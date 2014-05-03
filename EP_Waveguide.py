@@ -4,10 +4,12 @@ from EP_Base import *
 
 class EP_Waveguide(EP_Base):
     """
+    EP_Waveguide class.
     """
     def __init__(self, L=100, d=1.0, eta=0.05, N=1.5, theta=0.0, **kwargs):
         """
-        Copy methods and variables from EP_Base class and add new variables.
+        Exceptional Point (EP) waveguide class. Copies methods and variables
+        from EP_Base class and add new variables.
         
             Additional parameters:
             ----------------------
@@ -37,10 +39,8 @@ class EP_Waveguide(EP_Base):
         self.y_EP = 0.0
         
         # change initial conditions
-        #self.x_R0 = self.x_EP     # circling radius
-        self.x_R0 = 0.9 * self.x_EP     # circling radius
-        #self.y_R0 = self.x_EP     # circling radius
-        self.y_R0 = 0.9 * self.x_EP     # circling radius
+        self.x_R0 = self.x_EP     # circling radius
+        self.y_R0 = self.x_EP     # circling radius
     
     
     def k(self, n):
@@ -62,6 +62,7 @@ class EP_Waveguide(EP_Base):
             -----------
                 t: float
                 x, y: float, optional
+                
             Returns:
             --------
                 H: (2,2) ndarray
@@ -84,7 +85,19 @@ class EP_Waveguide(EP_Base):
   
   
     def get_cycle_parameters(self, t):
-        """Return the loop parameters at time t."""
+        """
+        Return the loop parameters at time t.
+        
+            Parameters:
+            -----------
+                t: float
+                    Time t.
+                    
+            Returns:
+            --------
+                x, y: float
+                    Trajectory coordinates (x,y) at time t.
+        """
         x_EP, x_R0 = self.x_EP, self.x_R0
         y_EP, y_R0 = self.y_EP, self.y_R0
         phi0 = self.init_loop_phase
@@ -121,16 +134,24 @@ class EP_Waveguide(EP_Base):
             raise Exception("""Error: loop_type {}
                                does not exist!""".format(loop_type))
         
-    def sample_H(self):
+    def sample_H(self, xN=None, yN=None):
         """
         Sample local eigenvalue geometry of H.
         
+            Parameters:
+            -----------
+                xN, yN: int
+                    Number of sampling points.
+                    
             Returns:
             --------
                 X, Y: (N,N) ndarray
                 Z: (N,N,2) ndarray
         """
-        xN = yN = 5*10**2
+        if xN is None:
+            xN = 5*10**2
+        if yN is None:
+            yN = xN
         
         x = np.linspace(self.x_EP - 1.1*self.x_R0,
                         self.x_EP + 1.1*self.x_R0, xN)
@@ -184,7 +205,31 @@ class EP_Waveguide(EP_Base):
     
     def get_boundary(self, x=None, eps=None, delta=None,
                      d=None, kr=None, theta_boundary=None):
-        """Get boundary function xi."""
+        """
+        Get boundary function xi.
+        
+            Parameters:
+            -----------
+                x: ndarray
+                    Spatial/temporal coordinate.
+                eps: float
+                    Boundary roughness strength.
+                delta: float
+                    Boundary frequency detuning.
+                d: float
+                    Waveguide width.
+                kr: float
+                    Boundary modulation frequency.
+                theta_boundary: float
+                    Phase difference between lower and upper boundary.
+            
+            Returns:
+            --------
+                xi_lower: float
+                    Lower boundary function.
+                xi_upper: float
+                    Upper boundary function.
+        """
         
         # if variables not supplied set defaults
         if x is None:
@@ -305,7 +350,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                                            eps_factor=1.0, eps=0.3, set_x_EP=False,
                                            delta=0.0, 
                                            full_evolution=False,
-                                           write_cfg=True):
+                                           write_cfg=True,
+                                           input_xml="input.xml"):
     """
     Prepare length dependent greens_code input for VSC calculations. The waveguide
     boundary is prepared such that the length is an integer multiple of the detuned
@@ -314,27 +360,29 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
         Parameters:
         -----------
             eta: float
-                Dissipation coefficient
+                Dissipation coefficient.
             L:   float
                 Waveguide length.
             N:   float
-                Number of open modes int(k*d/pi)
+                Number of open modes int(k*d/pi).
             loop_type: str
-                Specifies path in (epsilon,delta) parameter space
+                Specifies path in (epsilon,delta) parameter space.
             init_loop_phase: float
-                Starting angle on parameter trajectory
+                Starting angle on parameter trajectory.
             eps_factor: float
-                Constant to shift x_EP -> x_EP * eps_factor
+                Constant to shift x_EP -> x_EP * eps_factor.
             eps: float
-                Set value for x_EP to eps (only done if set_x_EP=True)
+                Set value for x_EP to eps (only done if set_x_EP=True).
             set_x_EP: bool
-                Whether to manually set x_EP
+                Whether to manually set x_EP.
             delta: float
-                Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta)
+                Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta).
             full_evolution: bool
-                Whether to build intermediate waveguide boundaries with x < L
+                Whether to build intermediate waveguide boundaries with x < L.
             write_cfg: bool
-                Wheter to write WG class attributes to file
+                Whether to write WG class attributes to file.
+            input_xml: str
+                Input xml file to be supplied with length-dependent data.
         
         Returns:
         --------
@@ -383,10 +431,17 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
         params['init_loop_phase'] *= pi
         
         WG = EP_Waveguide(**params)
-        if set_x_EP:
+        #if set_x_EP:
+        #    WG.x_EP = eps
+        #else:
+        #    WG.x_EP *= eps_factor
+        
+        #  no need for set_x_EP variable?
+        if eps:
             WG.x_EP = eps
         else:
             WG.x_EP *= eps_factor
+            
         WG.y_EP += delta
         xi, _ = WG.get_boundary()
         
@@ -438,12 +493,69 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
         
         os.chdir(pwd)
 
-
+def parse_arguments():
+    """
+    Parse input for function generate_length_dependent_calculations(*args, **kwargs).
+        
+        Parameters:
+        -----------
+            None
+            
+        Returns:
+        --------
+            kwargs: dict
+    """
+    
+    import argparse
+    from argparse import ArgumentDefaultsHelpFormatter as help_formatter
+    
+    parser = argparse.ArgumentParser(formatter_class=help_formatter)
+    
+    parser.add_argument("--eta", nargs="?", default=0.0, type=float,
+                        help="Dissipation coefficient" )
+    parser.add_argument("-L", nargs="?", default=100, type=float,
+                        help="Waveguide length" )
+    parser.add_argument("--N", nargs="?", default=1.01, type=float,
+                        help="Number of open modes int(k*d/pi)" )
+    parser.add_argument("-t", "--loop-type", default="Constant_delta", type=str,
+                        help="Specifies path in (epsilon,delta) parameter space" )
+    parser.add_argument("--init-loop-phase", default=0.0, type=float,
+                        help="Starting angle on parameter trajectory" )
+    parser.add_argument("--eps-factor", nargs="?", default=1.0, type=float,
+                        help="Constant to shift x_EP -> x_EP * eps_factor" )
+    parser.add_argument("--eps", nargs="?", default=0.01, type=float,
+                        help="Set value for x_EP to eps (only done if set_x_EP=True)" )
+    parser.add_argument("-x", "--set-x-EP", action="store_true",
+                        help="Whether to manually set x_EP")
+    parser.add_argument("-d", "--delta", nargs="?", default=0.0, type=float,
+                        help="Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta)" )
+    parser.add_argument("-f", "--full-evolution", action="store_true",
+                        help="Whether to build intermediate waveguide boundaries with x < L")
+    parser.add_argument("-w", "--write-cfg", action="store_true",
+                        help="Whether to write WG class attributes to file")
+    parser.add_argument("-i", "--input-xml", default="input.xml", type=str,
+                        help="Input xml file to be supplied with length-dependent data")
+    
+    #subparsers = parser.add_subparsers(help='sub-command help')
+    
+    args = parser.parse_args()
+    kwargs = vars(args)
+    
+    print kwargs
+    #
+    #if not args.set_x_EP and args.eps:
+    #    print "Warning: set_x_EP = {} and eps = {}".format(args.set_x_EP,
+    #                                                       args.eps)
+    
+    return kwargs
+    
+   
 if __name__ == '__main__':
-    #generate_profile_heatmap()
-    eps_EP = 0.0297403059911
-    generate_length_dependent_calculations(eta=0.0, L=100, 
-                                           eps_factor=1.0, delta=0.3,
-                                           set_x_EP=True, eps=0.01, 
-                                           full_evolution=False,
-                                           loop_type="Constant_delta")
+    
+    generate_length_dependent_calculations(**parse_arguments())
+    
+    #generate_length_dependent_calculations(eta=0.0, L=100, 
+    #                                       eps_factor=1.0, delta=0.3,
+    #                                       set_x_EP=True, eps=0.01, 
+    #                                       full_evolution=False,
+    #                                       loop_type="Constant_delta")

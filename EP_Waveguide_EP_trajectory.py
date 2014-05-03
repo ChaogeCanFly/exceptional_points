@@ -1,3 +1,8 @@
+#
+#   *** outdated! ***
+#
+
+
 #!/usr/bin/env python
 
 from EP_Base import *
@@ -10,6 +15,7 @@ class EP_Waveguide_EP_Trajectory(EP_Base):
         Copy methods and variables from EP_Base class and add new variables.
         
             Additional parameters:
+            ----------------------
                 d: float
                     Waveguide width
                 eta: float

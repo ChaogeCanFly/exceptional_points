@@ -4,7 +4,7 @@ from EP_Helpers import *
 
 class EP_Base:
     """
-    EP_Base class
+    EP_Base class.
     """
     def __init__(self, T=10, x_EP=0.0, y_EP=0.0, x_R0=0.8, y_R0=0.8,
                  loop_type="Circle", loop_direction='-', init_state='a',

@@ -4,11 +4,12 @@ from EP_Base import *
 
 class EP_OptoMech(EP_Base):
     """
-    Optomechanics class.
+    EP_OptoMech class.
     """
     def __init__(self, R=0.05, gamma=2.0, **kwargs):
         """
-        Copy methods and variables from EP_Base class.
+        Exceptional Points (EP) optomechanics class. Copies methods and
+        variables from EP_Base class.
         
             Additional parameters:
             ----------------------
