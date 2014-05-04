@@ -506,7 +506,7 @@ def parse_arguments():
         --------
             kwargs: dict
     """
-    
+    import json
     import argparse
     from argparse import ArgumentDefaultsHelpFormatter as help_formatter
     
@@ -543,7 +543,7 @@ def parse_arguments():
     args = parser.parse_args()
     kwargs = vars(args)
     
-    print kwargs
+    print json.dumps(kwargs, indent=4)
     #
     #if not args.set_x_EP and args.eps:
     #    print "Warning: set_x_EP = {} and eps = {}".format(args.set_x_EP,
