@@ -347,7 +347,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                                            init_loop_phase=0.0,
                                            loop_type="Varcircle",
                                            loop_direction="-",
-                                           eps_factor=1.0, eps=0.3, set_x_EP=False,
+                                           eps_factor=1.0, eps=None,
+                                           #set_x_EP=False,
                                            delta=0.0, 
                                            full_evolution=False,
                                            write_cfg=True,
@@ -373,8 +374,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                 Constant to shift x_EP -> x_EP * eps_factor.
             eps: float
                 Set value for x_EP to eps (only done if set_x_EP=True).
-            set_x_EP: bool
-                Whether to manually set x_EP.
+            #set_x_EP: bool
+            #    Whether to manually set x_EP.
             delta: float
                 Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta).
             full_evolution: bool
@@ -523,10 +524,11 @@ def parse_arguments():
                         help="Starting angle on parameter trajectory" )
     parser.add_argument("--eps-factor", nargs="?", default=1.0, type=float,
                         help="Constant to shift x_EP -> x_EP * eps_factor" )
-    parser.add_argument("--eps", nargs="?", default=0.01, type=float,
-                        help="Set value for x_EP to eps (only done if set_x_EP=True)" )
-    parser.add_argument("-x", "--set-x-EP", action="store_true",
-                        help="Whether to manually set x_EP")
+    parser.add_argument("--eps", nargs="?", default=None, type=float,
+                        help="Set value for x_EP to eps (only done if not None)" )
+                        #help="Set value for x_EP to eps (only done if set_x_EP=True)" )
+    #parser.add_argument("-x", "--set-x-EP", action="store_true",
+    #                    help="Whether to manually set x_EP")
     parser.add_argument("-d", "--delta", nargs="?", default=0.0, type=float,
                         help="Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta)" )
     parser.add_argument("-f", "--full-evolution", action="store_true",
