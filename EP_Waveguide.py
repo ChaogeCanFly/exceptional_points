@@ -459,7 +459,7 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
         # print wire properties to file
         if write_cfg:
             with open("EP_SETTINGS.cfg", "w") as f:
-                d = { key: value for key, value in vars(WG).items()
+                d = { key: value for key, value in vars(WG).items() \
                       if not isinstance(value, np.ndarray)}
                 data = json.dumps(d, sort_keys=True, indent=-1)
                 f.write(data)
