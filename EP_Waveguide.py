@@ -352,7 +352,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                                            delta=0.0, 
                                            full_evolution=False,
                                            write_cfg=True,
-                                           input_xml="input.xml"):
+                                           input_xml="input.xml",
+                                           pphw="200"):
     """
     Prepare length dependent greens_code input for VSC calculations. The waveguide
     boundary is prepared such that the length is an integer multiple of the detuned
@@ -384,6 +385,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                 Whether to write WG class attributes to file.
             input_xml: str
                 Input xml file to be supplied with length-dependent data.
+            pphw: int
+                Points per half wavelength (determines grid-spacing).
         
         Returns:
         --------
@@ -478,6 +481,7 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
         out_xml = open("{}/input.xml".format(directory), "w")
         
         replacements = {
+            r'"halfwave">pphw': r'"halfwave">{}'.format(pphw),
             r'"L">L': r'"L">{}'.format(Ln),
             r'"N_file">N_file': r'"N_file">{}'.format(N_file),
             r'"file">file': r'"file">{}.profile'.format(filename),
@@ -537,6 +541,8 @@ def parse_arguments():
                         help="Whether to write WG class attributes to file")
     parser.add_argument("-i", "--input-xml", default="input.xml", type=str,
                         help="Input xml file to be supplied with length-dependent data")
+    parser.add_argument("-p", "--pphw", default=200, type=int,
+                        help="Points per half wavelength (determines grid-spacing)")
     
     #subparsers = parser.add_subparsers(help='sub-command help')
     
