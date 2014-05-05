@@ -481,7 +481,7 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
         out_xml = open("{}/input.xml".format(directory), "w")
         
         replacements = {
-            r'"halfwave">pphw': r'"halfwave">{}'.format(pphw),
+            r'halfwave">pphw': r'halfwave">{}'.format(pphw),
             r'"L">L': r'"L">{}'.format(Ln),
             r'"N_file">N_file': r'"N_file">{}'.format(N_file),
             r'"file">file': r'"file">{}.profile'.format(filename),
