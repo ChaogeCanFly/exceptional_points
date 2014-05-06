@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 from EP_Helpers import c_eig, c_trapz
+from scipy.integrate import complex_ode
+import numpy as np
+from numpy import pi
 
 class EP_Base:
     """EP_Base class."""
@@ -143,10 +146,10 @@ class EP_Base:
         #    where eigenvalue-jumps occur
         for k in mask.nonzero()[0]:
             # correct phase to obtain continuous wavefunction
-            phase_0_R = angle(eVecs_r[k,:,0]) - angle(eVecs_r[k+1,:,1])
-            phase_0_L = angle(eVecs_l[k,:,0]) - angle(eVecs_l[k+1,:,1])
-            phase_1_R = angle(eVecs_r[k+1,:,0]) - angle(eVecs_r[k,:,1])
-            phase_1_L = angle(eVecs_l[k+1,:,0]) - angle(eVecs_l[k,:,1])
+            phase_0_R = np.angle(eVecs_r[k,:,0]) - np.angle(eVecs_r[k+1,:,1])
+            phase_0_L = np.angle(eVecs_l[k,:,0]) - np.angle(eVecs_l[k+1,:,1])
+            phase_1_R = np.angle(eVecs_r[k+1,:,0]) - np.angle(eVecs_r[k,:,1])
+            phase_1_L = np.angle(eVecs_l[k+1,:,0]) - np.angle(eVecs_l[k,:,1])
             #phase_0_R = phase_1_R = 0.0
             #phase_0_L = phase_1_L = 0.0
             #print "phase_0: ", phase_0_R/pi
@@ -234,7 +237,7 @@ class EP_Base:
         
         # change order of energy eigenvalues and eigenvectors if
         # imag(integral_E0) is smaller than imag(integral_E1)
-        if imag(intE0) < imag(intE1):
+        if np.imag(intE0) < np.imag(intE1):
             self.eVals[:,:] = self.eVals[:,::-1]
             self.eVecs_r[:,:,:] = self.eVecs_r[:,:,::-1]
             self.eVecs_l[:,:,:] = self.eVecs_l[:,:,::-1]
@@ -269,7 +272,7 @@ class EP_Base:
             eVec0_r /= norm(eVec0_r.conj(), eVec0_r)
         elif self.init_state == 'd':
             #phase = exp(1j*0.77185547)
-            phase = exp(1j*pi)
+            phase = np.exp(1j*pi)
             eVec0_r = self.eVecs_r[0,:,0] + phase*self.eVecs_r[0,:,1]
             norm = lambda vl, vr: np.sqrt(vl.dot(vr))
             eVec0_r /= norm(eVec0_r.conj(), eVec0_r)

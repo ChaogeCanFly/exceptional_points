@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 from EP_Base import *
+import numpy as np
+from numpy import pi
 
 class EP_Toymodel(EP_Base):
     """EP_Toymodel class."""

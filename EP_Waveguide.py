@@ -1,14 +1,16 @@
 #!/usr/bin/env python2.7
 
 from EP_Base import *
+import numpy as np
+from numpy import pi
 
 class EP_Waveguide(EP_Base):
     """EP_Waveguide class."""
     
     def __init__(self, L=100, d=1.0, eta=0.05, N=1.5, theta=0.0, **kwargs):
-        """
-        Exceptional Point (EP) waveguide class. Copies methods and variables
-        from EP_Base class and add new variables.
+        """Exceptional Point (EP) waveguide class.
+        
+        Copies methods and variables from EP_Base class and adds new variables.
         
             Additional parameters:
             ----------------------
