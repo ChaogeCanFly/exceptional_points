@@ -536,8 +536,8 @@ def parse_arguments():
                         help="Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta)" )
     parser.add_argument("-f", "--full-evolution", action="store_true",
                         help="Whether to build intermediate waveguide boundaries with x < L")
-    parser.add_argument("-w", "--write-cfg", action="store_true",
-                        help="Whether to write WG class attributes to file")
+    parser.add_argument("-w", "--write-cfg", action="store_false",
+                        help="Whether to NOT write WG class attributes to file")
     parser.add_argument("-i", "--input-xml", default="input.xml", type=str,
                         help="Input xml file to be supplied with length-dependent data")
     parser.add_argument("-p", "--pphw", default=200, type=int,
