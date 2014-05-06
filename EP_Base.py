@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 
-from EP_Helpers import *
+from EP_Helpers import c_eig, c_trapz
 
 class EP_Base:
-    """
-    EP_Base class.
-    """
+    """EP_Base class."""
+    
     def __init__(self, T=10, x_EP=0.0, y_EP=0.0, x_R0=0.8, y_R0=0.8,
                  loop_type="Circle", loop_direction='-', init_state='a',
                  init_loop_phase=0.0, calc_adiabatic_state=False):
-        """
-        Exceptional Point (EP) base class. The dynamics of a 2-level system are
-        determined via an Runge-Kutta method of order (4) 5 due to Dormand and
-        Prince. 
+        """Exceptional Point (EP) base class.
+        
+        The dynamics of a 2-level system are determined via an Runge-Kutta method
+        of order (4) 5 due to Dormand and Prince. 
         
             Parameters:
             -----------
@@ -26,7 +25,6 @@ class EP_Base:
                     Maximum distance between trajectory and EP in x-direction
                 y_R0 : float, optional
                     Maximum distance between trajectory and EP in y-direction
-                
                 init_state : str, optional
                     Determines initial state for the system's evolution
                 loop_type : str, optional
@@ -45,6 +43,7 @@ class EP_Base:
             None
         
         """
+        
         # total loop duration
         self.T = T
         
@@ -107,17 +106,19 @@ class EP_Base:
     
     
     def get_c_eigensystem(self):
-        """
-        Calculate the instantaneous eigenvalues and eigenvectors for
+        """Calculate the instantaneous eigenvalues and eigenvectors for
         all times t=0,...,T and remove any discontinuities.
         
             Parameters:
             -----------
                 None
+                
             Returns:
             --------
                 None
+                
         """
+        
         # allocate temporary vectors
         eVals = np.zeros_like(self.eVals)
         eVecs_r = np.zeros_like(self.eVecs_r)
@@ -197,32 +198,36 @@ class EP_Base:
         
     
     def get_adiabatic_state(self, n):
-        """
-        Calculate the adiabatical dynamic phase factor exp(1j*theta).
+        """Calculate the adiabatical dynamic phase factor exp(1j*theta).
         
             Parameters:
             -----------
                 n: integer
+                    Determines the upper integral boundary value t[n] < T.
+                    
             Returns:
             --------
                 dynamical phase: float
+                
         """
-        Ea, Eb = [ self.eVals[:n,i] for i in 0, 1 ]
         
-        self.theta[n,:] = [ -c_trapz(E, dx=self.dt) for E in Ea, Eb]
-        exp_a, exp_b = [ exp(1j*theta) for theta in self.theta[n,:] ]
+        E_a, E_b = [ self.eVals[:n,i] for i in (0,1) ]
+        
+        self.theta[n,:] = [ -c_trapz(E, dx=self.dt) for E in (E_a,E_b) ]
+        exp_a, exp_b = [ np.exp(1j*theta) for theta in self.theta[n,:] ]
         
         return exp_a, exp_b
             
 
     def get_gain_state(self):
+        """Determine the (relative) gain and loss states.
+        
+        The integral int_0,T E_a(t) dt is calculated. If the imaginary part of
+        the resulting integral is larger than int_0,T E_b(t), E_a is the gain
+        state and nothing is done. If not, eigenvalues and eigenstates are
+        interchanged.
         """
-        Determine the (relative) gain and loss states. The integral
-        int_0,T E_a(t) dt is calculated. If the imaginary
-        part of the resulting integral is larger than int_0,T E_b(t),
-        E_a is the gain state and nothing is done. If not, eigenvalues
-        and eigenstates are interchanged.
-        """
+        
         # calculate time-integral of both eigenvalues
         intE0, intE1  = [ c_trapz(self.eVals[:,n],
                                   dx=self.dt) for n in (0,1) ]
@@ -236,17 +241,21 @@ class EP_Base:
 
     
     def get_init_state(self):
-        """
-        Return the initial state vector |phi_i(0)>,
-        i = a, b or c/d (= linear combinations of a and b)
+        """Return the initial state vector at time t=0.
+        
+        Depending on the self.init_state variable, a vector |phi_i(0)> is
+        returned, with i = a, b or c/d (= linear combinations of a and b).
         
             Parameters:
             -----------
                 None
+                
             Returns:
             --------
                 eVec0_r: (2,) ndarray
+                
         """
+        
         if self.init_state == 'a':
             eVec0_r = self.eVecs_r[0,:,0]
         elif self.init_state == 'b':
@@ -269,21 +278,22 @@ class EP_Base:
  
    
     def solve_ODE(self):
-        """
-        Iteratively solve the ODE dy/dt = f(t,y) on a discretized time-grid.
+        """Iteratively solve the ODE dy/dt = f(t,y) on a discretized time-grid.
 
-        Parameters:
-        -----------
-                None
-        Returns:
-        --------
-                t:  (N,)  ndarray
-                    Time array.
-            phi_a:  (N,2) ndarray
-                    Overlap <phi_a|psi>.
-            phi_b:  (N,2) ndarray
-                    Overlap <phi_b|psi>.
+            Parameters:
+            -----------
+                    None
+                    
+            Returns:
+            --------
+                    t:  (N,)  ndarray
+                        Time array.
+                phi_a:  (N,2) ndarray
+                        Overlap <phi_a|psi>.
+                phi_b:  (N,2) ndarray
+                        Overlap <phi_b|psi>.
         """
+        
         # r.h.s of ode d/dt y = f(t, y)
         f = lambda t, phi: -1j*self.H(t).dot(phi)
         

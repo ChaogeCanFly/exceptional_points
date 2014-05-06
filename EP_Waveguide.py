@@ -3,9 +3,8 @@
 from EP_Base import *
 
 class EP_Waveguide(EP_Base):
-    """
-    EP_Waveguide class.
-    """
+    """EP_Waveguide class."""
+    
     def __init__(self, L=100, d=1.0, eta=0.05, N=1.5, theta=0.0, **kwargs):
         """
         Exceptional Point (EP) waveguide class. Copies methods and variables
@@ -85,8 +84,7 @@ class EP_Waveguide(EP_Base):
   
   
     def get_cycle_parameters(self, t):
-        """
-        Return the loop parameters at time t.
+        """Return the loop parameters at time t.
         
             Parameters:
             -----------
@@ -135,8 +133,7 @@ class EP_Waveguide(EP_Base):
                                does not exist!""".format(loop_type))
         
     def sample_H(self, xN=None, yN=None):
-        """
-        Sample local eigenvalue geometry of H.
+        """Sample local eigenvalue geometry of H.
         
             Parameters:
             -----------
@@ -147,7 +144,9 @@ class EP_Waveguide(EP_Base):
             --------
                 X, Y: (N,N) ndarray
                 Z: (N,N,2) ndarray
+        
         """
+        
         if xN is None:
             xN = 5*10**2
         if yN is None:
@@ -349,7 +348,6 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                                            loop_type="Varcircle",
                                            loop_direction="-",
                                            eps_factor=1.0, eps=None,
-                                           #set_x_EP=False,
                                            delta=0.0, 
                                            full_evolution=False,
                                            write_cfg=True,
@@ -436,12 +434,7 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
         params['init_loop_phase'] *= pi
         
         WG = EP_Waveguide(**params)
-        #if set_x_EP:
-        #    WG.x_EP = eps
-        #else:
-        #    WG.x_EP *= eps_factor
         
-        #  no need for set_x_EP variable?
         if eps:
             WG.x_EP = eps
         else:
@@ -551,10 +544,6 @@ def parse_arguments():
     kwargs = vars(args)
     
     print json.dumps(kwargs, indent=4)
-    #
-    #if not args.set_x_EP and args.eps:
-    #    print "Warning: set_x_EP = {} and eps = {}".format(args.set_x_EP,
-    #                                                       args.eps)
     
     return kwargs
     

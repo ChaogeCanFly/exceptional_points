@@ -3,22 +3,26 @@
 from EP_Base import *
 
 class EP_Toymodel(EP_Base):
-    """
-    """
+    """EP_Toymodel class."""
+    
     def __init__(self, **kwargs):
         """Copy methods and variables from EP_Base class."""
         EP_Base.__init__(self, **kwargs)
 
 
     def H(self, t):
-        """
-        Return parametrically dependent Hamiltonian at time t.
+        """Return parametrically dependent Hamiltonian at time t.
         
             Parameters:
+            -----------
                 t: float
+                
             Returns:
+            --------
                 H: (2,2) ndarray
+                
         """
+        
         # Pauli matrices sigma_x and sigma_z
         sigma_x = np.array([[0,1], [1,0]], dtype=complex)
         sigma_z = np.array([[1,0], [0,-1]], dtype=complex)
@@ -31,8 +35,20 @@ class EP_Toymodel(EP_Base):
 
 
     def get_cycle_parameters(self, t):
+        """Return the loop parameters at time t.
+        
+            Parameters:
+            -----------
+                t: float
+                    Time t.
+                    
+            Returns:
+            --------
+                x, y: float
+                    Trajectory coordinates (x,y) at time t.
+        
         """
-        """
+        
         a1, b1 = self.x_EP, self.x_R0
         a2, b2 = self.y_EP, self.y_R0
         c1, c2 = 0, 0
@@ -80,9 +96,17 @@ class EP_Toymodel(EP_Base):
     
     
     def plot_data_thief(self, init_state=True):
-        """
-        Plot results from numerical integration and compare
-        to corresponding data from Fig. 2 from paper.
+        """Plot results from numerical integration and compare to corresponding
+        data of Fig. 2 from paper.
+        
+            Parameters:
+            -----------
+                init_state: bool
+                    
+            Returns:
+            --------
+                None
+                
         """
         
         xlabel("time [a.u.]")

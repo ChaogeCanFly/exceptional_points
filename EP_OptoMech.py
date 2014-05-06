@@ -3,9 +3,8 @@
 from EP_Base import *
 
 class EP_OptoMech(EP_Base):
-    """
-    EP_OptoMech class.
-    """
+    """EP_OptoMech class."""
+    
     def __init__(self, R=0.05, gamma=2.0, **kwargs):
         """
         Exceptional Points (EP) optomechanics class. Copies methods and

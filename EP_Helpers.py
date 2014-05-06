@@ -11,6 +11,13 @@ from scipy.integrate import trapz, ode, complex_ode, odeint
 
 
 class FileOperations():
+    """Simple  class to handle the output of class parameters to stdout and
+    a .cfg file.
+    
+        ### possibly outdated -> json.dumps ###
+    
+    """
+    
     def __init__(self, filename=None):
         filename = '{}.cfg'.format(filename)
         self.file = open(filename, 'a')
@@ -26,23 +33,36 @@ class FileOperations():
 
 def c_eig(H, left=False, **kwargs):
     """Wrapper for scipy.linalg.eig(H) that returns modified eigenvalues
-    and eigenvectors. The returned vectors are normalized according to
-    the biorthogonal product, i.e.,
+    and eigenvectors.
+    
+    The returned vectors are normalized according to the biorthogonal product, i.e.,
+        
         <psi_l|phi_r> = delta_{psi,phi}
+    
     with
+    
         H|psi_r> = E|psi_r>, <psi_l|H = <psi_l|E ,
+    
     instead of the standard (hermitian) inner product
+    
         (|psi>.dagger) * |psi> = 1
+    
         
         Parameters:
         -----------
             H:  (2,2) ndarray
+                Hamiltonian matrix
+            left: bool (default: False)
+                Whether to calculate left eigenvectors as well
+    
         Returns:
         --------
           eigenvalues:  (2,)   ndarray
           left eigenvectors:  (2,2)  ndarray
           right eigenvectors: (2,2)  ndarray
+    
     """
+    
     # get eigenvalues and eigenvalues of matrix H
     # multiple possibilities:
     # 1) from option left=True
@@ -86,8 +106,7 @@ def c_eig(H, left=False, **kwargs):
 
 
 def c_trapz(f, dx, **kwargs):
-    """
-    Wrapper for scipy.integrate.trapz that allows to integrate complex-valued
+    """Wrapper for scipy.integrate.trapz that allows to integrate complex-valued
     arrays.
     
         Parameters:
@@ -97,15 +116,17 @@ def c_trapz(f, dx, **kwargs):
         Returns:
         --------
             c_trapz: (N,) ndarray
+    
     """
+    
     real_int = trapz(real(f), dx=dx, **kwargs)
     imag_int = trapz(imag(f), dx=dx, **kwargs)
     
     return real_int + 1j*imag_int
 
+
 def c_gradient(f, dx):
-    """
-    Wrapper for numpy.gradient that allows to calculate gradients for complex-
+    """Wrapper for numpy.gradient that allows to calculate gradients for complex-
     valued arrrays.
     
         Parameters:
@@ -116,11 +137,14 @@ def c_gradient(f, dx):
         Returns:
         --------
             c_gradient: (N,) ndarray
+            
     """
+    
     real_grad = np.gradient(real(f), dx)
     imag_grad = np.gradient(imag(f), dx)
     
     return real_grad + 1j*imag_grad
+
 
 def map_trajectory(a, b, Ga, Gb):
     """
@@ -136,7 +160,9 @@ def map_trajectory(a, b, Ga, Gb):
         Returns:
         --------
             mapped trajectory: ndarray
+            
     """
+    
     dG = Ga-Gb
     # mimick Heaviside theta function
     f = lambda x: 1./(1.+exp(-10.**6*x))
@@ -146,6 +172,7 @@ def map_trajectory(a, b, Ga, Gb):
 
 def set_scientific_axes(ax, axis='x'):
     """Set axes to scientific notation."""
+    
     #ax.ticklabel_format(style='sci', axis=axis, scilimits=(0,0), useOffset=False)
     ax.ticklabel_format(style='plain', axis=axis, useOffset=False)
     ax.xaxis.set_major_locator(MaxNLocator(4))
@@ -154,24 +181,43 @@ def set_scientific_axes(ax, axis='x'):
 
 
 def cmap_discretize(cmap, indices):
-    """Discretize colormap according to list."""
+    """Discretize colormap according to indices list.
+    
+        Parameters:
+        -----------
+            cmap: str or Colormap instance
+            indices: list
+        
+        Returns:
+        --------
+            segmented colormap
+            
+    """
+    
     if type(cmap) == str:
         cmap = get_cmap(cmap)
+        
     indices = np.ma.concatenate([[0],indices,[1]])
     N = len(indices)
+    
     colors_i = np.concatenate((np.linspace(0,1.,N),
                                (0.,0.,0.,0.)))
     colors_rgba = cmap(colors_i)
+    
     cdict = {}
     for ki, key in enumerate(('red','green','blue')):
         cdict[key] = [ (indices[i], colors_rgba[i-1,ki],
                         colors_rgba[i,ki]) for i in xrange(N) ]
-    # Return colormap object.
+        
     return LinearSegmentedColormap(cmap.name + "_%d"%N, cdict, 1024)
 
 
 def draw_arrow(loop_direction, init_loop_phase, x0=0., y0=0., R=1.5, phi=pi/8.):
-    """Draw arrow with specified pointing direction."""
+    """Draw arrow with specified pointing direction.
+    
+        ### outdated ###
+    
+    """
     
     x1, y1 = x0 + R*cos(-phi+init_loop_phase), y0 + R*sin(-phi+init_loop_phase)
     x2, y2 = x0 + R*cos(phi+init_loop_phase),  y0 + R*sin(phi+init_loop_phase)
@@ -191,48 +237,31 @@ def draw_arrow(loop_direction, init_loop_phase, x0=0., y0=0., R=1.5, phi=pi/8.):
              )
 
 
-def plot_amplitudes(title="title", n=1):
-    clf()
-    title(title)
-    nvec1 = 0
-    nvec2 = 1
-    
-    part1 = imag
-    plot(part1(eVecs_l[:,nvec1,n]), "r", label="imag(0n)")
-    plot(part1(eVecs_l[:,nvec2,n]), "r--", label="imag(1n)")
-    
-    part2 = real
-    plot(part2(eVecs_l[:,nvec1,n]), "g-", label="real(0n)")
-    plot(part2(eVecs_l[:,nvec2,n]), "g--", label="real(1n)")
-    
-    # abs
-    plot(abs(eVecs_l[:,nvec1,n])**2, "b-", label="abs(0n)**2")
-    plot(abs(eVecs_l[:,nvec2,n])**2, "b--", label="abs(1n)**2")
-    
-    legend(loc=2)
-    show()
-    
-    
-def plot_amplitudes_2(title="title", switch=False):
-    clf()
-    title(title)
-    nvec1 = 0
-    nvec2 = 1
-    
-    part = angle
-    plot(part(eVecs_l[:,nvec1,0])/pi, "r-", label="arg(a0)")
-    plot(part(eVecs_l[:,nvec2,0])/pi, "r--", label="arg(b0)")
-    
-    part = angle
-    plot(part(eVecs_l[:,nvec1,1])/pi, "b-", label="arg(a1)")
-    plot(part(eVecs_l[:,nvec2,1])/pi, "b--", label="arg(b1)")
-    
-    legend(loc=2)
-    show()
-
-
 def test_eigenvalues(eVals, eVecs_l, eVecs_r, H):
-    """Test eigenvalue problem."""
+    """Test eigenvalue problem.
+    
+    The output contains both the eigenvalues and eigenvectors (left and right),
+    as well as the left and right hand sides of the eigenvalue equations
+    
+        H v_i = E_i v_i
+    or
+        v_i H = E_i v_i
+    
+    respectively.
+    
+        Parameters:
+        -----------
+            eVals: (2,) ndarray
+            eVecs_l: (2,2) ndarray
+            eVecs_r: (2,2) ndarray
+            H: (2,2) ndarray
+        
+        Returns:
+        --------
+            None
+            
+    """
+    
     print 50*"#"
     print
     print "eVals\n ", eVals
@@ -240,14 +269,12 @@ def test_eigenvalues(eVals, eVecs_l, eVecs_r, H):
     print "eVecs_l\n", eVecs_l
     print
     
-    for n in 0,1:
+    for n in (0,1):
         print "ev_l*H\n  ", eVecs_l[:,n].dot(H)
         print "e1*ev_l\n  ", eVals[n]*eVecs_l[:,n]
-        #print "equal?", eVecs_l[:,n].dot(H) == eVals[n]*eVecs_l[:,n]
         print
         print "H*ev_r\n  ", H.dot(eVecs_r[:,n])
         print "e1*ev_r\n  ", eVals[n]*eVecs_r[:,n]
-        #print "equal?", H.dot(eVecs_r[:,n]) == eVals[n]*eVecs_r[:,n]
         print
         
     print 50*"#"
