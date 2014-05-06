@@ -354,7 +354,7 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                                            full_evolution=False,
                                            write_cfg=True,
                                            input_xml="input.xml",
-                                           pphw="200"):
+                                           pphw="200", r_nx_part="50"):
     """
     Prepare length dependent greens_code input for VSC calculations. The waveguide
     boundary is prepared such that the length is an integer multiple of the detuned
