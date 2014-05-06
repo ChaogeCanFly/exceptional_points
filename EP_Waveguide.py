@@ -327,6 +327,7 @@ def generate_profile_heatmap():
                         r'name="N_file">{}'.format(N_file),
                     r'name="file">file':
                         r'name="file">{}.profile'.format(filename),
+
                     r'name="Gamma0p_min">Gamma0p_min':
                         r'name="Gamma0p_min">{}'.format(eta),
                     r'name="Gamma0p_max">Gamma0p_min':
@@ -375,8 +376,6 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                 Constant to shift x_EP -> x_EP * eps_factor.
             eps: float
                 Set value for x_EP to eps (only done if set_x_EP=True).
-            #set_x_EP: bool
-            #    Whether to manually set x_EP.
             delta: float
                 Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta).
             full_evolution: bool
@@ -387,6 +386,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                 Input xml file to be supplied with length-dependent data.
             pphw: int
                 Points per half wavelength (determines grid-spacing).
+            r_nx_part: int
+                Parts into which the Border Hamiltonian rectangle is divided into.
         
         Returns:
         --------
@@ -485,6 +486,7 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
             r'"L">L': r'"L">{}'.format(Ln),
             r'"N_file">N_file': r'"N_file">{}'.format(N_file),
             r'"file">file': r'"file">{}.profile'.format(filename),
+            r'"nx_part">$r_nx/50': r'"nx_part">$r_nx/{}'.format(r_nx_part),
             r'"Gamma0p_min">Gamma0p_min': r'"Gamma0p_min">{}'.format(eta),
             r'"Gamma0p_max">Gamma0p_min': r'"Gamma0p_max">{}'.format(eta)
         }
@@ -530,9 +532,6 @@ def parse_arguments():
                         help="Constant to shift x_EP -> x_EP * eps_factor" )
     parser.add_argument("--eps", nargs="?", default=None, type=float,
                         help="Set value for x_EP to eps (only done if not None)" )
-                        #help="Set value for x_EP to eps (only done if set_x_EP=True)" )
-    #parser.add_argument("-x", "--set-x-EP", action="store_true",
-    #                    help="Whether to manually set x_EP")
     parser.add_argument("-d", "--delta", nargs="?", default=0.0, type=float,
                         help="Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta)" )
     parser.add_argument("-f", "--full-evolution", action="store_true",
@@ -543,6 +542,8 @@ def parse_arguments():
                         help="Input xml file to be supplied with length-dependent data")
     parser.add_argument("-p", "--pphw", default=200, type=int,
                         help="Points per half wavelength (determines grid-spacing)")
+    parser.add_argument("-r", "--r-nx-part", default=100, type=int,
+                        help="Parts into which the Border Hamiltonian rectangle is divided into")
     
     #subparsers = parser.add_subparsers(help='sub-command help')
     
