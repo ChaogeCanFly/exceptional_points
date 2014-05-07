@@ -105,14 +105,14 @@ class EP_Waveguide(EP_Base):
         w = self.w
             
         if loop_type == "Circle":
-            lambda1 = lambda t: x_EP + x_R0*cos(w*t + phi0)
-            lambda2 = lambda t: y_EP + y_R0*sin(w*t + phi0)
+            lambda1 = lambda t: x_EP + x_R0*np.cos(w*t + phi0)
+            lambda2 = lambda t: y_EP + y_R0*np.sin(w*t + phi0)
             return lambda1(t), lambda2(t)
         
         elif loop_type == "Varcircle":
             y_EP = 0.0
-            lambda1 = lambda t: x_EP - x_EP*cos(w*t)
-            lambda2 = lambda t: y_EP - x_EP*sin(w*t) + phi0
+            lambda1 = lambda t: x_EP - x_EP*np.cos(w*t)
+            lambda2 = lambda t: y_EP - x_EP*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
         
         elif loop_type == "Bell":
@@ -128,7 +128,7 @@ class EP_Waveguide(EP_Base):
             return x_EP, y_EP
         
         elif loop_type == "Constant_delta":
-            return x_EP * (1.0-cos(w*t)), y_EP
+            return x_EP * (1.0 - np.cos(w*t)), y_EP
         
         else:
             raise Exception("""Error: loop_type {}
