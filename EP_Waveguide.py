@@ -97,7 +97,9 @@ class EP_Waveguide(EP_Base):
             --------
                 x, y: float
                     Trajectory coordinates (x,y) at time t.
+                    
         """
+        
         x_EP, x_R0 = self.x_EP, self.x_R0
         y_EP, y_R0 = self.y_EP, self.y_R0
         phi0 = self.init_loop_phase
@@ -133,6 +135,7 @@ class EP_Waveguide(EP_Base):
         else:
             raise Exception("""Error: loop_type {}
                                does not exist!""".format(loop_type))
+        
         
     def sample_H(self, xN=None, yN=None):
         """Sample local eigenvalue geometry of H.

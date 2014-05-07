@@ -21,9 +21,9 @@ class EP_Base:
                 T : float, optional
                     Total duration of the loop in parameter space
                 x_EP : float, optional
-                    x-corrdinate of loop center
+                    x-coordinate of loop center
                 y_EP : float, optional
-                    y-corrdinate of loop center
+                    y-coordinate of loop center
                 x_R0 : float, optional
                     Maximum distance between trajectory and EP in x-direction
                 y_R0 : float, optional
@@ -37,7 +37,7 @@ class EP_Base:
                 init_loop_phase : float, optional
                     Starting point of evolution on trajectory
                 calc_adiabatic_state : bool, optional
-                    Wheather adiabatic solutions should also be calculated (note
+                    Whether adiabatic solutions should also be calculated (note
                     that setting this flag True can slow down the computation
                     considerably)
                 
@@ -70,6 +70,7 @@ class EP_Base:
         #       'a': populate gain state |a>
         #       'b': populate loss state |b>
         #       'c': superposition of gain and loss state 2^(-1/2)*(|a> + |b>)
+        #       'd': superposition of gain and loss state 2^(-1/2)*(|a> - |b>)
         self.init_state = init_state
         
         # loop cycle parameters
@@ -92,6 +93,7 @@ class EP_Base:
         # adiabatic coefficient and adiabatic phase
         self.Psi_adiabatic = np.zeros((self.tN,2), dtype=np.complex256)
         self.theta = np.zeros((self.tN,2), dtype=np.complex256)
+        
         # flag to switch off the calculation of the adiabatic state
         # this quantity is not needed for heatmap runs and slows down
         # the code considerably
