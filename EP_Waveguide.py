@@ -393,6 +393,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                 Points per half wavelength (determines grid-spacing).
             r_nx_part: int
                 Parts into which the Border Hamiltonian rectangle is divided into.
+            custom_directory: str
+                Custom directory into which to copy the .xml and .profile files.
         
         Returns:
         --------
@@ -547,6 +549,8 @@ def parse_arguments():
                         help="Points per half wavelength (determines grid-spacing)")
     parser.add_argument("-r", "--r-nx-part", default=100, type=int,
                         help="Parts into which the Border Hamiltonian rectangle is divided into")
+    parser.add_argument("-c", "--custom-directory", default=None, type=str,
+                        help="Custom directory into which to copy the .xml and .profile files.")
     
     #subparsers = parser.add_subparsers(help='sub-command help')
     
