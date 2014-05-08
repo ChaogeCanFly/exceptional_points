@@ -209,8 +209,7 @@ class EP_Waveguide(EP_Base):
     
     def get_boundary(self, x=None, eps=None, delta=None,
                      d=None, kr=None, theta_boundary=None):
-        """
-        Get boundary function xi.
+        """Get boundary function xi.
         
             Parameters:
             -----------
@@ -233,6 +232,7 @@ class EP_Waveguide(EP_Base):
                     Lower boundary function.
                 xi_upper: float
                     Upper boundary function.
+                    
         """
         
         # if variables not supplied set defaults
@@ -257,7 +257,8 @@ class EP_Waveguide(EP_Base):
         return xi_lower, xi_upper
     
     def get_boundary_contour(self, X, Y):
-        "Boundary contour for plotting"
+        """Boundary contour for plotting."""
+        
         lower, upper = self.get_boundary(X)
         mask_upper = Y > upper
         mask_lower = Y < lower
@@ -357,7 +358,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                                            full_evolution=False,
                                            write_cfg=True,
                                            input_xml="input.xml",
-                                           pphw="200", r_nx_part="50"):
+                                           pphw="200", r_nx_part="50",
+                                           custom_directory=None):
     """
     Prepare length dependent greens_code input for VSC calculations. The waveguide
     boundary is prepared such that the length is an integer multiple of the detuned
@@ -426,8 +428,11 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
             'loop_type': loop_type,
         }
         
-        directory = "{}/eta_{eta}_L_{}_Ln_{}_{loop_direction}".format(pwd, L, Ln,
-                                                                      **params)
+        if custom_directory:
+            directory = "{}/{}".format(pwd, custom_directory)
+        else:
+            directory = "{}/eta_{eta}_L_{}_Ln_{}_{loop_direction}".format(pwd, L, Ln,
+                                                                          **params)
         if not os.path.exists(directory):
             os.makedirs(directory)
             
