@@ -56,7 +56,7 @@ class EP_Toymodel(EP_Base):
         c1, c2 = 0, 0
         p0 = self.init_loop_phase
 
-        def pacmanShape(t):
+        def pacman_shape(t):
             p1, p2 = 1*pi/2 - 1.0, 2.0
             t1, t2 = [ p/self.w for p in p1, p2 ]
 
@@ -69,17 +69,17 @@ class EP_Toymodel(EP_Base):
             else:
                 return 1.0
             
-        pacmanShape = np.vectorize(pacmanShape)
+        pacman_shape = np.vectorize(pacman_shape)
         
         if self.loop_type is "Circle":
             R = lambda t: 1.
             c1 = c2 = 0.0
         elif self.loop_type is "Circle_wedge":
-            R = pacmanShape
+            R = pacman_shape
             c1 = c2 = 0.0
         elif self.loop_type is "Circle_whirl":
             R = lambda t: 1.
-            R = lambda t: (1. + 0.5*cos(5*self.w*t))
+            R = lambda t: (1. + 0.5*np.cos(5*self.w*t))
             c1 = c2 = 0.2
             c1 = c2 = 0.0
         elif self.loop_type is "Dropshape":
@@ -91,8 +91,8 @@ class EP_Toymodel(EP_Base):
             raise Exception("""Error: loop_type %s
                                 does not exist!""" % self.loop_type)
         
-        lambda1 = lambda t: a1 + b1*R(t)*cos(self.w*t + p0) + c1*cos(10*self.w*t)
-        lambda2 = lambda t: a2 + b2*R(t)*sin(self.w*t + p0) + c2*sin(10*self.w*t)
+        lambda1 = lambda t: a1 + b1*R(t)*np.cos(self.w*t + p0) + c1*np.cos(10*self.w*t)
+        lambda2 = lambda t: a2 + b2*R(t)*np.sin(self.w*t + p0) + c2*np.sin(10*self.w*t)
 
         return lambda1(t), lambda2(t)
     
