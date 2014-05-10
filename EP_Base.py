@@ -110,7 +110,7 @@ class EP_Base:
         pass
     
     
-    def get_c_eigensystem(self):
+    def _get_c_eigensystem(self):
         """Calculate the instantaneous eigenvalues and eigenvectors for
         all times t=0,...,T and remove any discontinuities.
         
@@ -202,7 +202,7 @@ class EP_Base:
         self.eVecs_r = eVecs_r
         
     
-    def get_adiabatic_state(self, n):
+    def _get_adiabatic_state(self, n):
         """Calculate the adiabatical dynamic phase factor exp(1j*theta).
         
             Parameters:
@@ -224,7 +224,7 @@ class EP_Base:
         return exp_a, exp_b
             
 
-    def get_gain_state(self):
+    def _get_gain_state(self):
         """Determine the (relative) gain and loss states.
         
         The integral int_0,T E_a(t) dt is calculated. If the imaginary part of
@@ -245,7 +245,7 @@ class EP_Base:
             self.eVecs_l[:,:,:] = self.eVecs_l[:,:,::-1]
 
     
-    def get_init_state(self):
+    def _get_init_state(self):
         """Return the initial state vector at time t=0.
         
         Depending on the self.init_state variable, a vector |phi_i(0)> is
@@ -306,9 +306,9 @@ class EP_Base:
         SE = complex_ode(f).set_integrator('dopri5', rtol=1e-9)
         
         # set initial conditions
-        self.get_c_eigensystem()    # calculate eigensystem for all times
-        self.get_gain_state()       # find state with total (relative) gain
-        self.eVec0 = self.get_init_state()          # define initial state
+        self._get_c_eigensystem()    # calculate eigensystem for all times
+        self._get_gain_state()       # find state with total (relative) gain
+        self.eVec0 = self._get_init_state()          # define initial state
         SE.set_initial_value(self.eVec0, t=0.0)     # y0, t0
                 
         # iterate ode
@@ -316,7 +316,7 @@ class EP_Base:
             if SE.successful():
                 self.Psi[n,:]  = SE.y
                 if self.calc_adiabatic_state:
-                    self.Psi_adiabatic[n,:] = self.get_adiabatic_state(n)
+                    self.Psi_adiabatic[n,:] = self._get_adiabatic_state(n)
                 SE.integrate(SE.t + self.dt)
             else:
                 raise Exception("ODE convergence error!")

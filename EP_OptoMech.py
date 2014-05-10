@@ -81,14 +81,15 @@ class EP_OptoMech(EP_Base):
     
     
     def sample_H(self):
-        """
-        Sample local eigenvalue geometry of H.
+        """Sample local eigenvalue geometry of H.
         
             Returns:
             --------
                 X, Y: (N,N) ndarray
                 Z: (N,N,2) ndarray
+                
         """
+        
         xN = yN = 1*10**2
         xEP = self.x_EP
         yEP = self.y_EP
@@ -126,7 +127,9 @@ class EP_OptoMech(EP_Base):
             --------
                 f: (N,) ndarray
                     Non-adiabatic coupling parameter as a function of time t.
+                    
         """
+        
         e = self.eVals[:,0]
         delta, kappa = self.get_cycle_parameters(self.t)
         D = delta + 1j*kappa

@@ -10,7 +10,7 @@ class EP_Waveguide(EP_Base):
     def __init__(self, L=100, d=1.0, eta=0.05, N=1.5, theta=0.0, **kwargs):
         """Exceptional Point (EP) waveguide class.
         
-        Copies methods and variables from EP_Base class and adds new variables.
+        Copies methods and variables from EP_Base class and adds new parameters.
         
             Additional parameters:
             ----------------------
@@ -22,7 +22,9 @@ class EP_Waveguide(EP_Base):
                     Number of open modes
                 theta: float
                     Phase difference between upper and lower boundary
+                    
         """
+        
         EP_Base.__init__(self, T=L, **kwargs)
         
         self.d = d                                  # wire width
@@ -67,12 +69,14 @@ class EP_Waveguide(EP_Base):
             Returns:
             --------
                 H: (2,2) ndarray
+                
         """
+        
         if eps is None and delta is None:
             eps, delta = self.get_cycle_parameters(t)
             
-        B = -1j*(np.exp(1j*self.theta_boundary) + 1) * \
-                    self.kr/2. * np.sqrt(self.k0/(2.*self.k1))
+        B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * 
+                      self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
         
         H11 = -self.k0 - 1j*self.eta/2.
         H12 = B*eps
@@ -102,9 +106,9 @@ class EP_Waveguide(EP_Base):
         
         x_EP, x_R0 = self.x_EP, self.x_R0
         y_EP, y_R0 = self.y_EP, self.y_R0
+        w = self.w
         phi0 = self.init_loop_phase
         loop_type = self.loop_type
-        w = self.w
             
         if loop_type == "Circle":
             lambda1 = lambda t: x_EP + x_R0*np.cos(w*t + phi0)
@@ -133,8 +137,8 @@ class EP_Waveguide(EP_Base):
             return x_EP * (1.0 - np.cos(w*t)), y_EP
         
         else:
-            raise Exception("""Error: loop_type {}
-                               does not exist!""".format(loop_type))
+            raise Exception(("Error: loop_type {}"
+                             "does not exist!").format(loop_type))
         
         
     def sample_H(self, xN=None, yN=None):
@@ -163,7 +167,7 @@ class EP_Waveguide(EP_Base):
                         self.y_EP + 1.1*self.y_R0, yN)
         
         X, Y = np.meshgrid(x, y)
-        Z = np.zeros((xN,yN,2), complex)
+        Z = np.zeros((xN,yN,2), dtype=complex)
         
         for i, xi in enumerate(x):
             for j, yj in enumerate(y):
@@ -175,6 +179,7 @@ class EP_Waveguide(EP_Base):
 
     def draw_wavefunction(self):
         """Plot wavefunction."""
+        
         x, b0, b1 = self.t, self.phi_a, self.phi_b
         yN = len(x)/self.T
         y = np.linspace(-0.1,self.d+0.1,yN)
@@ -191,8 +196,10 @@ class EP_Waveguide(EP_Base):
         #cb = colorbar(p)
         #cb.set_label("Wavefunction")
         
+        
     def draw_dissipation_coefficient(self, cax=None):
         """Plot position dependent dissipation coefficient."""
+        
         x, b0, b1 = self.t, self.phi_a, self.phi_b
         y = np.linspace(-0.1,self.d+0.1,2)
         
@@ -207,9 +214,10 @@ class EP_Waveguide(EP_Base):
         cb = colorbar(p, ax=cax)
         cb.set_label("Loss")
     
+    
     def get_boundary(self, x=None, eps=None, delta=None,
                      d=None, kr=None, theta_boundary=None):
-        """Get boundary function xi.
+        """Get the boundary function xi as a function of the spatial coordinate x.
         
             Parameters:
             -----------
@@ -256,8 +264,9 @@ class EP_Waveguide(EP_Base):
         
         return xi_lower, xi_upper
     
+    
     def get_boundary_contour(self, X, Y):
-        """Boundary contour for plotting."""
+        """Get the boundary contour."""
         
         lower, upper = self.get_boundary(X)
         mask_upper = Y > upper
@@ -266,8 +275,10 @@ class EP_Waveguide(EP_Base):
         
         return X, Y, Z
     
+    
     def draw_boundary(self):
-        """Draw boundary."""
+        """Draw the boundary profile."""
+        
         x = self.t #self.t[::2]
         #eps, delta = self.get_cycle_parameters(x)
         
@@ -283,6 +294,7 @@ class EP_Waveguide(EP_Base):
     
 def generate_profile_heatmap():
     """Generate a matrix of (eta, L) values for VSC calculations."""
+    
     import os
     import shutil
     import fileinput
