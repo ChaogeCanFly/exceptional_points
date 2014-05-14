@@ -570,7 +570,10 @@ def parse_arguments():
     kwargs = vars(args)
     
     print json.dumps(kwargs, indent=4)
-    
+    if args.write_cfg:
+        with open("EP_PARSE_SETTINGS.cfg", "w") as f:
+            data = json.dumps(kwargs, sort_keys=True, indent=-1)
+            f.write(data)    
     return kwargs
     
    
