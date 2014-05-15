@@ -510,6 +510,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
             r'"Gamma0p_min">Gamma0p_min': r'"Gamma0p_min">{}'.format(eta),
             r'"Gamma0p_max">Gamma0p_min': r'"Gamma0p_max">{}'.format(eta),
             r'"neumann"> 1': r'"neumann"> {}'.format(neumann),
+            r'"kFp_min">1.01': r'"kFp_min"> {}'.format(N),
+            r'"kFp_max">1.01': r'"kFp_max"> {}'.format(N)
         }
         
         for line in src_xml:
