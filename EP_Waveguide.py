@@ -371,7 +371,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                                            write_cfg=True,
                                            input_xml="input.xml",
                                            pphw="200", r_nx_part="50",
-                                           custom_directory=None):
+                                           custom_directory=None,
+                                           neumann=1):
     """
     Prepare length dependent greens_code input for VSC calculations. The waveguide
     boundary is prepared such that the length is an integer multiple of the detuned
@@ -407,6 +408,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                 Parts into which the Border Hamiltonian rectangle is divided into.
             custom_directory: str
                 Custom directory into which to copy the .xml and .profile files.
+            neumann: bool
+                Whether to use Neumann boundary conditions.
         
         Returns:
         --------
@@ -505,7 +508,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
             r'"file">file': r'"file">{}.profile'.format(filename),
             r'"nx_part">$r_nx/50': r'"nx_part">$r_nx/{}'.format(r_nx_part),
             r'"Gamma0p_min">Gamma0p_min': r'"Gamma0p_min">{}'.format(eta),
-            r'"Gamma0p_max">Gamma0p_min': r'"Gamma0p_max">{}'.format(eta)
+            r'"Gamma0p_max">Gamma0p_min': r'"Gamma0p_max">{}'.format(eta),
+            r'"neumann"> 1': r'"neumann"> {}'.format(neumann),
         }
         
         for line in src_xml:
@@ -563,6 +567,8 @@ def parse_arguments():
                         help="Parts into which the Border Hamiltonian rectangle is divided into")
     parser.add_argument("-c", "--custom-directory", default=None, type=str,
                         help="Custom directory into which to copy the .xml and .profile files.")
+    parser.add_argument("-n", "--neumann", default=1, type=int,
+                        help="Whether to use Neumann boundary conditions.")
     
     #subparsers = parser.add_subparsers(help='sub-command help')
     
