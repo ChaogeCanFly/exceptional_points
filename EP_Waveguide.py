@@ -429,7 +429,7 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
     #    L_range = np.linspace(1,L,L)
     #else:
     kr = (N - np.sqrt(N**2 - 1))*pi
-    lambda0 = pi/(kr + delta)
+    lambda0 = abs(pi/(kr + delta))
     L_range = np.arange(lambda0,L,lambda0)
         
     if not full_evolution:
