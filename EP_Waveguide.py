@@ -472,7 +472,7 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
             WG.x_EP *= eps_factor
             
         WG.y_EP += delta
-        xi, _ = WG.get_boundary()
+        xi_lower, xi_upper = WG.get_boundary()
         
         # print discretization data
         #with open(xml) as x:
@@ -499,17 +499,16 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
         x = WG.t
         N_file = len(x)
         
-        np.savetxt(filename + ".profile", zip(x, xi))
+        np.savetxt(filename + ".upper_profile", zip(x, xi_upper))
+        np.savetxt(filename + ".lower_profile", zip(x, xi_lower))
         shutil.copy(xml, directory)
             
-        src_xml = open(xml)
-        out_xml = open("{}/input.xml".format(directory), "w")
-        
         replacements = {
             r'halfwave">pphw': r'halfwave">{}'.format(pphw),
             r'"L">L': r'"L">{}'.format(Ln),
             r'"N_file">N_file': r'"N_file">{}'.format(N_file),
-            r'"file">file': r'"file">{}.profile'.format(filename),
+            r'"file">file_upper': r'"file">{}.upper_profile'.format(filename),
+            r'"file">file_lower': r'"file">{}.lower_profile'.format(filename),
             r'"nx_part">$r_nx/50': r'"nx_part">$r_nx/{}'.format(r_nx_part),
             r'"Gamma0p_min">Gamma0p_min': r'"Gamma0p_min">{}'.format(eta),
             r'"Gamma0p_max">Gamma0p_min': r'"Gamma0p_max">{}'.format(eta),
@@ -518,14 +517,27 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
             r'"kFp_max">1.01': r'"kFp_max"> {}'.format(N)
         }
         
-        for line in src_xml:
-            for src, target in replacements.iteritems():
-                line = line.replace(src, target)
-            out_xml.write(line)
-        src_xml.close()
-        out_xml.close()
+        with open(xml) as src_xml:
+            src_xml = src_xml.read()
+      
+        for src, target in replacements.iteritems():
+            src_xml = src_xml.replace(src, target)
+      
+        with open("{}/input.xml".format(directory), "w") as out_xml:
+            out_xml.write(src_xml)
         
         os.chdir(pwd)
+        
+        #src_xml = open(xml)
+        #out_xml = open("{}/input.xml".format(directory), "w")
+        #
+        #for line in src_xml:
+        #    for src, target in replacements.iteritems():
+        #        line = line.replace(src, target)
+        #    out_xml.write(line)
+        #src_xml.close()
+        #out_xml.close()
+        
 
 def parse_arguments():
     """
