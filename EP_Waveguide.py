@@ -365,6 +365,7 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                                            init_loop_phase=0.0,
                                            loop_type="Varcircle",
                                            loop_direction="-",
+                                           theta=0.0,
                                            eps_factor=1.0, eps=None,
                                            delta=0.0, 
                                            full_evolution=False,
@@ -390,6 +391,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                 Specifies path in (epsilon,delta) parameter space.
             init_loop_phase: float
                 Starting angle on parameter trajectory.
+            theta: float
+                Phase difference bewteen upper and lower boundary (in multiples of pi).
             eps_factor: float
                 Constant to shift x_EP -> x_EP * eps_factor.
             eps: float
@@ -443,6 +446,7 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
             'init_loop_phase': init_loop_phase,
             'loop_direction': loop_direction,
             'loop_type': loop_type,
+            'theta': theta*pi,
         }
         
         if custom_directory:
@@ -551,6 +555,8 @@ def parse_arguments():
                         help="Specifies path in (epsilon,delta) parameter space" )
     parser.add_argument("--init-loop-phase", default=0.0, type=float,
                         help="Starting angle on parameter trajectory" )
+    parser.add_argument("-T", "--theta", default=0.0, type=float,
+                        help="Phase difference bewteen upper and lower boundary (in multiples of pi)" )
     parser.add_argument("--eps-factor", nargs="?", default=1.0, type=float,
                         help="Constant to shift x_EP -> x_EP * eps_factor" )
     parser.add_argument("--eps", nargs="?", default=None, type=float,
