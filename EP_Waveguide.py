@@ -69,7 +69,6 @@ class EP_Waveguide(EP_Base):
             Returns:
             --------
                 H: (2,2) ndarray
-                
         """
         
         if eps is None and delta is None:
@@ -101,7 +100,6 @@ class EP_Waveguide(EP_Base):
             --------
                 x, y: float
                     Trajectory coordinates (x,y) at time t.
-                    
         """
         
         x_EP, x_R0 = self.x_EP, self.x_R0
@@ -140,42 +138,6 @@ class EP_Waveguide(EP_Base):
             raise Exception(("Error: loop_type {}"
                              "does not exist!").format(loop_type))
         
-        
-    def sample_H(self, xN=None, yN=None):
-        """Sample local eigenvalue geometry of H.
-        
-            Parameters:
-            -----------
-                xN, yN: int
-                    Number of sampling points.
-                    
-            Returns:
-            --------
-                X, Y: (N,N) ndarray
-                Z: (N,N,2) ndarray
-        
-        """
-        
-        if xN is None:
-            xN = 5*10**2
-        if yN is None:
-            yN = xN
-        
-        x = np.linspace(self.x_EP - 1.1*self.x_R0,
-                        self.x_EP + 1.1*self.x_R0, xN)
-        y = np.linspace(self.y_EP - 1.1*self.y_R0,
-                        self.y_EP + 1.1*self.y_R0, yN)
-        
-        X, Y = np.meshgrid(x, y)
-        Z = np.zeros((xN,yN,2), dtype=complex)
-        
-        for i, xi in enumerate(x):
-            for j, yj in enumerate(y):
-                Z[i,j,:] = c_eig(self.H(0,xi,yj))[0]
-                
-        # circumvent indexing='ij' option in np.meshgrid
-        return X.T, Y.T, Z
-
 
     def draw_wavefunction(self):
         """Plot wavefunction."""
@@ -240,7 +202,6 @@ class EP_Waveguide(EP_Base):
                     Lower boundary function.
                 xi_upper: float
                     Upper boundary function.
-                    
         """
         
         # if variables not supplied set defaults

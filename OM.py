@@ -12,35 +12,54 @@ import brewer2mpl as brew
 
 def plot_riemann_sheets(**kwargs):
     """Plot local Riemann sheet structure of the OM Hamiltonian."""
-    # init EP_OptoMech object 
+    ## init EP_OptoMech object 
+    #OM = EP_OptoMech(**kwargs)
+    ## sample H eigenvalues
+    #OM.solve_ODE()
+    #X, Y, Z = OM.sample_H()
+    #x, y = OM.get_cycle_parameters(OM.t)
+    #
+    ## plot 3D surface
+    #fig = figure()
+    #ax1 = fig.add_subplot(211, projection='3d')
+    #ax2 = fig.add_subplot(212, projection='3d')
+    #
+    #axes =  ax1, ax2
+    #parts = imag, real
+    #
+    #for ax, part in zip(axes, parts):
+    #    # plot both eigenvalues
+    #    for n in (0, 1):
+    #        ax.plot_surface(X, Y, part(Z[:,:,n]),
+    #                        cmap=cm.jet, linewidth=0.1)
+    #        
+    #        Ea = part(OM.eVals[:,0])
+    #        Eb = part(OM.eVals[:,1])
+    #
+    #        ax.plot(x, y, Ea, "r-")
+    #        ax.plot(x, y, Eb, "g-")
+    #show()    
+
+    import mayavi.mlab as mlab
+    
+    #print kwargs
+    # init EP_Waveguide object 
     OM = EP_OptoMech(**kwargs)
     # sample H eigenvalues
     OM.solve_ODE()
     X, Y, Z = OM.sample_H()
     x, y = OM.get_cycle_parameters(OM.t)
 
-    # plot 3D surface
-    fig = figure()
-    ax1 = fig.add_subplot(211, projection='3d')
-    ax2 = fig.add_subplot(212, projection='3d')
+
+    mlab.surf(X,Y,np.imag(Z[...,0])) #, colormap="bones")
+    mlab.surf(X,Y,np.imag(Z[...,1])) #, colormap="bones")
+    Ea = np.imag(OM.eVals[:,0])
+    Eb = np.imag(OM.eVals[:,1])
+    mlab.plot3d(x, y, Ea)
+    mlab.plot3d(x, y, Eb)
+    mlab.show()
     
-    axes =  ax1, ax2
-    parts = imag, real
     
-    for ax, part in zip(axes, parts):
-        # plot both eigenvalues
-        for n in (0, 1):
-            ax.plot_surface(X, Y, part(Z[:,:,n]),
-                            cmap=cm.jet, linewidth=0.1)
-            
-            Ea = part(OM.eVals[:,0])
-            Eb = part(OM.eVals[:,1])
-
-            ax.plot(x, y, Ea, "r-")
-            ax.plot(x, y, Eb, "g-")
-    show()    
-
-
 def circle_EP(**kwargs):
     """Calculate trajectories around the EP.
     
@@ -190,7 +209,7 @@ def circle_EP(**kwargs):
 if __name__ == '__main__':
     
     params = {
-        'T': 32,
+        'T': 5,
         #'R': 0.0625,
         'R': 0.25,
         'init_loop_phase': 3.70031,                # Im(lambda)=0, R=0.25
@@ -202,7 +221,7 @@ if __name__ == '__main__':
     
     print "Warning: is normalization symmetric?"
     
-    if 1:
+    if 0:
         for d in '+', : #'+', '-':
             for s in 'a', : #'a', 'b':
                 params['loop_direction'] = d

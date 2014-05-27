@@ -40,8 +40,8 @@ class EP_OptoMech(EP_Base):
             Returns:
             --------
                 H: (2,2) ndarray
-                
         """
+        
         if x is None and y is None:
             omega, g = self.get_cycle_parameters(t)
         else:
@@ -80,37 +80,6 @@ class EP_OptoMech(EP_Base):
         return omega, g
     
     
-    def sample_H(self):
-        """Sample local eigenvalue geometry of H.
-        
-            Returns:
-            --------
-                X, Y: (N,N) ndarray
-                Z: (N,N,2) ndarray
-                
-        """
-        
-        xN = yN = 1*10**2
-        xEP = self.x_EP
-        yEP = self.y_EP
-        print xEP, yEP
-
-        x = np.linspace(xEP - 2.2*self.R,
-                        xEP + 2.2*self.R, xN)
-        y = np.linspace(yEP - 2.2*self.R,
-                        yEP + 2.2*self.R, yN)
-        
-        X, Y = np.meshgrid(x, y)
-        Z = np.zeros((xN,yN,2), complex)
-        
-        for i, xi in enumerate(x):
-            for j, yj in enumerate(y):
-                Z[i,j,:] = c_eig(self.H(0,xi,yj))[0]
-                
-        # circumvent indexing='ij' option in np.meshgrid
-        return X.T, Y.T, Z
-    
-    
     def get_non_adiabatic_coupling(self):
         """
         Return the non-adiabatic coupling defined as
@@ -127,7 +96,6 @@ class EP_OptoMech(EP_Base):
             --------
                 f: (N,) ndarray
                     Non-adiabatic coupling parameter as a function of time t.
-                    
         """
         
         e = self.eVals[:,0]
@@ -139,6 +107,7 @@ class EP_OptoMech(EP_Base):
         f = ((ep - Dp) * G - (e - D) * Gp)/(2.*e*(e - D))
 
         return f
+        
         
 def plot_non_adiabatic_coupling():
     OM = EP_OptoMech(T=64., R=1./16., init_state='b')

@@ -110,19 +110,44 @@ class EP_Base:
         pass
     
     
-    def _get_c_eigensystem(self):
-        """Calculate the instantaneous eigenvalues and eigenvectors for
-        all times t=0,...,T and remove any discontinuities.
+    def sample_H(self, xN=None, yN=None):
+        """Sample local eigenvalue geometry of H.
         
             Parameters:
             -----------
-                None
-                
+                xN, yN: int
+                    Number of sampling points.
+                    
             Returns:
             --------
-                None
-                
+                X, Y: (N,N) ndarray
+                Z: (N,N,2) ndarray
         """
+        
+        if xN is None:
+            xN = 5*10**2
+        if yN is None:
+            yN = xN
+        
+        x = np.linspace(self.x_EP - 1.1*self.x_R0,
+                        self.x_EP + 1.1*self.x_R0, xN)
+        y = np.linspace(self.y_EP - 1.1*self.y_R0,
+                        self.y_EP + 1.1*self.y_R0, yN)
+        
+        X, Y = np.meshgrid(x, y)
+        Z = np.zeros((xN,yN,2), dtype=complex)
+        
+        for i, xi in enumerate(x):
+            for j, yj in enumerate(y):
+                Z[i,j,:] = c_eig(self.H(0,xi,yj))[0]
+                
+        # circumvent indexing='ij' option in np.meshgrid
+        return X.T, Y.T, Z
+    
+    
+    def _get_c_eigensystem(self):
+        """Calculate the instantaneous eigenvalues and eigenvectors for
+        all times t=0,...,T and remove any discontinuities."""
         
         # allocate temporary vectors
         eVals = np.zeros_like(self.eVals)
@@ -157,21 +182,6 @@ class EP_Base:
             #print "phase_0: ", phase_0_R/pi
             #print "phase_1: ", phase_1_R/pi
             
-            
-            ##### plot phases and moduli of left and right wavefunctions
-            ##### before and after the jumps are fixed
-            #####clf()
-            #####_, ((ax1,ax2),(ax3,ax4)) = subplots(nrows=2, ncols=2)
-            #####
-            #####ax1.plot(angle(eVecs_l[:,0,0])/pi,"r-")
-            #####ax1.plot(angle(eVecs_l[:,1,0])/pi,"g-")
-            #####ax2.plot(abs(eVecs_l[:,0,0])/pi,"r-")
-            #####ax2.plot(abs(eVecs_l[:,1,0])/pi,"g-")
-            #####ax3.plot(angle(eVecs_l[:,0,1])/pi,"r-")
-            #####ax3.plot(angle(eVecs_l[:,1,1])/pi,"g-")
-            #####ax4.plot(abs(eVecs_l[:,0,1])/pi,"r-")
-            #####ax4.plot(abs(eVecs_l[:,1,1])/pi,"g-")
-            
             # account for phase-jump v0(k) -> v1(k+1)
             eVecs_r[k+1:,:,1] *= np.exp(+1j*phase_0_R)
             eVecs_l[k+1:,:,1] *= np.exp(+1j*phase_0_L)
@@ -184,16 +194,6 @@ class EP_Base:
                                 np.concatenate((e[:k+1,...,0], e[k+1:,...,1])),
                                 np.concatenate((e[:k+1,...,1], e[k+1:,...,0]))
                                 )
-
-            #####ax1.plot(angle(eVecs_l[:,0,0])/pi,"b--")
-            #####ax1.plot(angle(eVecs_l[:,1,0])/pi,"k--")
-            #####ax2.plot(abs(eVecs_l[:,0,0])/pi,"b--")
-            #####ax2.plot(abs(eVecs_l[:,1,0])/pi,"k--")
-            #####ax3.plot(angle(eVecs_l[:,0,1])/pi,"b--")
-            #####ax3.plot(angle(eVecs_l[:,1,1])/pi,"k--")
-            #####ax4.plot(abs(eVecs_l[:,0,1])/pi,"b--")
-            #####ax4.plot(abs(eVecs_l[:,1,1])/pi,"k--")
-            #####show()
         
         #print np.einsum('ijk,ijk -> ik', eVecs_l, eVecs_r)
         
@@ -213,7 +213,6 @@ class EP_Base:
             Returns:
             --------
                 dynamical phase: float
-                
         """
         
         E_a, E_b = [ self.eVals[:n,i] for i in (0,1) ]
@@ -258,7 +257,6 @@ class EP_Base:
             Returns:
             --------
                 eVec0_r: (2,) ndarray
-                
         """
         
         if self.init_state == 'a':

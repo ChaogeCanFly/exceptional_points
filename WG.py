@@ -16,11 +16,10 @@ def plot_riemann_sheets(filename=None, **kwargs):
     
         Parameters:
         -----------
-            None
-            
-        Returns:
-        --------
-            None
+            filename: str
+                Save plot to file.
+        
+        Keyword arguments are taken from EP_Waveguide class.
     """
     import mayavi.mlab as mlab
     
