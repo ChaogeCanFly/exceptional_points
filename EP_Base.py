@@ -134,10 +134,9 @@ class EP_Base:
         
         for i, xi in enumerate(x):
             for j, yj in enumerate(y):
-                Z[i,j,:] = c_eig(self.H(0,xi,yj))[0]
+                Z[j,i,:] = c_eig(self.H(0,xi,yj))[0]
                 
-        # circumvent indexing='ij' option in np.meshgrid
-        return X.T, Y.T, Z
+        return X, Y, Z
     
     
     def _get_c_eigensystem(self):
