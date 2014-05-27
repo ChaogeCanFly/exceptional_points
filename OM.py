@@ -49,7 +49,7 @@ def plot_riemann_sheets(**kwargs):
     OM = EP_OptoMech(**kwargs)
     _, c1, c2 = OM.solve_ODE()
     
-    X, Y, Z = OM.sample_H(xN=50, yN=50)
+    X, Y, Z = OM.sample_H(xN=20, yN=20)
     x, y = OM.get_cycle_parameters(OM.t)
 
     mlab.figure(bgcolor=(1,1,1))
@@ -64,19 +64,17 @@ def plot_riemann_sheets(**kwargs):
               #representation='wireframe',
               opacity=0.85,
               colormap=cmap,
-              vmin=-1, vmax=1) 
+              vmin=-1, vmax=1)
+    
     ext = (np.min(X), np.max(X), np.min(Y), np.max(Y), 1, -1)
-    mlab.outline(extent=ext, line_width=3.5)
+    mlab.outline(extent=ext, line_width=2.5, color=(0.5, 0.5, 0.5))
+    
     E_a = np.imag(OM.eVals[:,0])
     E_b = np.imag(OM.eVals[:,1])
-    
-    p = map_trajectory(abs(c1), abs(c2), E_a, E_b)
-    #mlab.xlabel("w")
-    #mlab.ylabel("g")
-    #mlab.zlabel(r"$\mathrm{Im} \lambda$")
-    mlab.plot3d(x, y, p)
-    #mlab.plot3d(x, y, E_a)
-    #mlab.plot3d(x, y, E_b)
+    p = map_trajectory(c1, c2, E_a, E_b)
+    mlab.plot3d(x, y, p, opacity=0.6,
+                line_width=.5,
+                tube_radius=0.015)
     mlab.show()
     
     
@@ -231,7 +229,7 @@ def circle_EP(**kwargs):
 if __name__ == '__main__':
     
     params = {
-        'T': 10,
+        'T': 5,
         #'R': 0.0625,
         'R': 0.5,
         'init_loop_phase': 3.70031,                # Im(lambda)=0, R=0.25

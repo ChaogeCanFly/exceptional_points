@@ -40,11 +40,6 @@ class EP_Base:
                     Whether adiabatic solutions should also be calculated (note
                     that setting this flag True can slow down the computation
                     considerably)
-                
-            Returns:
-            --------
-            None
-        
         """
         
         # total loop duration
@@ -105,7 +100,7 @@ class EP_Base:
         pass
 
 
-    def H(self, t):
+    def H(self, t, x, y):
         """H method is overwritten by inherited classes."""
         pass
     

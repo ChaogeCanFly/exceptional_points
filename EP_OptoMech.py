@@ -8,9 +8,9 @@ class EP_OptoMech(EP_Base):
     """EP_OptoMech class."""
     
     def __init__(self, R=0.05, gamma=2.0, **kwargs):
-        """
-        Exceptional Points (EP) optomechanics class. Copies methods and
-        variables from EP_Base class.
+        """Exceptional Points (EP) optomechanics class.
+        
+        Copies methods and variables from EP_Base class.
         
             Additional parameters:
             ----------------------
@@ -18,8 +18,8 @@ class EP_OptoMech(EP_Base):
                     Trajectory radius around the EP.
                 gamma: float
                     Relative loss between states |1> and |2>.
-                    
         """
+        
         EP_Base.__init__(self, **kwargs)
         self.R = R
         self.gamma = gamma
@@ -28,10 +28,10 @@ class EP_OptoMech(EP_Base):
        
        
     def H(self, t, x=None, y=None):
-        """
-        Return parametrically dependent Hamiltonian at time t. The exact form
-        of H has been taken from eq. (1) in the paper draft of Thomas J. Milburn
-        (2014-04-18).
+        """Return parametrically dependent Hamiltonian at time t.
+        
+        The exact form of H has been taken from eq. (1) in the paper draft of
+        Thomas J. Milburn (2014-04-18).
         
             Parameters:
             -----------
@@ -61,8 +61,7 @@ class EP_OptoMech(EP_Base):
 
 
     def get_cycle_parameters(self, t):
-        """
-        Return path around the EP at (omega, g) = (0, gamma/2) parametrized
+        """Return path around the EP at (omega, g) = (0, gamma/2) parametrized
         via time t.
         
             Parameters:
@@ -84,8 +83,7 @@ class EP_OptoMech(EP_Base):
     
     
     def get_non_adiabatic_coupling(self):
-        """
-        Return the non-adiabatic coupling defined as
+        """Return the non-adiabatic coupling defined as
         
             <1(t)|dH/dt|2(t)> = <2(t)|dH/dt|1(t)>,
             

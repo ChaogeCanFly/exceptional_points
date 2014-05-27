@@ -53,10 +53,10 @@ class EP_Waveguide(EP_Base):
     #    """Return position dependent dissipation coefficient."""
     #    return self.eta * np.sin(pi/self.T * x)
     
-    def H(self, t, eps=None, delta=None):
-        """
-        Return parametrically dependent Hamiltonian at time t,
+    def H(self, t, x=None, y=None):
+        """Return parametrically dependent Hamiltonian at time t,
             H = H(x(t), y(t)).
+        
         If x and y are specified directly, t is ignored and H(x,y) is
         returned instead.
         
@@ -70,8 +70,10 @@ class EP_Waveguide(EP_Base):
                 H: (2,2) ndarray
         """
         
-        if eps is None and delta is None:
+        if x is None and y is None:
             eps, delta = self.get_cycle_parameters(t)
+        else:
+            eps, delta = x, y
             
         B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * 
                       self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
@@ -334,10 +336,10 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                                            pphw="200", r_nx_part="50",
                                            custom_directory=None,
                                            neumann=1):
-    """
-    Prepare length dependent greens_code input for VSC calculations. The waveguide
-    boundary is prepared such that the length is an integer multiple of the detuned
-    resonant wavelength, 2*pi/(kr + delta).
+    """Prepare length dependent greens_code input for VSC calculations.
+    
+    The waveguide boundary is prepared such that the length is an integer
+    multiple of the detuned resonant wavelength, 2*pi/(kr + delta).
     
         Parameters:
         -----------
@@ -373,10 +375,6 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
                 Custom directory into which to copy the .xml and .profile files.
             neumann: bool
                 Whether to use Neumann boundary conditions.
-        
-        Returns:
-        --------
-            None
     """
     
     import os
@@ -487,16 +485,6 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
             out_xml.write(src_xml)
         
         os.chdir(pwd)
-        
-        #src_xml = open(xml)
-        #out_xml = open("{}/input.xml".format(directory), "w")
-        #
-        #for line in src_xml:
-        #    for src, target in replacements.iteritems():
-        #        line = line.replace(src, target)
-        #    out_xml.write(line)
-        #src_xml.close()
-        #out_xml.close()
         
 
 def parse_arguments():
