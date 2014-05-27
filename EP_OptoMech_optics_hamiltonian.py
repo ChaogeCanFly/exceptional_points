@@ -48,34 +48,6 @@ class EP_OptoMech(EP_Base):
         return H
        
 
-    def sample_H(self):
-        """
-        Sample local eigenvalue geometry of H.
-        
-            Returns:
-                X, Y: (N,N) ndarray
-                Z: (N,N,2) ndarray
-        """
-        xN = yN = 5*10**2
-        xEP = np.real(self.B1)
-        yEP = np.imag(self.B1)
-
-        x = np.linspace(xEP - 1.2*self.R,
-                        xEP + 1.2*self.R, xN)
-        y = np.linspace(yEP - 1.2*self.R,
-                        yEP + 1.2*self.R, yN)
-        
-        X, Y = np.meshgrid(x, y)
-        Z = np.zeros((xN,yN,2), complex)
-        
-        for i, xi in enumerate(x):
-            for j, yj in enumerate(y):
-                Z[i,j,:] = c_eig(self.H(0,xi,yj))[0]
-                
-        # circumvent indexing='ij' option in np.meshgrid
-        return X.T, Y.T, Z
-    
-    
     def get_cycle_parameters(self, t):
         """
         """
