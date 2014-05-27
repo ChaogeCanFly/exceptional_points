@@ -111,6 +111,7 @@ def c_trapz(f, dx, **kwargs):
         -----------
             f:  (N,) ndarray
            dx:  float
+           
         Returns:
         --------
             c_trapz: (N,) ndarray
@@ -143,9 +144,8 @@ def c_gradient(f, dx):
 
 
 def map_trajectory(c1, c2, E1, E2):
-    """
-    Function to determine the trajectory's character based on
-    the amplitude's absolute values a and b.
+    """Function to determine the trajectory's character based on the amplitudes
+    c1 and c2.
     
         Parameters:
         -----------
@@ -153,10 +153,13 @@ def map_trajectory(c1, c2, E1, E2):
                 Absolute values of amplitudes c1 and c2.
             E1, E2: ndarray
                 Real or imaginary parts of the energies E1 and E2.
+                
         Returns:
         --------
             mapped trajectory: ndarray
     """
+    
+    c1, c2 = [ np.abs(x) for x in c1, c2 ]
     
     N = np.sqrt(c1**2 + c2**2)
     return (E1*c1 + E2*c2)/N
@@ -165,11 +168,11 @@ def map_trajectory(c1, c2, E1, E2):
 def set_scientific_axes(ax, axis='x'):
     """Set axes to scientific notation."""
     
+    #xticks(rotation=30)
     #ax.ticklabel_format(style='sci', axis=axis, scilimits=(0,0), useOffset=False)
     ax.ticklabel_format(style='plain', axis=axis, useOffset=False)
     ax.xaxis.set_major_locator(MaxNLocator(4))
     ax.yaxis.set_major_locator(MaxNLocator(4))
-    #xticks(rotation=30)
 
 
 def cmap_discretize(cmap, indices):
@@ -201,31 +204,6 @@ def cmap_discretize(cmap, indices):
                         colors_rgba[i,ki]) for i in xrange(N) ]
         
     return LinearSegmentedColormap(cmap.name + "_%d"%N, cdict, 1024)
-
-
-def draw_arrow(loop_direction, init_loop_phase, x0=0., y0=0., R=1.5, phi=pi/8.):
-    """Draw arrow with specified pointing direction.
-    
-        ### outdated ###
-    
-    """
-    
-    x1, y1 = x0 + R*cos(-phi+init_loop_phase), y0 + R*sin(-phi+init_loop_phase)
-    x2, y2 = x0 + R*cos(phi+init_loop_phase),  y0 + R*sin(phi+init_loop_phase)
-    
-    if loop_direction == '-':
-        arr = '<|-'
-    elif loop_direction == '+':
-        arr = '-|>'
-    else:
-        raise Exception("Invalid loop_direction %s!" % loop_direction)
-   
-    annotate("",
-             xy=(x1, y1), xycoords='data',
-             xytext=(x2, y2), textcoords='data',
-             arrowprops=dict(arrowstyle=arr, lw=1.5, #linestyle="dashed",
-                             connectionstyle="arc3,rad=-0.3")
-             )
 
 
 def test_eigenvalues(eVals, eVecs_l, eVecs_r, H):
