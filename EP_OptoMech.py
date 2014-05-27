@@ -36,6 +36,9 @@ class EP_OptoMech(EP_Base):
             Parameters:
             -----------
                 t: float
+                    Time variable.
+                x, y: float
+                    Parameters in omega-g space.
                 
             Returns:
             --------

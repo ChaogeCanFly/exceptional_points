@@ -22,7 +22,6 @@ class EP_Waveguide(EP_Base):
                     Number of open modes
                 theta: float
                     Phase difference between upper and lower boundary
-                    
         """
         
         EP_Base.__init__(self, T=L, **kwargs)
@@ -378,8 +377,8 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
         Returns:
         --------
             None
-    
     """
+    
     import os
     import shutil
     import fileinput

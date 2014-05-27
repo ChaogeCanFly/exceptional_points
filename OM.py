@@ -41,22 +41,42 @@ def plot_riemann_sheets(**kwargs):
     #show()    
 
     import mayavi.mlab as mlab
+    from EP_Helpers import map_trajectory
     
-    #print kwargs
-    # init EP_Waveguide object 
+    #bmap = brew.get_map('Spectral', 'Diverging', 5)
+    #cmap = bmap.mpl_colormap
+    
     OM = EP_OptoMech(**kwargs)
-    # sample H eigenvalues
-    OM.solve_ODE()
-    X, Y, Z = OM.sample_H()
+    _, c1, c2 = OM.solve_ODE()
+    
+    X, Y, Z = OM.sample_H(xN=50, yN=50)
     x, y = OM.get_cycle_parameters(OM.t)
 
-
-    mlab.surf(X,Y,np.imag(Z[...,0])) #, colormap="bones")
-    mlab.surf(X,Y,np.imag(Z[...,1])) #, colormap="bones")
-    Ea = np.imag(OM.eVals[:,0])
-    Eb = np.imag(OM.eVals[:,1])
-    mlab.plot3d(x, y, Ea)
-    mlab.plot3d(x, y, Eb)
+    mlab.figure(bgcolor=(1,1,1))
+    cmap = 'Spectral'
+    
+    mlab.surf(X,Y,np.imag(Z[...,0]), 
+              #representation='wireframe',
+              opacity=0.85,
+              colormap=cmap,
+              vmin=-1, vmax=1) 
+    mlab.surf(X,Y,np.imag(Z[...,1]), 
+              #representation='wireframe',
+              opacity=0.85,
+              colormap=cmap,
+              vmin=-1, vmax=1) 
+    ext = (np.min(X), np.max(X), np.min(Y), np.max(Y), 1, -1)
+    mlab.outline(extent=ext, line_width=3.5)
+    E_a = np.imag(OM.eVals[:,0])
+    E_b = np.imag(OM.eVals[:,1])
+    
+    p = map_trajectory(abs(c1), abs(c2), E_a, E_b)
+    #mlab.xlabel("w")
+    #mlab.ylabel("g")
+    #mlab.zlabel(r"$\mathrm{Im} \lambda$")
+    mlab.plot3d(x, y, p)
+    #mlab.plot3d(x, y, E_a)
+    #mlab.plot3d(x, y, E_b)
     mlab.show()
     
     
@@ -64,10 +84,12 @@ def circle_EP(**kwargs):
     """Calculate trajectories around the EP.
     
         Parameters:
+        -----------
             L:  float, optional
                 System length.
                 
         Returns:
+        --------
             None
     """
     OM = EP_OptoMech(**kwargs)
@@ -209,9 +231,9 @@ def circle_EP(**kwargs):
 if __name__ == '__main__':
     
     params = {
-        'T': 5,
+        'T': 10,
         #'R': 0.0625,
-        'R': 0.25,
+        'R': 0.5,
         'init_loop_phase': 3.70031,                # Im(lambda)=0, R=0.25
         #'init_loop_phase': 3.86493,                # Im(lambda)=0, R=0.0625
         #'init_loop_phase': 1.01208,                # Re(lambda)=0, R=0.25
