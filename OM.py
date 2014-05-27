@@ -12,33 +12,6 @@ import brewer2mpl as brew
 
 def plot_riemann_sheets(**kwargs):
     """Plot local Riemann sheet structure of the OM Hamiltonian."""
-    ## init EP_OptoMech object 
-    #OM = EP_OptoMech(**kwargs)
-    ## sample H eigenvalues
-    #OM.solve_ODE()
-    #X, Y, Z = OM.sample_H()
-    #x, y = OM.get_cycle_parameters(OM.t)
-    #
-    ## plot 3D surface
-    #fig = figure()
-    #ax1 = fig.add_subplot(211, projection='3d')
-    #ax2 = fig.add_subplot(212, projection='3d')
-    #
-    #axes =  ax1, ax2
-    #parts = imag, real
-    #
-    #for ax, part in zip(axes, parts):
-    #    # plot both eigenvalues
-    #    for n in (0, 1):
-    #        ax.plot_surface(X, Y, part(Z[:,:,n]),
-    #                        cmap=cm.jet, linewidth=0.1)
-    #        
-    #        Ea = part(OM.eVals[:,0])
-    #        Eb = part(OM.eVals[:,1])
-    #
-    #        ax.plot(x, y, Ea, "r-")
-    #        ax.plot(x, y, Eb, "g-")
-    #show()    
 
     import mayavi.mlab as mlab
     from EP_Helpers import map_trajectory
@@ -49,10 +22,11 @@ def plot_riemann_sheets(**kwargs):
     OM = EP_OptoMech(**kwargs)
     _, c1, c2 = OM.solve_ODE()
     
-    X, Y, Z = OM.sample_H(xN=20, yN=20)
+    X, Y, Z = OM.sample_H(xN=120, yN=120)
     x, y = OM.get_cycle_parameters(OM.t)
 
-    mlab.figure(bgcolor=(1,1,1))
+    fig = mlab.figure(size=(1400,1000), bgcolor=(1,1,1))
+    #fig.scene.render_window.aa_frames = 8
     cmap = 'Spectral'
     
     mlab.surf(X,Y,np.imag(Z[...,0]), 
@@ -60,21 +34,46 @@ def plot_riemann_sheets(**kwargs):
               opacity=0.85,
               colormap=cmap,
               vmin=-1, vmax=1) 
+    
     mlab.surf(X,Y,np.imag(Z[...,1]), 
-              #representation='wireframe',
               opacity=0.85,
               colormap=cmap,
               vmin=-1, vmax=1)
+    mlab.surf(X,Y,np.imag(Z[...,1]),
+              opacity=0.85,
+              colormap=cmap,
+              vmin=-1, vmax=1)
+
     
     ext = (np.min(X), np.max(X), np.min(Y), np.max(Y), 1, -1)
-    mlab.outline(extent=ext, line_width=2.5, color=(0.5, 0.5, 0.5))
+    mlab.outline(extent=ext,
+                 line_width=2.5,
+                 color=(0.5, 0.5, 0.5))
     
     E_a = np.imag(OM.eVals[:,0])
     E_b = np.imag(OM.eVals[:,1])
-    p = map_trajectory(c1, c2, E_a, E_b)
-    mlab.plot3d(x, y, p, opacity=0.6,
+    z = map_trajectory(c1, c2, E_a, E_b)
+    
+    mlab.plot3d(x, y, z,
                 line_width=.5,
                 tube_radius=0.015)
+    
+    u, v, w = [ np.gradient(n) for n in x, y, z ]
+    
+    mlab.points3d(x[0], y[0], z[0],
+                  color=(0, 0, 0),
+                  scale_factor=0.05,
+                  mode='sphere')
+    
+    #x, y, z, u, v, w = [ n[-150:-145] for n in x, y, z, u, v, w ]
+    x, y, z, u, v, w = [ n[-1:] for n in x, y, z, u, v, w ]
+    
+    mlab.quiver3d(x, y, z, u, v, w,
+                  color=(0, 0, 0),
+                  scale_factor=75,
+                  mode='cone')
+    
+    mlab.view(142, -72, 7.5)
     mlab.show()
     
     
