@@ -15,7 +15,6 @@ class FileOperations():
     a .cfg file.
     
         ### possibly outdated -> json.dumps ###
-    
     """
     
     def __init__(self, filename=None):
@@ -60,7 +59,6 @@ def c_eig(H, left=False, **kwargs):
           eigenvalues:  (2,)   ndarray
           left eigenvectors:  (2,2)  ndarray
           right eigenvectors: (2,2)  ndarray
-    
     """
     
     # get eigenvalues and eigenvalues of matrix H
@@ -116,7 +114,6 @@ def c_trapz(f, dx, **kwargs):
         Returns:
         --------
             c_trapz: (N,) ndarray
-    
     """
     
     real_int = trapz(real(f), dx=dx, **kwargs)
@@ -137,7 +134,6 @@ def c_gradient(f, dx):
         Returns:
         --------
             c_gradient: (N,) ndarray
-            
     """
     
     real_grad = np.gradient(real(f), dx)
@@ -146,28 +142,24 @@ def c_gradient(f, dx):
     return real_grad + 1j*imag_grad
 
 
-def map_trajectory(a, b, Ga, Gb):
+def map_trajectory(c1, c2, E1, E2):
     """
     Function to determine the trajectory's character based on
     the amplitude's absolute values a and b.
     
         Parameters:
         -----------
-            a, b: ndarray
-                Absolute values of amplitudes a and b.
-            Ga, Gb: ndarray
-                Real or imaginary parts of the energies E_a and E_b.
+            c1, c2: ndarray
+                Absolute values of amplitudes c1 and c2.
+            E1, E2: ndarray
+                Real or imaginary parts of the energies E1 and E2.
         Returns:
         --------
             mapped trajectory: ndarray
-            
     """
     
-    dG = Ga-Gb
-    # mimick Heaviside theta function
-    f = lambda x: 1./(1.+exp(-10.**6*x))
-    r = lambda x: x/(a+b)
-    return (f(a-b)*(Ga-r(b)*dG) + f(b-a)*(Gb+r(a)*dG))
+    N = np.sqrt(c1**2 + c2**2)
+    return (E1*c1 + E2*c2)/N
 
 
 def set_scientific_axes(ax, axis='x'):
@@ -191,7 +183,6 @@ def cmap_discretize(cmap, indices):
         Returns:
         --------
             segmented colormap
-            
     """
     
     if type(cmap) == str:
@@ -259,7 +250,6 @@ def test_eigenvalues(eVals, eVecs_l, eVecs_r, H):
         Returns:
         --------
             None
-            
     """
     
     print 50*"#"
