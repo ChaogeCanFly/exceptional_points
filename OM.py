@@ -22,23 +22,23 @@ def plot_riemann_sheets(**kwargs):
     OM = EP_OptoMech(**kwargs)
     _, c1, c2 = OM.solve_ODE()
     
-    X, Y, Z = OM.sample_H(xN=20, yN=20)
+    X, Y, Z = OM.sample_H(xN=1300, yN=1300)
     x, y = OM.get_cycle_parameters(OM.t)
 
     fig = mlab.figure(size=(1400,1000), bgcolor=(1,1,1))
     #fig.scene.render_window.aa_frames = 8
     cmap = 'Spectral'
     
-    #mlab.surf(X,Y,np.imag(Z[...,0]), 
-    #          opacity=0.85,
-    #          colormap=cmap,
-    #          vmin=-1, vmax=1) 
-    #
-    #mlab.surf(X,Y,np.imag(Z[...,1]), 
-    #          opacity=0.85,
-    #          colormap=cmap,
-    #          vmin=-1, vmax=1)
-    #
+    mlab.surf(X,Y,np.imag(Z[...,0]), 
+              opacity=0.85,
+              colormap=cmap,
+              vmin=-1, vmax=1) 
+    
+    mlab.surf(X,Y,np.imag(Z[...,1]), 
+              opacity=0.85,
+              colormap=cmap,
+              vmin=-1, vmax=1)
+    
     #mlab.surf(X,Y,np.imag(Z[...,1]),
     #          opacity=0.85,
     #          representation='wireframe',
@@ -46,21 +46,26 @@ def plot_riemann_sheets(**kwargs):
     #          color=(0,0,0),
     #          vmin=-1, vmax=1)
 
-    XX, YY = [ np.vstack((N,N)) for N in X, Y]
-    ZZ = np.vstack((np.imag(Z[...,0]),np.imag(Z[...,1])))
-
-    idx = np.argsort(ZZ, axis=1)
-    
-    print XX.shape, YY.shape, ZZ.shape
-    print XX[idx].shape
-    XX, YY, ZZ = [ N[idx] for N in XX, YY, ZZ ]
-    print XX.shape, YY.shape, ZZ.shape
-    mlab.mesh(XX, YY, ZZ,
-              opacity=0.85,
-              #representation='wireframe',
-              line_width=0.25,
-              #color=(0,0,0),
-              vmin=-1, vmax=1)
+    #XX, YY = [ np.vstack((N,N)) for N in X, Y]
+    #ZZ = np.vstack((np.imag(Z[...,0]),np.imag(Z[...,1])))
+    #
+    #idx = np.argsort(ZZ, axis=1)
+    #
+    #print XX.shape, YY.shape, ZZ.shape, idx.shape
+    #print XX[idx].shape
+    #
+    #print idx
+    #print XX
+    #XX, YY, ZZ = [ N[idx] for N in XX, YY, ZZ ]
+    #print XX
+    #
+    #print XX.shape, YY.shape, ZZ.shape
+    #mlab.mesh(XX, YY, ZZ,
+    #          opacity=0.85,
+    #          #representation='wireframe',
+    #          line_width=0.25,
+    #          #color=(0,0,0),
+    #          vmin=-1, vmax=1)
     
     ext = (np.min(X), np.max(X), np.min(Y), np.max(Y), 1, -1)
     mlab.outline(extent=ext,
