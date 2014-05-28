@@ -111,7 +111,7 @@ class EP_Base:
             Parameters:
             -----------
                 xN, yN: int
-                    Number of sampling points.
+                    Number of sampling points in x and y direction.
                     
             Returns:
             --------
@@ -129,24 +129,24 @@ class EP_Base:
         y = np.linspace(self.y_EP - 1.1*self.y_R0,
                         self.y_EP + 1.1*self.y_R0, yN)
         
-        X, Y = np.meshgrid(x, y)
+        X, Y = np.meshgrid(x, y, indexing='ij')
         Z = np.zeros((xN,yN,2), dtype=complex)
         
         for i, xi in enumerate(x):
             for j, yj in enumerate(y):
                 Z[i,j,:] = c_eig(self.H(0,xi,yj))[0]
+                print xi, yj, Z[i,j,0]
                 
-        # circumvent indexing='ij' option in np.meshgrid
-        return X.T, Y.T, Z
+        return X, Y, Z    
     
     
-    def iso_sample_H(self, part=np.real, xN=None, yN=None, zN=None):
+    def iso_sample_H(self, mode='real', xN=None, yN=None, zN=None):
         """Sample implicit local eigenvalue geometry of H.
         
             Parameters:
             -----------
                 xN, yN, zN: int
-                    Number of sampling points.
+                    Number of sampling points in x, y and z direction.
                     
         """
         
@@ -155,14 +155,19 @@ class EP_Base:
         if yN is None:
             yN = xN
         if zN is None:
-            zN = xN
+            zN = xN*10
             
         x = np.linspace(self.x_EP - 1.1*self.x_R0,
                         self.x_EP + 1.1*self.x_R0, xN)
         y = np.linspace(self.y_EP - 1.1*self.y_R0,
                         self.y_EP + 1.1*self.y_R0, yN)
+        
         z = np.linspace(-1.1, 1.1, zN)
-        X, Y, Z = np.meshgrid(x, y, z)
+        
+        if mode is 'imag':
+            z = z*1j
+            
+        X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
         
         F = np.zeros((xN,yN,zN), dtype=complex)
         
@@ -170,8 +175,12 @@ class EP_Base:
             for j, yj in enumerate(y):
                 for k, zk in enumerate(z):
                     char_poly = np.poly(self.H(0,xi,yj))
+                    eVals = c_eig(self.H(0,xi,yj))[0][0]
+                    #print np.polyval(char_poly, eVals)
+                    #print "H", self.H(0,xi,yj)
+                    #print "char_poly", xi, yj, zk, char_poly
                     F[i,j,k] = np.polyval(char_poly, zk)
-                
+        
         return X, Y, Z, F
     
     def _get_c_eigensystem(self):

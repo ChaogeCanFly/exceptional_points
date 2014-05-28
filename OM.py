@@ -20,80 +20,91 @@ def plot_riemann_sheets(**kwargs):
     #cmap = bmap.mpl_colormap
     
     OM = EP_OptoMech(**kwargs)
+    x, y = OM.get_cycle_parameters(OM.t)
     _, c1, c2 = OM.solve_ODE()
     
-    X, Y, Z = OM.sample_H(xN=13, yN=13)
-    x, y = OM.get_cycle_parameters(OM.t)
-
+    #X, Y, Z = OM.sample_H(xN=45, yN=45)
+    X, Y, Z = OM.sample_H(xN=25, yN=25)
+    XI, YI, ZI, F = OM.iso_sample_H(mode='real', xN=25, yN=25, zN=50)
+    
     fig = mlab.figure(size=(1400,1000), bgcolor=(1,1,1))
     #fig.scene.render_window.aa_frames = 8
+    
     cmap = 'Spectral'
+    part = np.real
+    #print part(F)
     
-    #mlab.surf(X,Y,np.imag(Z[...,0]), 
-    #          opacity=0.85,
-    #          colormap=cmap,
-    #          vmin=-1, vmax=1) 
-    #
-    #mlab.surf(X,Y,np.imag(Z[...,1]), 
-    #          opacity=0.85,
-    #          colormap=cmap,
-    #          vmin=-1, vmax=1)
-    
-    #mlab.surf(X,Y,np.imag(Z[...,1]),
-    #          opacity=0.85,
-    #          representation='wireframe',
-    #          line_width=0.25,
-    #          color=(0,0,0),
-    #          vmin=-1, vmax=1)
-
-    XX, YY = [ np.hstack((N,N)) for N in X, Y]
-    ZZ = np.hstack((np.imag(Z[...,0]),np.imag(Z[...,1])))
-    
-    idx = np.argsort(ZZ)
-    
-    print XX.shape, YY.shape, ZZ.shape, idx.shape
-    print XX[idx].shape
-    
-    print idx
-    print XX
-    XX, YY, ZZ = [ N[idx] for N in XX, YY, ZZ ]
-    print XX
-    
-    print XX.shape, YY.shape, ZZ.shape
-    mlab.mesh(XX, YY, ZZ,
-              opacity=0.85,
-              #representation='wireframe',
-              line_width=0.25,
-              #color=(0,0,0),
-              vmin=-1, vmax=1)
+    #src = mlab.pipeline.scalar_field(XI, YI, ZI, part(F))
+    #mlab.pipeline.iso_surface(src, contours=[0])
+    #F[abs(part(F)) < 1e-2] = 0.0
+    #print zip(x, y, np.real(OM.eVals[:,0]))
+    mlab.contour3d(XI, YI, ZI, part(F), contours=[0])
     
     ext = (np.min(X), np.max(X), np.min(Y), np.max(Y), 1, -1)
     mlab.outline(extent=ext,
                  line_width=2.5,
                  color=(0.5, 0.5, 0.5))
     
-    E_a = np.imag(OM.eVals[:,0])
-    E_b = np.imag(OM.eVals[:,1])
-    z = map_trajectory(c1, c2, E_a, E_b)
+    mlab.surf(X, Y, part(Z[...,0]), 
+              opacity=0.85,
+              #extent=ext,
+              colormap=cmap,
+              vmin=-1, vmax=1) 
     
-    mlab.plot3d(x, y, z,
-                line_width=.5,
-                tube_radius=0.015)
+    mlab.surf(X, Y, part(Z[...,1]), 
+              opacity=0.85,
+              #extent=ext,
+              colormap=cmap,
+              vmin=-1, vmax=1)
     
-    u, v, w = [ np.gradient(n) for n in x, y, z ]
+    #mlab.surf(X,Y,np.real(Z[...,1]),
+    #          opacity=0.85,
+    #          representation='wireframe',
+    #          line_width=0.25,
+    #          color=(0,0,0),
+    #          vmin=-1, vmax=1)
+
+    #XX, YY = [ np.vstack((N,N)) for N in X, Y]
+    #ZZ = np.vstack((np.imag(Z[...,0]),np.imag(Z[...,1])))
+    #
+    #idx = np.argsort(ZZ)
+    #
+    #print XX.shape, YY.shape, ZZ.shape, idx.shape
+    #
+    #XX, YY, ZZ = [ N[idx] for N in XX, YY, ZZ ]
+    #print XX
+    #
+    #print XX.shape, YY.shape, ZZ.shape
+    #mlab.mesh(XX, YY, ZZ,
+    #          opacity=0.85,
+    #          #representation='wireframe',
+    #          line_width=0.25,
+    #          #color=(0,0,0),
+    #          vmin=-1, vmax=1)
+    #
     
-    mlab.points3d(x[0], y[0], z[0],
-                  color=(0, 0, 0),
-                  scale_factor=0.05,
-                  mode='sphere')
-    
-    #x, y, z, u, v, w = [ n[-150:-145] for n in x, y, z, u, v, w ]
-    x, y, z, u, v, w = [ n[-1:] for n in x, y, z, u, v, w ]
-    
-    mlab.quiver3d(x, y, z, u, v, w,
-                  color=(0, 0, 0),
-                  scale_factor=75,
-                  mode='cone')
+    ###E_a = np.imag(OM.eVals[:,0])
+    ###E_b = np.imag(OM.eVals[:,1])
+    ###z = map_trajectory(c1, c2, E_a, E_b)
+    ###
+    ###mlab.plot3d(x, y, z,
+    ###            line_width=.5,
+    ###            tube_radius=0.015)
+    ###
+    ###u, v, w = [ np.gradient(n) for n in x, y, z ]
+    ###
+    ###mlab.points3d(x[0], y[0], z[0],
+    ###              color=(0, 0, 0),
+    ###              scale_factor=0.05,
+    ###              mode='sphere')
+    ###
+    ####x, y, z, u, v, w = [ n[-150:-145] for n in x, y, z, u, v, w ]
+    ###x, y, z, u, v, w = [ n[-1:] for n in x, y, z, u, v, w ]
+    ###
+    ###mlab.quiver3d(x, y, z, u, v, w,
+    ###              color=(0, 0, 0),
+    ###              scale_factor=75,
+    ###              mode='cone')
     
     mlab.view(142, -72, 7.5)
     mlab.show()
