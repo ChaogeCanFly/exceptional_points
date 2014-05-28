@@ -140,6 +140,40 @@ class EP_Base:
         return X.T, Y.T, Z
     
     
+    def iso_sample_H(self, part=np.real, xN=None, yN=None, zN=None):
+        """Sample implicit local eigenvalue geometry of H.
+        
+            Parameters:
+            -----------
+                xN, yN, zN: int
+                    Number of sampling points.
+                    
+        """
+        
+        if xN is None:
+            xN = 5*10**2
+        if yN is None:
+            yN = xN
+        if zN is None:
+            zN = xN
+            
+        x = np.linspace(self.x_EP - 1.1*self.x_R0,
+                        self.x_EP + 1.1*self.x_R0, xN)
+        y = np.linspace(self.y_EP - 1.1*self.y_R0,
+                        self.y_EP + 1.1*self.y_R0, yN)
+        z = np.linspace(-1.1, 1.1, zN)
+        X, Y, Z = np.meshgrid(x, y, z)
+        
+        F = np.zeros((xN,yN,zN), dtype=complex)
+        
+        for i, xi in enumerate(x):
+            for j, yj in enumerate(y):
+                for k, zk in enumerate(z):
+                    char_poly = np.poly(self.H(0,xi,yj))
+                    F[i,j,k] = np.polyval(char_poly, zk)
+                
+        return X, Y, Z, F
+    
     def _get_c_eigensystem(self):
         """Calculate the instantaneous eigenvalues and eigenvectors for
         all times t=0,...,T and remove any discontinuities."""
