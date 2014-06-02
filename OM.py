@@ -10,11 +10,16 @@ from matplotlib.colors import LogNorm
 from matplotlib.ticker import LogFormatter, MultipleLocator, FixedLocator
 import brewer2mpl as brew
 
+def blank(x,y,z):
+    return 0.0
+
 def plot_riemann_sheets(**kwargs):
     """Plot local Riemann sheet structure of the OM Hamiltonian."""
 
     import mayavi.mlab as mlab
     from EP_Helpers import map_trajectory
+    from scipy.interpolate import griddata
+    import matplotlib.pyplot as plt
     
     #bmap = brew.get_map('Spectral', 'Diverging', 5)
     #cmap = bmap.mpl_colormap
@@ -24,46 +29,86 @@ def plot_riemann_sheets(**kwargs):
     _, c1, c2 = OM.solve_ODE()
     
     #X, Y, Z = OM.sample_H(xN=45, yN=45)
-    X, Y, Z = OM.sample_H(xN=25, yN=25)
-    XI, YI, ZI, F = OM.iso_sample_H(mode='real', xN=25, yN=25, zN=50)
+    X, Y, Z = OM.sample_H(xN=10, yN=10)
     
+    #mlab.contour3d(X, Y, Z, np.zeros_like(Z))
+    
+    
+    #XI, YI, ZI, F = OM.iso_sample_H(mode='real', xN=50, yN=50, zN=500)
+    #######Eplus = np.column_stack( (X.ravel(),Y.ravel(),Z[...,0].ravel() ))
+    #######Eminus = np.column_stack( (X.ravel(),Y.ravel(),Z[...,1].ravel() ))
+    #######E = np.row_stack( (Eplus,Eminus) )
+    #######X,Y,Z = Eplus.T
+    #######print X.shape,Y.shape,Z.shape
+    #######part = np.real
+    #######Z = part(Z)
+    #######
+    #######print E.shape
+
     fig = mlab.figure(size=(1400,1000), bgcolor=(1,1,1))
     #fig.scene.render_window.aa_frames = 8
+    ext = (np.min(X), np.max(X), np.min(Y), np.max(Y), 1, -1)
+    X, Y, Z = OM.sample_H_iso(xN=10, yN=10)
+    
+    print np.dtype(X)
+    print np.dtype(Y)
+    print np.dtype(Z)
+    
+    mlab.contour3d(X, Y, Z, np.zeros_like(part(Z)), contours=0.)
     
     cmap = 'Spectral'
-    part = np.real
-    #print part(F)
+    cmap = 'Blues'
+    ###print Z
+    ###mlab.contour_surf(Z)
+    #F[abs(part(F)) < 10**-2] = 0.0
+    #mlab.contour3d(X,Y,Z, np.zeros( shape=(10,10,10) ))#lambda x,y,z: np.array([0.0,0.0,0.0]) )
+    #mlab.contour3d(XI, YI, part(ZI), part(F),
+    #               transparent=True,
+    #               opacity=0.5,
+    #               #extent = ext,
+    #               #contours=[100.0]
+    #               contours=[0],
+    #              )
+                   
+    #mlab.contour3d(GD,
+    #               contours=[0.0, 0.01])
+        
+    #with open("test.dat", "w") as f:
+    #    for slice_2d in part(F):
+    #        f.write("#\n")
+    #        np.savetxt(f, slice_2d, fmt='%-7.2f')
+            
     
-    #src = mlab.pipeline.scalar_field(XI, YI, ZI, part(F))
-    #mlab.pipeline.iso_surface(src, contours=[0])
-    #F[abs(part(F)) < 1e-2] = 0.0
-    #print zip(x, y, np.real(OM.eVals[:,0]))
-    mlab.contour3d(XI, YI, ZI, part(F), contours=[0])
+    #mlab.outline(extent=ext,
+    #             line_width=2.5,
+    #             color=(0.5, 0.5, 0.5))
+    ##
+    #mlab.surf(X, Y, part(Z[...,0]), 
+    #          #opacity=0.85,
+    #          #extent=ext,
+    #          colormap=cmap,
+    #          vmin=-1, vmax=1) 
+    #
+    #mlab.surf(X, Y, part(Z[...,1]), 
+    #          #opacity=0.85,
+    #          #extent=ext,
+    #          colormap=cmap,
+    #          vmin=-1, vmax=1)
     
-    ext = (np.min(X), np.max(X), np.min(Y), np.max(Y), 1, -1)
-    mlab.outline(extent=ext,
-                 line_width=2.5,
-                 color=(0.5, 0.5, 0.5))
-    
-    mlab.surf(X, Y, part(Z[...,0]), 
-              opacity=0.85,
-              #extent=ext,
-              colormap=cmap,
-              vmin=-1, vmax=1) 
-    
-    mlab.surf(X, Y, part(Z[...,1]), 
-              opacity=0.85,
-              #extent=ext,
-              colormap=cmap,
-              vmin=-1, vmax=1)
-    
-    #mlab.surf(X,Y,np.real(Z[...,1]),
-    #          opacity=0.85,
+    #n = 2
+    #mlab.surf(X[::n,::n],Y[::n,::n], part(Z[...,1][::n,::n]+0.05),
+    #          #opacity=0.85,
     #          representation='wireframe',
-    #          line_width=0.25,
+    #          line_width=1.0,
     #          color=(0,0,0),
     #          vmin=-1, vmax=1)
-
+    #mlab.surf(X[::n,::n],Y[::n,::n], part(Z[...,0][::n,::n]-0.05),
+    #          #opacity=0.85,
+    #          representation='wireframe',
+    #          line_width=1.0,
+    #          color=(0,0,0),
+    #          vmin=-1, vmax=1)
+    
     #XX, YY = [ np.vstack((N,N)) for N in X, Y]
     #ZZ = np.vstack((np.imag(Z[...,0]),np.imag(Z[...,1])))
     #
@@ -83,30 +128,31 @@ def plot_riemann_sheets(**kwargs):
     #          vmin=-1, vmax=1)
     #
     
-    ###E_a = np.imag(OM.eVals[:,0])
-    ###E_b = np.imag(OM.eVals[:,1])
-    ###z = map_trajectory(c1, c2, E_a, E_b)
-    ###
-    ###mlab.plot3d(x, y, z,
-    ###            line_width=.5,
-    ###            tube_radius=0.015)
-    ###
-    ###u, v, w = [ np.gradient(n) for n in x, y, z ]
-    ###
-    ###mlab.points3d(x[0], y[0], z[0],
-    ###              color=(0, 0, 0),
-    ###              scale_factor=0.05,
-    ###              mode='sphere')
-    ###
-    ####x, y, z, u, v, w = [ n[-150:-145] for n in x, y, z, u, v, w ]
-    ###x, y, z, u, v, w = [ n[-1:] for n in x, y, z, u, v, w ]
-    ###
-    ###mlab.quiver3d(x, y, z, u, v, w,
-    ###              color=(0, 0, 0),
-    ###              scale_factor=75,
-    ###              mode='cone')
+    #E_a = part(OM.eVals[:,0])
+    #E_b = part(OM.eVals[:,1])
+    #z = map_trajectory(c1, c2, E_a, E_b)
+    #
+    #mlab.plot3d(x, y, z,
+    #            line_width=.5,
+    #            tube_radius=0.015)
+    #
+    #u, v, w = [ np.gradient(n) for n in x, y, z ]
+    #
+    #mlab.points3d(x[0], y[0], z[0],
+    #              color=(0, 0, 0),
+    #              scale_factor=0.05,
+    #              mode='sphere')
+    #
+    #x, y, z, u, v, w = [ n[-1:] for n in x, y, z, u, v, w ]
+    #
+    #mlab.quiver3d(x, y, z, u, v, w,
+    #              color=(0, 0, 0),
+    #              scale_factor=75,
+    #              mode='cone')
+    #
     
     mlab.view(142, -72, 7.5)
+    mlab.view(130, -70, 6.5)
     mlab.show()
     
     
