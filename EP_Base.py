@@ -134,20 +134,47 @@ class EP_Base:
         
         for i, xi in enumerate(x):
             for j, yj in enumerate(y):
-                Z[i,j,:] = c_eig(self.H(0,xi,yj))[0]
-                print xi, yj, Z[i,j,0]
+                H = self.H(0,xi,yj)
+                Z[i,j,:] = c_eig(H)[0]
                 
         return X, Y, Z    
-    
+   
+    def sample_H_iso(self, xN=None, yN=None):
+        if xN is None:
+            xN = 5*10**2
+        if yN is None:
+            yN = xN
+        
+        x = np.linspace(self.x_EP - 1.1*self.x_R0,
+                        self.x_EP + 1.1*self.x_R0, xN)
+        y = np.linspace(self.y_EP - 1.1*self.y_R0,
+                        self.y_EP + 1.1*self.y_R0, yN)
+        
+        X, Y = np.meshgrid(x, y, indexing='ij')
+        Z = np.zeros((xN,yN,2), dtype=complex)
+        
+        for i, xi in enumerate(x):
+            for j, yj in enumerate(y):
+                H = self.H(0,xi,yj)
+                Z[i,j,:] = c_eig(H)[0]
+                
+        Xnew, Ynew, Znew = np.meshgrid(x, y, np.real(Z[...].ravel()))
+        print X.dtype
+        return Xnew, Ynew, Znew    
+       
+        
     
     def iso_sample_H(self, mode='real', xN=None, yN=None, zN=None):
-        """Sample implicit local eigenvalue geometry of H.
+        """Sample local eigenvalue geometry of H implicitly.
         
             Parameters:
             -----------
                 xN, yN, zN: int
                     Number of sampling points in x, y and z direction.
                     
+            Returns:
+            --------
+                X, Y, Z, F: (N,N,N) ndarray
         """
         
         if xN is None:
@@ -161,25 +188,51 @@ class EP_Base:
                         self.x_EP + 1.1*self.x_R0, xN)
         y = np.linspace(self.y_EP - 1.1*self.y_R0,
                         self.y_EP + 1.1*self.y_R0, yN)
-        
-        z = np.linspace(-1.1, 1.1, zN)
+        z = np.linspace(-1.1, 1.1, 2*zN)
         
         if mode is 'imag':
             z = z*1j
+            part = np.imag
+        else:
+            part = np.real
             
         X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
         
         F = np.zeros((xN,yN,zN), dtype=complex)
+        F_4D = np.zeros((xN,yN,2*zN), dtype=complex)
+        E = np.zeros((xN,yN,2), dtype=complex)
         
-        for i, xi in enumerate(x):
-            for j, yj in enumerate(y):
-                for k, zk in enumerate(z):
-                    char_poly = np.poly(self.H(0,xi,yj))
-                    eVals = c_eig(self.H(0,xi,yj))[0][0]
-                    #print np.polyval(char_poly, eVals)
-                    #print "H", self.H(0,xi,yj)
-                    #print "char_poly", xi, yj, zk, char_poly
-                    F[i,j,k] = np.polyval(char_poly, zk)
+        #for i, xi in enumerate(x):
+        #    for j, yj in enumerate(y):
+        #        
+        #        H = self.H(0,xi,yj)
+        #        E[i,j,:] = c_eig(H)[0]
+        #        F[i,j,:] = 100
+        #        
+        #        char_poly = np.poly(H)
+        #        eps = 5*10**-2
+        #            
+        #        for k, zk in enumerate(z):
+                    
+                    #F[i,j,k] = np.polyval(char_poly, zk + 1j*np.imag(E[i,j,1]))
+                ####for kr, zkr in enumerate(z):
+                ####    for ki, zki in enumerate(z):
+                ####        F_4D[i,j,kr,ki] = np.polyval(char_poly, zkr+1j*zki)
+                ####        
+                ####        diff0 = abs((zkr+1j*zki) - E[i,j,0])
+                ####        diff1 = abs((zkr+1j*zki) - E[i,j,1])
+                ####        
+                ####        if diff0 < eps or diff1 < eps:
+                ####            print "yes"
+                ####            F[i,j,kr] = np.polyval(char_poly, zkr+1j*zki)
+                            
+                    #diff0 = abs(part(E[i,j,0]) - zk)**2
+                    #diff1 = abs(part(E[i,j,1]) - zk)**2
+                    #eps = 5.*10**-4
+                    #
+                    #if diff0 < eps or diff1 < eps:
+                    #    print xi, yj, zk, part(E[i,j,:]), [diff0, diff1], np.polyval(char_poly, zk)
+                    #    F[i,j,k] = 0. 
         
         return X, Y, Z, F
     
