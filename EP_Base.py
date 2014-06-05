@@ -139,32 +139,7 @@ class EP_Base:
                 
         return X, Y, Z    
    
-    def sample_H_iso(self, xN=None, yN=None):
-        if xN is None:
-            xN = 5*10**2
-        if yN is None:
-            yN = xN
-        
-        x = np.linspace(self.x_EP - 1.1*self.x_R0,
-                        self.x_EP + 1.1*self.x_R0, xN)
-        y = np.linspace(self.y_EP - 1.1*self.y_R0,
-                        self.y_EP + 1.1*self.y_R0, yN)
-        
-        X, Y = np.meshgrid(x, y, indexing='ij')
-        Z = np.zeros((xN,yN,2), dtype=complex)
-        
-        for i, xi in enumerate(x):
-            for j, yj in enumerate(y):
-                H = self.H(0,xi,yj)
-                Z[i,j,:] = c_eig(H)[0]
-                
-        Xnew, Ynew, Znew = np.meshgrid(x, y, np.real(Z[...].ravel()))
-        print X.dtype
-        return Xnew, Ynew, Znew    
-       
-        
-    
-    def iso_sample_H(self, mode='real', xN=None, yN=None, zN=None):
+    def iso_sample_H(self, part=np.real, xN=None, yN=None, zN=None):
         """Sample local eigenvalue geometry of H implicitly.
         
             Parameters:
@@ -176,66 +151,53 @@ class EP_Base:
             --------
                 X, Y, Z, F: (N,N,N) ndarray
         """
-        
         if xN is None:
             xN = 5*10**2
         if yN is None:
             yN = xN
         if zN is None:
-            zN = xN*10
-            
+            zN = xN
+        
         x = np.linspace(self.x_EP - 1.1*self.x_R0,
                         self.x_EP + 1.1*self.x_R0, xN)
         y = np.linspace(self.y_EP - 1.1*self.y_R0,
                         self.y_EP + 1.1*self.y_R0, yN)
-        z = np.linspace(-1.1, 1.1, 2*zN)
         
-        if mode is 'imag':
-            z = z*1j
-            part = np.imag
+        z = np.linspace(-1,1,zN)
+        
+        if part is np.real:
+            print "real"
+            f = lambda x, E: 1j*np.sign(x)*np.imag(E)
         else:
-            part = np.real
+            print "imag"
+            z = 1j*z
+            f = lambda x, E: np.sign(x)*np.real(E)
             
         X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
+        X, Y = [ np.real(N) for N in X, Y ]
         
-        F = np.zeros((xN,yN,zN), dtype=complex)
-        F_4D = np.zeros((xN,yN,2*zN), dtype=complex)
         E = np.zeros((xN,yN,2), dtype=complex)
+        F = np.zeros((xN,yN,zN), dtype=complex)
         
-        #for i, xi in enumerate(x):
-        #    for j, yj in enumerate(y):
-        #        
-        #        H = self.H(0,xi,yj)
-        #        E[i,j,:] = c_eig(H)[0]
-        #        F[i,j,:] = 100
-        #        
-        #        char_poly = np.poly(H)
-        #        eps = 5*10**-2
-        #            
-        #        for k, zk in enumerate(z):
+        for i, xi in enumerate(x):
+            for j, yj in enumerate(y):
+                H = self.H(0,xi,yj)
+                E[i,j,:] = c_eig(H)[0]
+                
+                char_poly = np.poly(H)
                     
-                    #F[i,j,k] = np.polyval(char_poly, zk + 1j*np.imag(E[i,j,1]))
-                ####for kr, zkr in enumerate(z):
-                ####    for ki, zki in enumerate(z):
-                ####        F_4D[i,j,kr,ki] = np.polyval(char_poly, zkr+1j*zki)
-                ####        
-                ####        diff0 = abs((zkr+1j*zki) - E[i,j,0])
-                ####        diff1 = abs((zkr+1j*zki) - E[i,j,1])
-                ####        
-                ####        if diff0 < eps or diff1 < eps:
-                ####            print "yes"
-                ####            F[i,j,kr] = np.polyval(char_poly, zkr+1j*zki)
-                            
-                    #diff0 = abs(part(E[i,j,0]) - zk)**2
-                    #diff1 = abs(part(E[i,j,1]) - zk)**2
-                    #eps = 5.*10**-4
-                    #
-                    #if diff0 < eps or diff1 < eps:
-                    #    print xi, yj, zk, part(E[i,j,:]), [diff0, diff1], np.polyval(char_poly, zk)
-                    #    F[i,j,k] = 0. 
-        
+                for k, zk in enumerate(z):     
+                    F[i,j,k] = np.polyval(char_poly, 
+                                          zk + 1j*np.sign(zk)*np.imag(E[i,j,0]))
+                    #F[i,j,k] = np.polyval(char_poly,
+                    #                      zk + 1j*np.imag(E[i,j,0]))
+                    #for k, zk in enumerate(z):     
+                    #F[i,j,len(z)-1+k] = np.polyval(char_poly,
+                                                   #zk + 1j*np.imag(E[i,j,1]))
+                #print z_4D.max()
         return X, Y, Z, F
-    
+       
+        
     def _get_c_eigensystem(self):
         """Calculate the instantaneous eigenvalues and eigenvectors for
         all times t=0,...,T and remove any discontinuities."""
