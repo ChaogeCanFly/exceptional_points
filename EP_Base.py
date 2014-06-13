@@ -96,17 +96,17 @@ class EP_Base:
  
  
     def get_cycle_parameters(self, t):
-        """get_cycle_parameters is overwritten by inherited classes."""
+        """get_cycle_parameters method is overwritten by inheriting classes."""
         pass
 
 
     def H(self, t, x, y):
-        """H method is overwritten by inherited classes."""
+        """Hamiltonian H is overwritten by inheriting classes."""
         pass
     
     
     def sample_H(self, xN=None, yN=None):
-        """Sample local eigenvalue geometry of H.
+        """Sample local eigenvalue geometry of Hamiltonian H.
         
             Parameters:
             -----------
@@ -124,10 +124,10 @@ class EP_Base:
         if yN is None:
             yN = xN
         
-        x = np.linspace(self.x_EP - 1.1*self.x_R0,
-                        self.x_EP + 1.1*self.x_R0, xN)
-        y = np.linspace(self.y_EP - 1.1*self.y_R0,
-                        self.y_EP + 1.1*self.y_R0, yN)
+        x = np.linspace(self.x_EP - 0.1*self.x_R0,
+                        self.x_EP + 0.1*self.x_R0, xN)
+        y = np.linspace(self.y_EP - 0.1*self.y_R0,
+                        self.y_EP + 0.1*self.y_R0, yN)
         
         X, Y = np.meshgrid(x, y, indexing='ij')
         Z = np.zeros((xN,yN,2), dtype=complex)

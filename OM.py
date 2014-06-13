@@ -6,7 +6,7 @@ import matplotlib
 from EP_OptoMech import *
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
-from matplotlib.colors import LogNorm
+from matplotlib.colors import LogNorm, LinearSegmentedColormap, ListedColormap
 from matplotlib.ticker import LogFormatter, MultipleLocator, FixedLocator
 import brewer2mpl as brew
 
@@ -19,23 +19,49 @@ def plot_riemann_sheets(**kwargs):
     from scipy.interpolate import griddata
     import matplotlib.pyplot as plt
     
+    
+    #cdict = {'red': [228,26,28],
+             #'blue': [55,126,184]}
+    #cmap_rb = LinearSegmentedColormap('cmap_rb', cdict,)
     #bmap = brew.get_map('Spectral', 'Diverging', 5)
     #cmap = bmap.mpl_colormap
     cmap = 'Spectral'
     cmap = 'Blues'
     
     part = np.imag
+    #part = np.real
     
     OM = EP_OptoMech(**kwargs)
     x, y = OM.get_cycle_parameters(OM.t)
     _, c1, c2 = OM.solve_ODE()
-    X, Y, Z = OM.sample_H(xN=300, yN=300)
+    X, Y, Z = OM.sample_H(xN=51, yN=51)
     
-    ext = (np.min(X), np.max(X),
-           np.min(Y), np.max(Y),
-           np.min(part(Z[...,0])), np.max(part(Z[...,1])))
+    xx, yy = [ n.ravel() for n in X, Y ]
+    zz = part(Z[...,0].ravel())
+    
+    
+    #from scipy.spatial import Delaunay
+    
+    #points = zip(*(n.flat for n in (X, Y, part(Z[...,0]))))
+    #print points
+    #triangles = Delaunay(points).vertices
+    #print triangles
     
     fig = mlab.figure(size=(1400,1000), bgcolor=(1,1,1))
+    #mlab.triangular_mesh(xx,yy,zz,triangles[...,1:],
+    #                     vmin=-1,vmax=1)
+    
+    if part is np.real:
+        ext = [np.min(X), np.max(X),    
+               np.min(Y), np.max(Y),
+               -1, 1]
+               #np.min(part(Z[...,0])), np.max(part(Z[...,0])))
+    else:
+        ext = [np.min(X), np.max(X),    
+               np.min(Y), np.max(Y),    
+               np.min(part(Z[...,0])), np.max(part(Z[...,1]))]
+    
+    
 
 
     E1 = part(Z[...,1])
@@ -44,50 +70,166 @@ def plot_riemann_sheets(**kwargs):
     nx = np.sqrt(len(E1.ravel())).astype(int)/2
     ny = nx
     
+    red = tuple(map(lambda x: x/255., (228,26,28)))
+    blue = tuple(map(lambda x: x/255., (55,126,184)))
+
+    cmap = LinearSegmentedColormap.from_list('RdBu_custom',
+                                             [red,red,red,red,
+                                             #'white',
+                                             blue,blue,blue,blue], N=256)
+    RdBu_custom = cmap(np.arange(256))*255.
+            
     if part is np.real:
+     
         # surface E1
-        mlab.surf(X[nx-1:nx+1,ny:], Y[nx-1:nx+1,:ny], E1[nx-1:nx+1,:ny],
+        ext_piece1 = [X[:nx,...].min(),
+                      X[:nx,...].max(),
+                      Y[:nx,...].min(),
+                      Y[:nx,...].max(),
+                      -1, 0]
+        
+        ext_piece2 = [X[nx:,...].min(),
+                      X[nx:,...].max(),
+                      Y[nx:,...].min(),
+                      Y[nx:,...].max(),
+                      0, 1]
+        
+
+        E1s1 = mlab.surf(X[:nx,...], Y[:nx,...], E1[:nx,...],
+                  extent=ext_piece1,
                   opacity=0.85,
+                  color=blue,
                   vmin=-1, vmax=1)
-        mlab.surf(X[:nx,...], Y[:nx,...], E1[:nx,...],
+        E1s2 = mlab.surf(X[nx:,...], Y[nx:,...], E1[nx:,...],
+                  extent=ext_piece2,
                   opacity=0.85,
+                  color=blue,
                   vmin=-1, vmax=1)
-        mlab.surf(X[nx:,...], Y[nx:,...], E1[nx:,...],
+        E1s3 = mlab.surf(X[nx-1:nx+1,:ny],
+                  Y[nx-1:nx+1,:ny],
+                  E1[nx-1:nx+1,:ny],
+                  #extent=ext,
                   opacity=0.85,
+                  color=blue,
                   vmin=-1, vmax=1)
         
+        #E1s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom*255
+        #E1s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom*255
+        #E1s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom*255
+        
         # surface E0
-        mlab.surf(X[nx-1:nx+1,ny:], Y[nx-1:nx+1,:ny], E0[nx-1:nx+1,:ny],
+        ext_piece1[-2:] = 0, 1
+        ext_piece2[-2:] = -1, 0
+        
+        E0s1 = mlab.surf(X[:nx,...], Y[:nx,...], E0[:nx,...],
                   opacity=0.85,
-                  vmin=-1, vmax=1)
-        mlab.surf(X[:nx,...], Y[:nx,...], E0[:nx,...],
+                  extent=ext_piece1,
+                  color=red,
+                  vmin=-0.1, vmax=1)
+                  #vmin=-1, vmax=1)
+        E0s2 = mlab.surf(X[nx:,...], Y[nx:,...], E0[nx:,...],
                   opacity=0.85,
+                  extent=ext_piece2,
+                  color=red,
                   vmin=-1, vmax=1)
-        mlab.surf(X[nx:,...], Y[nx:,...], E0[nx:,...],
+        E0s3 = mlab.surf(X[nx-1:nx+1,:ny],
+                  Y[nx-1:nx+1,:ny],
+                  E0[nx-1:nx+1,:ny],
                   opacity=0.85,
+                  color=red,
                   vmin=-1, vmax=1)
+        
+        #E0s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom*255
+        #E0s1.module_manager.scalar_lut_manager.reverse_lut = True
+        #
+        #E0s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom*255
+        #E0s2.module_manager.scalar_lut_manager.reverse_lut = True
+        #
+        #E0s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]*255
+    
     else:   
-        mlab.surf(X, Y, E1,
-                  #extent=ext,
-                  opacity=0.85,
-                  #line_width=1.0,
-                  #color=(0,0,0),
-                  vmin=-1, vmax=1)
-        delta_z = 0.01
-        mlab.surf(X, Y, E0+delta_z,
-                  #extent=ext,
-                  opacity=0.85,
-                  #line_width=1.0,
-                  #color=(0,0,0),
-                  vmin=-1, vmax=1)
+        ext_piece1 = [X.min(),X.max(),
+                      Y.min(),Y.max(),
+                      -0.5, 0]
+        
+        ext_piece2 = [X.min(),X.max(),
+                      Y.min(),Y.max(),
+                      0, 0.5]
+        
+        #ext_piece1 = [-0.5,0.5,-0.5,0.5,-1,0]
+        #ext_piece2 = [-0.5,0.5,-0.5,0.5,0,1]
+        
+
+        s1 = mlab.surf(X, Y, E1,
+                        #scalars=X,
+                        extent=ext_piece2,
+                        representation='surface',
+                        opacity=0.8, #0.90,
+                        #colormap='RdBu',
+                        color=red,
+                        vmin=-1, vmax=1)
+        delta_z = 0.03
+        s2 = mlab.surf(X, Y, E0, #+delta_z,
+                        #scalars=X[::-1],
+                        extent=ext_piece1,
+                        representation='surface',
+                        opacity=0.80,
+                        #colormap='RdBu',
+                        color=blue,
+                        vmin=-1, vmax=1)
+        
+        #s1.actor.property.specular = 0.45
+        #s1.actor.property.specular_power = 5
+        #s2.actor.property.specular = 0.45
+        #s2.actor.property.specular_power = 5
+        #
+        #lut1 = s1.module_manager.scalar_lut_manager.lut.table.to_array()
+        #lut2 = s2.module_manager.scalar_lut_manager.lut.table.to_array()
+        
+        #s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom*255
+        #s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom*255
+        
         mlab.view(130, -70, 6.5)
+    
+    E1 = part(OM.eVals[:,0])
+    E2 = part(OM.eVals[:,1])
+    z = map_trajectory(c1, c2, E1, E2)
+    
+    ext = ext_piece1
+    ext[-2:] = -0.5, 0.5
+    
+    ext3d = [x.min(), x.max(), y.min(), y.max(),z.min(),z.max()]
+    ext3d = [x.min(), x.max(), y.min(), y.max(),-0.5,0.5]
+    mlab.plot3d(x, y, z,
+                #line_width=.025,
+                extent=ext3d,
+                tube_radius=0.001
+               )
+    
+    mlab.points3d(x[0], y[0], z[0],
+                  color=(0, 0, 0),
+                  #extent=ext,
+                  scale_factor=0.01,
+                  mode='sphere',
+                  )
+    
+    u, v, w = [ np.gradient(n) for n in x, y, z ]
+    x, y, z, u, v, w = [ n[-1:] for n in x, y, z, u, v, w ]
+    
+    mlab.quiver3d(x, y, z, u, v, w,
+                  color=(0, 0, 0),
+                  scale_factor=50,
+                  #extent=ext,
+                  mode='cone',        
+                  )
         
     mlab.outline(extent=ext,
                  line_width=2.5,
                  color=(0.5, 0.5, 0.5))
     
     mlab.view(142, -72, 7.5)
-    fig.scene.render_window.aa_frames = 8
+    mlab.draw()
+    #fig.scene.render_window.aa_frames = 8
     mlab.show()
     
 
@@ -245,12 +387,12 @@ if __name__ == '__main__':
     params = {
         'T': 5,
         #'R': 0.0625,
-        'R': 0.5,
-        'init_loop_phase': 3.70031,                # Im(lambda)=0, R=0.25
+        #'R': 0.5,
+        #'init_loop_phase': 3.70031,                # Im(lambda)=0, R=0.25
         #'init_loop_phase': 3.86493,                # Im(lambda)=0, R=0.0625
         #'init_loop_phase': 1.01208,                # Re(lambda)=0, R=0.25
         #'init_loop_phase': 0.847457,               # Re(lambda)=0, R=0.0625
-        'calc_adiabatic_state': True
+        #'calc_adiabatic_state': True
     }
     
     print "Warning: is normalization symmetric?"
@@ -262,4 +404,14 @@ if __name__ == '__main__':
                 params['init_state'] = s
                 circle_EP(**params)
     else:
+        params = {
+                "T": 10., 
+                "R": 1/20., 
+                "gamma": 2., 
+                "init_state": 'b', 
+                "init_loop_phase": 1*pi, 
+                "loop_direction": '-',
+                "calc_adiabatic_state": True
+                }
+        
         plot_riemann_sheets(**params)

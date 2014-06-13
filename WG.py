@@ -4,6 +4,7 @@ import matplotlib
 #matplotlib.use('Agg')
 
 from EP_Waveguide import *
+from EP_Helpers import *
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.colors import LogNorm
@@ -121,10 +122,10 @@ def circle_EP(filename=None, write_profile=False, **kwargs):
     ax1.set_xlabel("x [a.u.]")
     ax1.set_ylabel("Energy")
     ax1.yaxis.set_label_position('left')
-    ax1.plot(x, imag(Ea), "r-",label=r"$\mathrm{Im} E_a(t)$")
-    ax1.plot(x, imag(Eb), "g-",label=r"$\mathrm{Im} E_b(t)$") 
-    ax2.plot(x, real(Ea), "r--", label=r"$\mathrm{Re} E_a(t)$")
-    ax2.plot(x, real(Eb), "g--", label=r"$\mathrm{Re} E_b(t)$")
+    ax1.plot(x, imag(Ea), "r-",label=r"$\mathrm{Im}(E_0$")
+    ax1.plot(x, imag(Eb), "g-",label=r"$\mathrm{Im}(E_1)$") 
+    ax2.plot(x, real(Ea), "r--", label=r"$\mathrm{Re}(E_0)$")
+    ax2.plot(x, real(Eb), "g--", label=r"$\mathrm{Re}(E_1)$")
     
     t_imag = map_trajectory(abs(b0), abs(b1),
                              imag(Ea), imag(Eb))
@@ -150,14 +151,14 @@ def circle_EP(filename=None, write_profile=False, **kwargs):
     ##
     x0, y0 = WG.get_cycle_parameters(0.)
     x1, y1 = WG.get_cycle_parameters(WG.t)
-    
-    ax3 = subplot2grid((3,3), (2,0), colspan=2)
-    #WG.draw_wavefunction()
-    #WG.draw_dissipation_coefficient()
-    WG.draw_boundary()
-    tick_params(labelleft='off', left='off', right='off')
-    ax3.set_xlabel("x [a.u.]")
-    ax3.set_frame_on(False)
+    ####
+    ####ax3 = subplot2grid((3,3), (2,0), colspan=2)
+    ####WG.draw_wavefunction()
+    ####WG.draw_dissipation_coefficient()
+    ####WG.draw_boundary()
+    ####tick_params(labelleft='off', left='off', right='off')
+    ####ax3.set_xlabel("x [a.u.]")
+    ####ax3.set_frame_on(False)
     #ax3.xaxis.set_ticklabels([])
     #ax3.get_xaxis().tick_bottom()
     
@@ -188,7 +189,7 @@ def circle_EP(filename=None, write_profile=False, **kwargs):
            dx1[offset::offset], dy1[offset::offset],
            units='xy', angles='xy', headwidth=6.,
            color='k', zorder=10)
-    ylim(-0.1,0.1)
+    #ylim(-0.1,0.1)
     #text(WG.x_EP - WG.x_R0*0.2,
     #     WG.y_EP + WG.y_R0*4, "EP")
     
