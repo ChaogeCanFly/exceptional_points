@@ -262,6 +262,7 @@ class EP_Waveguide(EP_Base):
         contourf(X, Y, Z, [0.9,1], colors="k")
         return X, Y, Z
 
+
     
 def generate_profile_heatmap():
     """Generate a matrix of (eta, L) values for VSC calculations."""
@@ -330,21 +331,62 @@ def generate_profile_heatmap():
                 out_xml.close()
                 
                 os.chdir(pwd)
+                
+                
+class Generate_Profiles(EP_Waveguide):
+    """."""
+    def __init__(self, eps_factor=1.0, eps=None, delta=0.0,
+                       full_evolution=False, write_cfg=True,
+                       input_xml="input.xml", pphw="200",
+                       r_nx_part="50", custom_directory=None,
+                       neumann=1, heatmap=False, **kwargs):
+        
+        EP_Waveguide.__init__(self, **kwargs)
+        
+        self.eps = eps
+        self.eps_factor = eps_factor
+        self.delta = delta
+        self.full_evolution = full_evolution
+        self.write_cfg = write_cfg
+        self.input_xml = input_xml
+        self.pphw = pphw
+        self.r_nx_part = r_nx_part
+        self.custom_directory = custom_directory
+        self.neumann = neumann
+        
+        if heatmap:
+            _heatmap()
+        else:
+            _length()
+            
+    def _heatmap(self, **kwargs):
+        """."""
+        
+        L_range = np.arange(L0,L,dL)
+        eta_range = np.arange(eta0,eta,de)
+        
+        for L in L_range:
+            for eta in eta_range:
+                pass
+    
+    def _length(self):
+        pass
+
 
     
-def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
-                                           init_loop_phase=0.0,
-                                           loop_type="Varcircle",
-                                           loop_direction="-",
-                                           theta=0.0,
-                                           eps_factor=1.0, eps=None,
-                                           delta=0.0, 
-                                           full_evolution=False,
-                                           write_cfg=True,
-                                           input_xml="input.xml",
-                                           pphw="200", r_nx_part="50",
-                                           custom_directory=None,
-                                           neumann=1):
+def generate_length(eta=0.3, L=100, N=1.01,
+                    init_loop_phase=0.0,
+                    loop_type="Varcircle",
+                    loop_direction="-",
+                    theta=0.0,
+                    eps_factor=1.0, eps=None,
+                    delta=0.0, 
+                    full_evolution=False,
+                    write_cfg=True,
+                    input_xml="input.xml",
+                    pphw="200", r_nx_part="50",
+                    custom_directory=None,
+                    neumann=1):
     """Prepare length dependent greens_code input for VSC calculations.
     
     The waveguide boundary is prepared such that the length is an integer
@@ -496,9 +538,27 @@ def generate_length_dependent_calculations(eta=0.3, L=100, N=1.01,
         os.chdir(pwd)
         
 
+
+def generate_heatmap(**kwargs):
+    """Generate a (L, eta) heatmap."""
+    
+    L0 = kwargs['L']
+    eta0 = kwargs['eta']
+    
+    L_range = np.arange(0.8, 1.2, 0.1)*L0
+    eta_range = np.arange(0.8, 1.6, 0.1)*eta0
+    
+    for L in L_range:
+        for eta in eta_range:
+            kwargs['L'] = L
+            kwargs['eta'] = eta
+            generate_length(**kwargs)
+            
+            
+            
 def parse_arguments():
     """
-    Parse input for function generate_length_dependent_calculations(*args, **kwargs).
+    Parse input for function generate_length(*args, **kwargs).
         
         Parameters:
         -----------
@@ -562,10 +622,6 @@ def parse_arguments():
    
 if __name__ == '__main__':
     
-    generate_length_dependent_calculations(**parse_arguments())
+    generate_heatmap(**parse_arguments())
+    #generate_length(**parse_arguments())
     
-    #generate_length_dependent_calculations(eta=0.0, L=100, 
-    #                                       eps_factor=1.0, delta=0.3,
-    #                                       set_x_EP=True, eps=0.01, 
-    #                                       full_evolution=False,
-    #                                       loop_type="Constant_delta")
