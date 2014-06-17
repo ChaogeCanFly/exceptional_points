@@ -120,7 +120,7 @@ class EP_Waveguide(EP_Base):
             lambda2 = lambda t: y_EP - x_EP*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
         
-        elif loop_type == "Bell":
+        elif loop_type == "Bell_old":
             """ Bug in loop_direction == '+' ! """
             if self.loop_direction == '+':
                 a = -1
@@ -130,11 +130,11 @@ class EP_Waveguide(EP_Base):
             lambda2 = lambda t: 20. * x_EP * (w*t/pi - a) + phi0
             return lambda1(t), lambda2(t)
         
-        elif loop_type == "Bell_new":
+        elif loop_type == "Bell":
             sign = -int(self.loop_direction + "1")
             
             lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
-            lambda2 = lambda t: 0.18 * sign * (w*t/pi - 1) + phi0
+            lambda2 = lambda t: 0.4 * sign * (w*t/pi - 1) + phi0
             
             return lambda1(t), lambda2(t)
         
