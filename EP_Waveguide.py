@@ -386,7 +386,7 @@ def generate_length(eta=0.3, L=100, N=1.01,
                     input_xml="input.xml",
                     pphw="200", r_nx_part="50",
                     custom_directory=None,
-                    neumann=1):
+                    neumann=1, use_variable_length=False):
     """Prepare length dependent greens_code input for VSC calculations.
     
     The waveguide boundary is prepared such that the length is an integer
@@ -426,6 +426,8 @@ def generate_length(eta=0.3, L=100, N=1.01,
                 Custom directory into which to copy the .xml and .profile files.
             neumann: bool
                 Whether to use Neumann boundary conditions.
+            use_variable_length: bool
+                Whether to use a multiple of the wavelength for the system size.
     """
     
     import os
@@ -437,15 +439,15 @@ def generate_length(eta=0.3, L=100, N=1.01,
     pwd = os.getcwd()
     xml = "{}/{}".format(pwd, input_xml)
     
-    #if delta is None:
-    #    L_range = np.linspace(1,L,L)
-    #else:
-    kr = (N - np.sqrt(N**2 - 1))*pi
-    lambda0 = abs(pi/(kr + delta))
-    L_range = np.arange(lambda0,L,lambda0)
+    if use_variable_length:
+        kr = (N - np.sqrt(N**2 - 1))*pi
+        lambda0 = abs(pi/(kr + delta))
+        L_range = np.arange(lambda0,L,lambda0)
+    else:
+        L_range = np.linspace(1,L,L)
         
     if not full_evolution:
-        L_range = (L_range[-1],)
+        L_range = L_range[-1:]
     
     for Ln in L_range:
         params = {
@@ -539,20 +541,23 @@ def generate_length(eta=0.3, L=100, N=1.01,
         
 
 
-def generate_heatmap(**kwargs):
+def generate_heatmap(heatmap=False, **kwargs):
     """Generate a (L, eta) heatmap."""
     
     L0 = kwargs['L']
     eta0 = kwargs['eta']
     
-    L_range = np.arange(0.8, 1.2, 0.1)*L0
+    L_range = np.arange(0.8, 1.3, 0.1)*L0
     eta_range = np.arange(0.8, 1.6, 0.1)*eta0
     
-    for L in L_range:
-        for eta in eta_range:
-            kwargs['L'] = L
-            kwargs['eta'] = eta
-            generate_length(**kwargs)
+    if heatmap:
+        for L in L_range:
+            for eta in eta_range:
+                kwargs['L'] = L
+                kwargs['eta'] = eta
+                generate_length(**kwargs)
+    else:
+        generate_length(**kwargs)
             
             
             
@@ -606,8 +611,10 @@ def parse_arguments():
                         help="Custom directory into which to copy the .xml and .profile files.")
     parser.add_argument("-n", "--neumann", default=1, type=int,
                         help="Whether to use Neumann boundary conditions.")
-    
-    #subparsers = parser.add_subparsers(help='sub-command help')
+    parser.add_argument("-u", "--use-variable-length", action="store_true",
+                        help="Whether to use a multiple of the wavelength for the system size.")
+    parser.add_argument("-H", "--heatmap", action="store_true",
+                        help="Whether to calculate a (eta,L) heatmap.")
     
     args = parser.parse_args()
     kwargs = vars(args)
