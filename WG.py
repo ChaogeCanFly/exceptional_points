@@ -5,64 +5,12 @@ import matplotlib
 
 from EP_Waveguide import *
 from EP_Helpers import *
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import LogFormatter, MultipleLocator
 from matplotlib.ticker import FixedLocator, FormatStrFormatter
 import brewer2mpl as brew
 
-def plot_riemann_sheets(filename=None, **kwargs):
-    """Plot local Riemann sheet structure of the WG Hamiltonian.
-    
-        Parameters:
-        -----------
-            filename: str
-                Save plot to file.
-        
-        Keyword arguments are taken from EP_Waveguide class.
-    """
-    import mayavi.mlab as mlab
-    
-    #print kwargs
-    # init EP_Waveguide object 
-    WG = EP_Waveguide(**kwargs)
-    # sample H eigenvalues
-    WG.solve_ODE()
-    X, Y, Z = WG.sample_H()
-    x, y = WG.get_cycle_parameters(WG.t)
-
-
-    mlab.surf(X,Y,imag(Z[...,0])) #, colormap="bones")
-    mlab.surf(X,Y,imag(Z[...,1])) #, colormap="bones")
-    Ea = imag(WG.eVals[:,0])
-    Eb = imag(WG.eVals[:,1])
-    mlab.plot3d(x, y, Ea)
-    mlab.plot3d(x, y, Eb)
-    mlab.show()
-    ## plot 3D surface
-    #fig = figure()
-    #ax1 = fig.add_subplot(211, projection='3d')
-    #ax2 = fig.add_subplot(212, projection='3d')
-    #
-    #axes =  ax1, ax2
-    #parts = imag, real
-    #
-    #for ax, part in zip(axes, parts):
-    #    # plot both eigenvalues
-    #    for n in (0, 1):
-    #        ax.plot_surface(X, Y, part(Z[:,:,n]),
-    #                        #vmin=-4.714, vmax=-4.711,
-    #                        #vmin=-0.0066, vmax=-0.0052,
-    #                        #rstride=15, cstride=15, 
-    #                        cmap=cm.jet, linewidth=0.1)
-    #        
-    #        Ea = part(WG.eVals[:,0])
-    #        Eb = part(WG.eVals[:,1])
-    #
-    #        ax.plot(x, y, Ea, "r-")
-    #        ax.plot(x, y, Eb, "g-")
-    #show()    
 
 
 def circle_EP(filename=None, write_profile=False, **kwargs):
