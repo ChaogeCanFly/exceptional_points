@@ -463,7 +463,7 @@ def generate_length(eta=0.3, L=100, N=1.01,
         if custom_directory:
             directory = "{}/{}".format(pwd, custom_directory)
         else:
-            directory = "{}/eta_{eta}_L_{}_Ln_{}_{loop_direction}".format(pwd, L, Ln,
+            directory = "{}/eta_{eta:.3f}_L_{}_Ln_{}_{loop_direction}".format(pwd, L, Ln,
                                                                           **params)
         if not os.path.exists(directory):
             os.makedirs(directory)
