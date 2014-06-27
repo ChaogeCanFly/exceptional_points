@@ -11,47 +11,30 @@ from matplotlib.ticker import LogFormatter, MultipleLocator, FixedLocator
 import brewer2mpl as brew
 
     
-def plot_riemann_sheets(**kwargs):
+def plot_riemann_sheets(part=np.imag, scale=6.5, wireframe_skip=5.,
+                        xN=153, yN=152, **kwargs):
     """Plot local Riemann sheet structure of the OM Hamiltonian."""
 
     import mayavi.mlab as mlab
-    from EP_Helpers import map_trajectory
-    from scipy.interpolate import griddata
+    from EP_Helpers import map_trajectory, get_height_profile
     import matplotlib.pyplot as plt
     
-    
-    #cdict = {'red': [228,26,28],
-             #'blue': [55,126,184]}
-    #cmap_rb = LinearSegmentedColormap('cmap_rb', cdict,)
-    #bmap = brew.get_map('Spectral', 'Diverging', 5)
-    #cmap = bmap.mpl_colormap
-    cmap = 'Spectral'
-    cmap = 'Blues'
-    
-    part = np.imag
-    #part = np.real
+    #part = np.imag
+    part = np.real
     
     OM = EP_OptoMech(**kwargs)
+    
     x, y = OM.get_cycle_parameters(OM.t)
     _, c1, c2 = OM.solve_ODE()
-    X, Y, Z = OM.sample_H(xN=351, yN=351)
+    
+    e1 = part(OM.eVals[:,0])
+    e2 = part(OM.eVals[:,1])
+    z = map_trajectory(c1, c2, e1, e2)
+    z = e1    
+    
+    X, Y, Z = OM.sample_H(xN=xN, yN=yN)
     E1 = part(Z[...,1])
-    E0 = part(Z[...,0])    
-    
-    scale = 5.
-    skip = 5
-    
-    fig = mlab.figure(size=(1400,1000), bgcolor=(1,1,1))
-    
-    if part is np.real:
-        ext = [np.min(X), np.max(X),    
-               np.min(Y), np.max(Y),
-               np.min(E0)/scale, np.max(E0)/scale]
-    else:
-        ext = [np.min(X), np.max(X),    
-               np.min(Y), np.max(Y),    
-               np.min(E0)/scale, np.max(E1)/scale]
-
+    E0 = part(Z[...,0])
     
     nx = np.sqrt(len(E1.ravel())).astype(int)/2
     ny = nx
@@ -59,348 +42,264 @@ def plot_riemann_sheets(**kwargs):
     def get_custom_cmap():
         red = tuple(map(lambda x: x/255., (228,26,28)))
         blue = tuple(map(lambda x: x/255., (55,126,184)))
-    
         cmap = LinearSegmentedColormap.from_list('RdBu_custom',
-                                                [red, blue], N=256)
+                                                 [red, blue], N=256)
         return cmap(np.arange(256))*255.
     
-    RdBu_custom = get_custom_cmap() 
-            
+    RdBu_custom = get_custom_cmap()
+    
+
+    fig = mlab.figure(size=(1400,1000), bgcolor=(1,1,1))
+    
+    line_color = (0.25, 0.25, 0.25)
+    mlab.plot3d(x, y, z/scale,
+                color=line_color,
+                opacity=1.,
+                tube_radius=0.001)
+    
+    W_Gauss_Fermi, W_Fermi, wmax, wmin = get_height_profile(X, Y, rho_y=1e-2, 
+                                                            sigma_x=1e-4)
+    
+    
     if part is np.real:
-        if 0:
-            # surface E1
-            ext_piece1 = [X[:nx,...].min(),
-                          X[:nx,...].max(),
-                          Y[:nx,...].min(),
-                          Y[:nx,...].max(),
-                          -1, 0]
+        
+        E1s1p1 = mlab.mesh(X[:nx+1,:ny+1],
+                         Y[:nx+1,:ny+1],
+                         E1[:nx+1,:ny+1]/scale,
+                         scalars=W_Gauss_Fermi[:nx+1,:ny+1],
+                         opacity=0.9,
+                         vmin=wmin, vmax=wmax)        
+        E1s2 = mlab.mesh(X[:nx+1,ny:],
+                         Y[:nx+1,ny:],
+                         E1[:nx+1,ny:]/scale,
+                         scalars=W_Fermi[:nx+1,ny:],         
+                         opacity=0.9,
+                         vmin=wmin, vmax=wmax)
+        
+        E0s1 = mlab.mesh(X[...,:ny+1],
+                         Y[...,:ny+1],
+                         E0[...,:ny+1]/scale,
+                         scalars=W_Gauss_Fermi[...,:ny+1],
+                         opacity=0.9,
+                         vmin=wmin, vmax=wmax)
+        E0s2 = mlab.mesh(X[:nx+1,ny:],
+                         Y[:nx+1,ny:],
+                         E0[:nx+1,ny:]/scale,
+                         scalars=W_Fermi[:nx+1,ny:],         
+                         opacity=0.9,
+                         vmin=wmin, vmax=wmax)
+        E0s3 = mlab.mesh(X[nx+1:,ny:],
+                         Y[nx+1:,ny:],
+                         E0[nx+1:,ny:]/scale,
+                         scalars=W_Fermi[nx+1:,ny:],
+                         opacity=0.9,
+                         vmin=wmin, vmax=wmax)
+        
+        E0s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
+        E0s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
+        E0s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        
+        mlab.surf(X[nx+1::wireframe_skip,::wireframe_skip],
+                  Y[nx+1::wireframe_skip,::wireframe_skip],
+                  E0[nx+1::wireframe_skip,::wireframe_skip]/scale,
+                  opacity=0.05,
+                  color=(0,0,0),
+                  representation='wireframe',
+                  vmin=wmin, vmax=wmax)
+        
+        mlab.surf(X[:nx+2:wireframe_skip,::wireframe_skip],
+                  Y[:nx+2:wireframe_skip,::wireframe_skip],
+                  E0[:nx+2:wireframe_skip,::wireframe_skip]/scale,
+                  opacity=0.05,
+                  color=(0,0,0),
+                  representation='wireframe',
+                  vmin=wmin, vmax=wmax)        
+        mesh_args = {
             
-            ext_piece2 = [X[nx:,...].min(),
-                          X[nx:,...].max(),
-                          Y[nx:,...].min(),
-                          Y[nx:,...].max(),
-                          0, 1]
-            
-    
-            E1s1 = mlab.surf(X[:nx+1,...],
-                             Y[:nx+1,...],
-                             E1[:nx+1,...]/scale,
-                      #extent=ext_piece1,
-                      opacity=0.85,
-                      color=blue,
-                      vmin=-1, vmax=1)
-            E1s2 = mlab.surf(X[nx+1:,...],
-                             Y[nx+1:,...],
-                             E1[nx+1:,...]/scale,
-                      #extent=ext_piece2,
-                      opacity=0.85,
-                      color=blue,
-                      vmin=-1, vmax=1)
-            E1s3 = mlab.surf(X[nx:nx+2,:ny+1],
-                      Y[nx:nx+2,:ny+1],
-                      E1[nx:nx+2,:ny+1]/scale,
-                      #extent=ext,
-                      opacity=0.85,
-                      color=blue,
-                      vmin=-1, vmax=1)
-            
-            E1s11 = mlab.surf(X[:nx+1:skip,::skip],
-                              Y[:nx+1:skip,::skip],
-                              E1[:nx+1:skip,::skip]/scale,
-                      opacity=0.85,
-                      representation='wireframe',
-                      color=blue,
-                      vmin=-0.1, vmax=1)
-            E1s22 = mlab.surf(X[nx+1::skip,::skip],
-                              Y[nx+1::skip,::skip],
-                              E1[nx+1::skip,::skip]/scale,
-                      opacity=0.85,
-                      representation='wireframe',
-                      color=blue,
-                      vmin=-1, vmax=1)
-            E1s33 = mlab.surf(X[nx:nx+2,:ny+1],
-                      Y[nx:nx+2,:ny+1],
-                      E1[nx:nx+2,:ny+1]/scale,
-                      representation='wireframe',
-                      opacity=0.85,
-                      color=blue,
-                      vmin=-1, vmax=1)
-            
-            
-            #E1s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom*255
-            #E1s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom*255
-            #E1s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom*255
-            
-            # surface E0
-            ext_piece1[-2:] = 0, 1
-            ext_piece2[-2:] = -1, 0
-            
-            E0s1 = mlab.surf(X[:nx+1,...],
-                             Y[:nx+1,...],
-                             E0[:nx+1,...]/scale,
-                            opacity=0.85,
-                            #extent=ext_piece1,
-                            #colormap='jet',
-                            color=red,
-                            vmin=-0.1, vmax=1)
-                      #vmin=-1, vmax=1)
-            E0s2 = mlab.surf(X[nx+1:,...],
-                             Y[nx+1:,...],
-                             E0[nx+1:,...]/scale,
-                                opacity=0.85,
-                                #extent=ext_piece2,
-                                #colormap='jet',
-                                color=red,
-                                vmin=-1, vmax=1)
-            E0s3 = mlab.surf(X[nx:nx+2,:ny+1],
-                                Y[nx:nx+2,:ny+1],
-                                E0[nx:nx+2,:ny+1]/scale,
-                                opacity=0.85,
-                                #colormap='jet',
-                                color=red,
-                                vmin=-1, vmax=1)
-            
-            E0s11 = mlab.surf(X[:nx+1:skip,::skip],
-                              Y[:nx+1:skip,::skip],
-                              E0[:nx+1:skip,::skip]/scale,
-                                opacity=0.85,
-                                representation='wireframe',
-                                color=red,
-                                vmin=-0.1, vmax=1)
-            E0s22 = mlab.surf(X[nx+1::skip,::skip],
-                              Y[nx+1::skip,::skip],
-                              E0[nx+1::skip,::skip]/scale,
-                                opacity=0.85,
-                                representation='wireframe',
-                                color=red,
-                                vmin=-1, vmax=1)
-            E0s33 = mlab.surf(X[nx:nx+2,:ny+1],
-                                Y[nx:nx+2,:ny+1],
-                                E0[nx:nx+2,:ny+1]/scale,
-                                representation='wireframe',
-                                opacity=0.85,
-                                color=red,
-                                vmin=-1, vmax=1)
-            
-        else:
-    
-            
-            # Gauss
-            #W = np.exp(-(X-X.mean())**2/(2*rho_x))/np.sqrt(2*pi*rho_x**2)
-            #W *= 1./(np.exp(-(Y-Y.mean())/rho_y) + 1)
-            
-            # Dirac
-            #W = 0.*X
-            #W = 1./(np.exp(-(X-X.mean())/rho_x) + 1)
-            #W *= 1./(np.exp(-(Y-Y.mean())/rho_y) + 1)
-            #plt.pcolor(W)
-            #plt.show()
-    
-            rho_x = 0.0001
-            rho_y = 0.01
-            
-            W_y_upper = 0.*X
-            W_y_upper = np.exp(-(X-X.mean())**2/(2*rho_x))/np.sqrt(2*pi*rho_x**2)
-            W_y_upper *= 1./(np.exp(-(Y-Y.mean())/rho_y) + 1)
-            
-            W_y_lower = 0.*X
-            W_y_lower = 1./(np.exp(-(X-X.mean())/rho_y) + 1)
-            W_y_lower = W_y_lower*W_y_upper.max()/W_y_lower.max()
-            
-            #plt.pcolor(W_y_lower)
-            #plt.show()
-            
-            W = W_y_lower            
-            smax = W.max()
-            smin = W.min()
-            
-            E1s1 = mlab.mesh(X[...,:ny+1],
-                             Y[...,:ny+1],
-                             E1[...,:ny+1]/scale,
-                             scalars=W_y_upper[...,:ny+1],
-                             opacity=0.85,
-                             colormap='RdBu',
-                             vmin=smin, vmax=smax)
-            E1s2 = mlab.mesh(X[:nx+1,ny:],
-                             Y[:nx+1,ny:],
-                             E1[:nx+1,ny:]/scale,
-                             scalars=W_y_lower[:nx+1,ny:],         
-                             opacity=0.85,
-                             colormap='RdBu',
-                             vmin=smin, vmax=smax)
-            E1s3 = mlab.mesh(X[nx+1:,ny:],
-                             Y[nx+1:,ny:],
-                             E1[nx+1:,ny:]/scale,
-                             scalars=W_y_lower[nx+1:,ny:],
-                             colormap='RdBu',
-                             opacity=0.85,
-                             vmin=smin, vmax=smax)
-            
-            E1s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom
-            E1s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
-            E1s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
+        }
+        
+        #E1s1 = mlab.mesh(X[...,:ny+1],
+        #                 Y[...,:ny+1],
+        #                 E1[...,:ny+1]/scale,
+        #                 scalars=W_Gauss_Fermi[...,:ny+1],
+        #                 opacity=0.9,
+        #                 vmin=wmin, vmax=wmax)
 
-            E1s11 = mlab.surf(X[nx+1::skip,::skip],
-                             Y[nx+1::skip,::skip],
-                             E1[nx+1::skip,::skip]/scale,
-                             opacity=0.85,
-                             color=red,
-                             line_width=1,
-                             representation='wireframe',
-                             vmin=smin, vmax=smax)
+        E1s1p2 = mlab.mesh(X[nx+1:,:ny+1],
+                         Y[nx+1:,:ny+1],
+                         E1[nx+1:,:ny+1]/scale,
+                         scalars=W_Gauss_Fermi[nx+1:,:ny+1],
+                         opacity=0.9,
+                         vmin=wmin, vmax=wmax)
+        E1s3 = mlab.mesh(X[nx+1:,ny:],
+                         Y[nx+1:,ny:],
+                         E1[nx+1:,ny:]/scale,
+                         scalars=W_Fermi[nx+1:,ny:],
+                         opacity=0.9,
+                         vmin=wmin, vmax=wmax)
+        #E1s2 = mlab.mesh(X[:nx+1,ny:],
+        #                 Y[:nx+1,ny:],
+        #                 E1[:nx+1,ny:]/scale,
+        #                 scalars=W_Fermi[:nx+1,ny:],         
+        #                 opacity=0.9,
+        #                 vmin=wmin, vmax=wmax)
 
-            E1s33 = mlab.surf(X[:nx+2:skip,::skip],
-                             Y[:nx+2:skip,::skip],
-                             E1[:nx+2:skip,::skip]/scale,
-                             opacity=0.85,
-                             color=red,
-                             line_width=0.5,
-                             representation='wireframe',
-                             vmin=smin, vmax=smax)
-            
-            
-            
-            
-            
-            
-            E0s1 = mlab.mesh(X[...,:ny+1],
-                             Y[...,:ny+1],
-                             E0[...,:ny+1]/scale,
-                             scalars=W_y_upper[...,:ny+1],
-                             opacity=0.85,
-                             colormap='jet',
-                             vmin=smin, vmax=smax)
-            E0s2 = mlab.mesh(X[:nx+1,ny:],
-                             Y[:nx+1,ny:],
-                             E0[:nx+1,ny:]/scale,
-                             scalars=W_y_lower[:nx+1,ny:],         
-                             opacity=0.85,
-                             colormap='jet',
-                             vmin=smin, vmax=smax)
-            E0s3 = mlab.mesh(X[nx+1:,ny:],
-                             Y[nx+1:,ny:],
-                             E0[nx+1:,ny:]/scale,
-                             scalars=W_y_lower[nx+1:,ny:],
-                             colormap='jet',
-                             opacity=0.85,
-                             vmin=smin, vmax=smax)
-            
-            E0s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
-            E0s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
-            E0s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom
-            
-            E1s11 = mlab.surf(X[nx+1::skip,::skip],
-                             Y[nx+1::skip,::skip],
-                             E0[nx+1::skip,::skip]/scale,
-                             opacity=0.85,
-                             color=blue,
-                             line_width=1,
-                             representation='wireframe',
-                             vmin=smin, vmax=smax)
+        
+        #E1s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        E1s1p1.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        E1s1p2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        E1s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        E1s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
 
-            E1s33 = mlab.surf(X[:nx+2:skip,::skip],
-                             Y[:nx+2:skip,::skip],
-                             E0[:nx+2:skip,::skip]/scale,
-                             opacity=0.85,
-                             color=blue,
-                             line_width=0.5,
-                             representation='wireframe',
-                             vmin=smin, vmax=smax)
+        mlab.surf(X[nx+1::wireframe_skip,::wireframe_skip],
+                  Y[nx+1::wireframe_skip,::wireframe_skip],
+                  E1[nx+1::wireframe_skip,::wireframe_skip]/scale,
+                  opacity=0.05,
+                  color=(0,0,0),
+                  representation='wireframe',
+                  vmin=wmin, vmax=wmax)
+        
+        mlab.surf(X[:nx+2:wireframe_skip,::wireframe_skip],
+                  Y[:nx+2:wireframe_skip,::wireframe_skip],
+                  E1[:nx+2:wireframe_skip,::wireframe_skip]/scale,
+                  opacity=0.05,
+                  color=(0,0,0),
+                  representation='wireframe',
+                  vmin=wmin, vmax=wmax)
+        
+        ##
+        
+        #E0s1 = mlab.mesh(X[...,:ny+1],
+        #                 Y[...,:ny+1],
+        #                 E0[...,:ny+1]/scale,
+        #                 scalars=W_Gauss_Fermi[...,:ny+1],
+        #                 opacity=0.75,
+        #                 vmin=wmin, vmax=wmax)
+        #E0s2 = mlab.mesh(X[:nx+1,ny:],
+        #                 Y[:nx+1,ny:],
+        #                 E0[:nx+1,ny:]/scale,
+        #                 scalars=W_Fermi[:nx+1,ny:],         
+        #                 opacity=0.75,
+        #                 vmin=wmin, vmax=wmax)
+        #E0s3 = mlab.mesh(X[nx+1:,ny:],
+        #                 Y[nx+1:,ny:],
+        #                 E0[nx+1:,ny:]/scale,
+        #                 scalars=W_Fermi[nx+1:,ny:],
+        #                 opacity=0.75,
+        #                 vmin=wmin, vmax=wmax)
+        #
+        #E0s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
+        #E0s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
+        #E0s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        #
+        #mlab.surf(X[nx+1::wireframe_skip,::wireframe_skip],
+        #          Y[nx+1::wireframe_skip,::wireframe_skip],
+        #          E0[nx+1::wireframe_skip,::wireframe_skip]/scale,
+        #          opacity=0.05,
+        #          color=(0,0,0),
+        #          representation='wireframe',
+        #          vmin=wmin, vmax=wmax)
+        #
+        #mlab.surf(X[:nx+2:wireframe_skip,::wireframe_skip],
+        #          Y[:nx+2:wireframe_skip,::wireframe_skip],
+        #          E0[:nx+2:wireframe_skip,::wireframe_skip]/scale,
+        #          opacity=0.05,
+        #          color=(0,0,0),
+        #          representation='wireframe',
+        #          vmin=wmin, vmax=wmax)
  
-    else:   
-        ext_piece1 = [X.min(),X.max(),
-                      Y.min(),Y.max(),
-                      E0.min()/scale, E0.max()/scale]
-        
-        ext_piece2 = [X.min(),X.max(),
-                      Y.min(),Y.max(),
-                      E1.min()/scale, E1.max()/scale]
-        
-        s1 = mlab.surf(X, Y, E1/scale,
-                        #scalars=X,
-                        #extent=ext_piece2,
+    else:
+        s2 = mlab.mesh(X, Y, E0/scale,
+                        scalars=W_Fermi, 
+                        representation='surface',
+                        opacity=0.8,
+                        vmin=-wmin, vmax=wmax)        
+        s1 = mlab.mesh(X, Y, E1/scale,
+                        scalars=W_Fermi, 
                         representation='surface',
                         opacity=0.8, 
-                        #colormap='RdBu',
-                        color=red,
-                        vmin=-1, vmax=1)
+                        vmin=-wmin, vmax=wmax)
         
-        s11 = mlab.surf(X[::skip,::skip], Y[::skip,::skip], E1[::skip,::skip]/scale,
-                        representation='wireframe',
-                        opacity=0.1, 
-                        color=(0,0,0),
-                        vmin=-1, vmax=1)
+        s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
+        s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
         
-        s2 = mlab.surf(X, Y, E0/scale,
-                        representation='surface',
-                        opacity=0.80,
-                        #colormap='RdBu',
-                        color=blue,
-                        vmin=-1, vmax=1)
+        mlab.surf(X[::wireframe_skip,::wireframe_skip],
+                  Y[::wireframe_skip,::wireframe_skip],
+                  E1[::wireframe_skip,::wireframe_skip]/scale,
+                  representation='wireframe',
+                  opacity=0.05, 
+                  color=(0,0,0),
+                  vmin=-wmin, vmax=wmax)
         
-        s22 = mlab.surf(X[::skip,::skip], Y[::skip,::skip], E0[::skip,::skip]/scale,
-                        representation='wireframe',
-                        opacity=0.1,
-                        color=(0,0,0),
-                        vmin=-1, vmax=1)
-        
-        #s1.actor.property.specular = 0.45
-        #s1.actor.property.specular_power = 5
-        #s2.actor.property.specular = 0.45
-        #s2.actor.property.specular_power = 5
-        #
-        #lut1 = s1.module_manager.scalar_lut_manager.lut.table.to_array()
-        #lut2 = s2.module_manager.scalar_lut_manager.lut.table.to_array()
-        #
-        #s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom*255
-        #s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom*255
-        
-        mlab.view(130, -70, 6.5)
+        mlab.surf(X[::wireframe_skip,::wireframe_skip],
+                  Y[::wireframe_skip,::wireframe_skip],
+                  E0[::wireframe_skip,::wireframe_skip]/scale,
+                  representation='wireframe',
+                  opacity=0.05,
+                  color=(0,0,0),
+                  vmin=-wmin, vmax=wmax)
     
-    E1 = part(OM.eVals[:,0])
-    E2 = part(OM.eVals[:,1])
-    z = map_trajectory(c1, c2, E1, E2)
+    for E in E0, E1:
+        for xx, yy, zz in ([X[:,0],  Y[:,0],  E[:,0]/scale],
+                           [X[:,-1], Y[:,-1], E[:,-1]/scale],
+                           [X[0,:],  Y[0,:],  E[0,:]/scale],
+                           [X[-1,:], Y[-1,:], E[-1,:]/scale]):
+            
+            edge_color = (0.25, 0.25, 0.25)
+            
+            n = np.where(abs(np.diff(zz)) >= 0.01)[0]
+            if n.size:
+                n = n[0]
+                mlab.plot3d(xx[:n+1], yy[:n+1], zz[:n+1],
+                            color=edge_color, 
+                            tube_radius=0.0005)
+                mlab.plot3d(xx[n+1:], yy[n+1:], zz[n+1:],
+                            color=edge_color, 
+                            tube_radius=0.0005)
+            else:
+                mlab.plot3d(xx, yy, zz,
+                            color=edge_color, 
+                            tube_radius=0.0005)
     
-    #ext = ext_piece1
-    #ext[-2:] = -0.5, 0.5
     
-    ext3d = [x.min(), x.max(), y.min(), y.max(),z.min()/scale,z.max()/scale]
-    
-    #mlab.plot3d(x, y, z/scale,
-    #            #line_width=.025,
-    #            #extent=ext3d,
-    #            tube_radius=0.002
-    #           )
-    #
-    #mlab.points3d(x[0], y[0], z[0]/scale,
-    #              color=(0, 0, 0),
-    #              #extent=ext3d,
-    #              scale_factor=0.01,
-    #              mode='sphere',
-    #              )
+    mlab.points3d(x[0], y[0], z[0]/scale,
+                  color=line_color,
+                  scale_factor=0.0075,
+                  mode='sphere')
     
     u, v, w = [ np.gradient(n) for n in x, y, z/scale ]
-    x, y, z, u, v, w = [ n[-1:] for n in x, y, z/scale, u, v, w ]
     
     if part is np.real:
-        #mlab.quiver3d(x, y, z, u, v, w,
-        #            color=(0, 0, 0),
-        #            scale_factor=300,
-        #            #extent=ext3d,
-        #            mode='cone',        
-        #            )
-        #mlab.position(-0.25, 1.92, 0.15)
-        #mlab.view
-        mlab.view(142, 72, 7.5)
+        x, y, z, u, v, w = [ n[-1] for n in x, y, z/scale, u, v, w ]
+        mlab.quiver3d(x, y, z, u, v, w,
+                    color=line_color,
+                    scale_factor=200,
+                    resolution=200,
+                    mode='cone'        
+                    )
     else:
-        mlab.view(142, -72, 7.5)
+        x, y, z, u, v, w = [ n[-1] for n in x, y, z/scale, u, v, w ]
+        mlab.quiver3d(x, y, z, u, v, w,
+                    color=line_color,
+                    scale_factor=200,
+                    resolution=50,
+                    mode='cone'
+                    )
         
-    mlab.outline(extent=ext,
-                 line_width=2.5,
-                 color=(0.5, 0.5, 0.5))
+    #mlab.outline(extent=ext,
+    #             line_width=2.5,
+    #             color=(0.5, 0.5, 0.5))
     
+    mlab.axes(figure=fig,
+              color=(0.25,0.25,0.25),
+              extent=[X.min(),X.max(),
+                      Y.min()*0.95,Y.max()*0.95,
+                      E0.min()/3.5,E1.max()/3.5])
+    
+    mlab.view(azimuth=40, elevation=55)
+    #mlab.view(focalpoint = [0.0, 1.0, 0.0])
     mlab.draw()
-    #fig.scene.render_window.aa_frames = 8
+    fig.scene.render_window.aa_frames = 8
     mlab.show()
     
 
@@ -579,10 +478,10 @@ if __name__ == '__main__':
                 "T": 10., 
                 "R": 1/20., 
                 "gamma": 2., 
-                "init_state": 'b', 
-                "init_loop_phase": 1*pi, 
+                "init_state": 'a', 
+                "init_loop_phase": 1*pi/2., #1*pi*0, 
                 "loop_direction": '-',
-                "calc_adiabatic_state": True
+                "calc_adiabatic_state": False
                 }
         
         plot_riemann_sheets(**params)
