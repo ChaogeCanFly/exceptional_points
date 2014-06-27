@@ -248,6 +248,41 @@ def test_eigenvalues(eVals, eVecs_l, eVecs_r, H):
     print 50*"#"
 
 
+def get_height_profile(X, Y, sigma_x=1e-4, rho_y=1e-2):
+        """Return customized height profile.
+            
+            Parameters:
+            -----------
+                X, Y: (Nx,Ny) ndarray
+                    Geometry meshgrid.
+                sigma_x, rho_y: float
+                    Standard deviation in x-, and smearing in y direction.
+            
+            Returns:
+            --------
+                W_Gauss_Fermi: (Nx,Ny) ndarray
+                    Height-profile with Gauss in x-, and Fermi shape in y direction.
+                W_Fermi: (Nx,Ny) ndarray
+                    Height profile with Fermi shape in y direction.
+                wmax, wmin: float
+                    Maximum and minimum of the height profile.
+        """
+        
+        W_Gauss_Fermi, W_Fermi = 0.*X, 0.*X
+        
+        W_Gauss_Fermi = np.exp(-(X-X.mean())**2/(2*sigma_x))
+        W_Gauss_Fermi /= np.sqrt(2*pi*sigma_x**2)
+        W_Gauss_Fermi *= 1./(np.exp(-(Y-Y.mean())/rho_y) + 1)
+        
+        W_Fermi = 1./(np.exp(-(X-X.mean())/rho_y) + 1)
+        W_Fermi = W_Fermi*W_Gauss_Fermi.max()/W_Fermi.max()
+        
+        wmax = W_Fermi.max()
+        wmin = W_Fermi.min()
+        
+        return W_Gauss_Fermi, W_Fermi, wmax, wmin
+
+
 if __name__ == '__main__':
     pass
 
