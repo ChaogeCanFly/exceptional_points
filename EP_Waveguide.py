@@ -629,6 +629,6 @@ def parse_arguments():
    
 if __name__ == '__main__':
     
-    generate_heatmap(**parse_arguments())
-    #generate_length(**parse_arguments())
+    #generate_heatmap(**parse_arguments())
+    generate_length(**parse_arguments())
     
