@@ -442,7 +442,7 @@ def generate_length(eta=0.3, L=100, N=1.01,
     if use_variable_length:
         kr = (N - np.sqrt(N**2 - 1))*pi
         lambda0 = abs(pi/(kr + delta))
-        L_range = np.arange(lambda0,L,lambda0)
+        L_range = np.arange(lambda0,L,2*lambda0)
     else:
         L_range = np.linspace(1,L,L)
         
