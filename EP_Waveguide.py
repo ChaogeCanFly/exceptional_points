@@ -613,8 +613,8 @@ def parse_arguments():
                         help="Whether to use Neumann boundary conditions.")
     parser.add_argument("-u", "--use-variable-length", action="store_true",
                         help="Whether to use a multiple of the wavelength for the system size.")
-    parser.add_argument("-H", "--heatmap", action="store_true",
-                        help="Whether to calculate a (eta,L) heatmap.")
+    #parser.add_argument("-H", "--heatmap", action="store_true",
+    #                    help="Whether to calculate a (eta,L) heatmap.")
     
     args = parser.parse_args()
     kwargs = vars(args)
