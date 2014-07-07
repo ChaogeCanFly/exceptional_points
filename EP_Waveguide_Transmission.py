@@ -1,10 +1,7 @@
 #!/usr/bin/env python2.7
 
-from EP_Base import *
 import numpy as np
 from numpy import pi
-import brewer2mpl as brew
-import matplotlib.pyplot as plt
 
 class Transmission_Matrix:
     """Transmission matrix class."""
