@@ -244,8 +244,8 @@ class EP_Waveguide(EP_Base):
         if smearing:
             kr = (self.N - np.sqrt(self.N**2 - 1))*pi
             lambda0 = abs(pi/(kr + delta))
-            s = 1./(lambda0)
-            pre = fermi(x - lambda0, s)*fermi(L - x - lambda0, s)
+            s = 1./(2*lambda0)
+            pre = fermi(x - 3*lambda0, s)*fermi(L - x - 3*lambda0, s)
             return pre*xi_lower, pre*(xi_upper - d) + d
         else:
             return xi_lower, xi_upper
@@ -401,7 +401,8 @@ def generate_length(eta=0.3, L=100, N=1.01,
                     input_xml="input.xml",
                     pphw="200", r_nx_part="50",
                     custom_directory=None,
-                    neumann=1, use_variable_length=False, smearing=False):
+                    neumann=1, use_variable_length=False, 
+                    smearing=False):
     """Prepare length dependent greens_code input for VSC calculations.
     
     The waveguide boundary is prepared such that the length is an integer
@@ -638,6 +639,7 @@ def parse_arguments():
         with open("EP_PARSE_SETTINGS.cfg", "w") as f:
             data = json.dumps(kwargs, sort_keys=True, indent=-1)
             f.write(data)    
+
     return kwargs
     
    
