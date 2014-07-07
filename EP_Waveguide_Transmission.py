@@ -64,6 +64,7 @@ class Transmission_Matrix(object):
         
             Returns:
             --------
+                x: float
                 U: (2,2) ndarray
                     Evolution operator.
         """
@@ -85,6 +86,7 @@ class Transmission_Matrix(object):
 
             Returns:
             --------
+                x: float
                 U: (2,2) ndarray
                     Evolution operator.
         """
@@ -102,7 +104,13 @@ class Transmission_Matrix(object):
         return self.x, M11, M12, M21, M22
    
     def S_matrix(self):
-        """Extract and return the elements of the scattering matrix S."""
+        """Extract and return the elements of the scattering matrix S.
+        
+            Returns:
+            --------
+                x: float
+                S: (2,2) ndarray
+        """
         
         return np.loadtxt(self.infile, unpack=True,
                           dtype=complex, usecols=(0,5,6,7,8))
@@ -110,13 +118,18 @@ class Transmission_Matrix(object):
 
 def compare_H_eff_to_S_matrix(N=1.01, eta=0.1, delta=0.0, eps=None,
                               eps_factor=1.0, L=50, infile="S_matrix.dat"):
+    """Plot the predictions for the length dependent evolution operator U and
+    compare them to their respective S-matrix elements.
+    """
+    
     import matplotlib.pyplot as plt
     import brewer2mpl
     
     bmap = brewer2mpl.get_map('Paired', 'qualitative', 12)
     colors = bmap.mpl_colors
     
-    fig = plt.figure()
+    plt.clf()
+    fig = plt.figure(0)
     ax = fig.add_axes([0.1, 0.1, 0.6, 0.75])
     
     T = Transmission_Matrix(N, eta, delta, eps, eps_factor, L, infile)
@@ -138,11 +151,11 @@ def compare_H_eff_to_S_matrix(N=1.01, eta=0.1, delta=0.0, eps=None,
         ax.semilogy(abs(x), abs(t), color=colors[2*i+1],
                  lw=2.0, ls="--", mew=0.35, ms=7.5, label=labels[i])
 
-    #ax.title(r"")
+    ax.title(("N={N}, eta={eta}, delta={delta},")
+             ("eps_f={eps_factor}").format(N=N, eta=eta, delta=delta,
+                                           eps_factor=eps_factor))
     ax.legend(bbox_to_anchor=(1.05, 1.0), loc=2, borderaxespad=0.)      
-    
-    #plt.tight_layout()
-    plt.show()
+    plt.show(block=False)
     
     
 if __name__ == '__main__':
