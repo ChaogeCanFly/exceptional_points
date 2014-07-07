@@ -11,14 +11,16 @@ from matplotlib.ticker import LogFormatter, MultipleLocator, FixedLocator
 import brewer2mpl as brew
 
     
-def plot_riemann_sheets(part=np.imag, scale=6.5, wireframe_skip=5.,
+def plot_riemann_sheets(part=np.real,
+                        scale=6.5, #1., #6.5,
+                        wireframe_skip=5.,
                         xN=153, yN=152, **kwargs):
     """Plot local Riemann sheet structure of the OM Hamiltonian."""
 
     import mayavi.mlab as mlab
     from EP_Helpers import map_trajectory, get_height_profile
     import matplotlib.pyplot as plt
-    
+    xN, yN = 31, 31
     #part = np.imag
     part = np.real
     
@@ -30,7 +32,7 @@ def plot_riemann_sheets(part=np.imag, scale=6.5, wireframe_skip=5.,
     e1 = part(OM.eVals[:,0])
     e2 = part(OM.eVals[:,1])
     z = map_trajectory(c1, c2, e1, e2)
-    z = e1    
+    #z = e1    
     
     X, Y, Z = OM.sample_H(xN=xN, yN=yN)
     E1 = part(Z[...,1])
@@ -39,9 +41,9 @@ def plot_riemann_sheets(part=np.imag, scale=6.5, wireframe_skip=5.,
     nx = np.sqrt(len(E1.ravel())).astype(int)/2
     ny = nx
     
+    red = tuple(map(lambda x: x/255., (228,26,28)))
+    blue = tuple(map(lambda x: x/255., (55,126,184)))
     def get_custom_cmap():
-        red = tuple(map(lambda x: x/255., (228,26,28)))
-        blue = tuple(map(lambda x: x/255., (55,126,184)))
         cmap = LinearSegmentedColormap.from_list('RdBu_custom',
                                                  [red, blue], N=256)
         return cmap(np.arange(256))*255.
@@ -52,10 +54,10 @@ def plot_riemann_sheets(part=np.imag, scale=6.5, wireframe_skip=5.,
     fig = mlab.figure(size=(1400,1000), bgcolor=(1,1,1))
     
     line_color = (0.25, 0.25, 0.25)
-    mlab.plot3d(x, y, z/scale,
-                color=line_color,
-                opacity=1.,
-                tube_radius=0.001)
+    #mlab.plot3d(x, y, z/scale,
+    #            color=line_color,
+    #            opacity=1.,
+    #            tube_radius=0.001)
     
     W_Gauss_Fermi, W_Fermi, wmax, wmin = get_height_profile(X, Y, rho_y=1e-2, 
                                                             sigma_x=1e-4)
@@ -67,37 +69,57 @@ def plot_riemann_sheets(part=np.imag, scale=6.5, wireframe_skip=5.,
                          Y[:nx+1,:ny+1],
                          E1[:nx+1,:ny+1]/scale,
                          scalars=W_Gauss_Fermi[:nx+1,:ny+1],
-                         opacity=0.9,
+                         opacity=0.8,
+                         color=blue,
                          vmin=wmin, vmax=wmax)        
         E1s2 = mlab.mesh(X[:nx+1,ny:],
                          Y[:nx+1,ny:],
                          E1[:nx+1,ny:]/scale,
                          scalars=W_Fermi[:nx+1,ny:],         
-                         opacity=0.9,
+                         opacity=0.8,
+                         color=blue,
                          vmin=wmin, vmax=wmax)
+        # <!-- CONE
+        E0s1 = mlab.mesh(X[:nx+1,:ny+1],
+                         Y[:nx+1,:ny+1],
+                         E0[:nx+1,:ny+1]/scale,
+                         scalars=W_Gauss_Fermi[:nx+1,:ny+1],
+                         opacity=0.8,
+                         color=red,
+                         vmin=wmin, vmax=wmax)
+        E0s11 = mlab.mesh(X[nx+1:,:ny+1],
+                         Y[nx+1:,:ny+1],
+                         E0[nx+1:,:ny+1]/scale,
+                         scalars=W_Gauss_Fermi[nx+1:,:ny+1],
+                         opacity=0.8,
+                         color=blue,
+                         vmin=wmin, vmax=wmax)
+        # --> CONE
         
-        E0s1 = mlab.mesh(X[...,:ny+1],
-                         Y[...,:ny+1],
-                         E0[...,:ny+1]/scale,
-                         scalars=W_Gauss_Fermi[...,:ny+1],
-                         opacity=0.9,
-                         vmin=wmin, vmax=wmax)
+        #E0s1 = mlab.mesh(X[...,:ny+1],
+                         #Y[...,:ny+1],
+                         #E0[...,:ny+1]/scale,
+                         #scalars=W_Gauss_Fermi[...,:ny+1],
+                         #opacity=0.8,
+                         #vmin=wmin, vmax=wmax)
         E0s2 = mlab.mesh(X[:nx+1,ny:],
                          Y[:nx+1,ny:],
                          E0[:nx+1,ny:]/scale,
                          scalars=W_Fermi[:nx+1,ny:],         
-                         opacity=0.9,
+                         opacity=0.8,
+                         color=red,
                          vmin=wmin, vmax=wmax)
         E0s3 = mlab.mesh(X[nx+1:,ny:],
                          Y[nx+1:,ny:],
                          E0[nx+1:,ny:]/scale,
                          scalars=W_Fermi[nx+1:,ny:],
-                         opacity=0.9,
+                         opacity=0.8,
+                         color=blue,
                          vmin=wmin, vmax=wmax)
         
-        E0s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
-        E0s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
-        E0s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        #E0s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
+        #E0s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
+        #E0s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom
         
         mlab.surf(X[nx+1::wireframe_skip,::wireframe_skip],
                   Y[nx+1::wireframe_skip,::wireframe_skip],
@@ -114,42 +136,28 @@ def plot_riemann_sheets(part=np.imag, scale=6.5, wireframe_skip=5.,
                   color=(0,0,0),
                   representation='wireframe',
                   vmin=wmin, vmax=wmax)        
-        mesh_args = {
-            
-        }
-        
-        #E1s1 = mlab.mesh(X[...,:ny+1],
-        #                 Y[...,:ny+1],
-        #                 E1[...,:ny+1]/scale,
-        #                 scalars=W_Gauss_Fermi[...,:ny+1],
-        #                 opacity=0.9,
-        #                 vmin=wmin, vmax=wmax)
+
 
         E1s1p2 = mlab.mesh(X[nx+1:,:ny+1],
                          Y[nx+1:,:ny+1],
                          E1[nx+1:,:ny+1]/scale,
                          scalars=W_Gauss_Fermi[nx+1:,:ny+1],
-                         opacity=0.9,
+                         opacity=0.8,
+                         color=red, 
                          vmin=wmin, vmax=wmax)
         E1s3 = mlab.mesh(X[nx+1:,ny:],
                          Y[nx+1:,ny:],
                          E1[nx+1:,ny:]/scale,
                          scalars=W_Fermi[nx+1:,ny:],
-                         opacity=0.9,
+                         opacity=0.8,
+                         color=red, 
                          vmin=wmin, vmax=wmax)
-        #E1s2 = mlab.mesh(X[:nx+1,ny:],
-        #                 Y[:nx+1,ny:],
-        #                 E1[:nx+1,ny:]/scale,
-        #                 scalars=W_Fermi[:nx+1,ny:],         
-        #                 opacity=0.9,
-        #                 vmin=wmin, vmax=wmax)
 
         
-        #E1s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom
-        E1s1p1.module_manager.scalar_lut_manager.lut.table = RdBu_custom
-        E1s1p2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
-        E1s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
-        E1s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
+        #E1s1p1.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        #E1s1p2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        #E1s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        #E1s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
 
         mlab.surf(X[nx+1::wireframe_skip,::wireframe_skip],
                   Y[nx+1::wireframe_skip,::wireframe_skip],
@@ -167,47 +175,6 @@ def plot_riemann_sheets(part=np.imag, scale=6.5, wireframe_skip=5.,
                   representation='wireframe',
                   vmin=wmin, vmax=wmax)
         
-        ##
-        
-        #E0s1 = mlab.mesh(X[...,:ny+1],
-        #                 Y[...,:ny+1],
-        #                 E0[...,:ny+1]/scale,
-        #                 scalars=W_Gauss_Fermi[...,:ny+1],
-        #                 opacity=0.75,
-        #                 vmin=wmin, vmax=wmax)
-        #E0s2 = mlab.mesh(X[:nx+1,ny:],
-        #                 Y[:nx+1,ny:],
-        #                 E0[:nx+1,ny:]/scale,
-        #                 scalars=W_Fermi[:nx+1,ny:],         
-        #                 opacity=0.75,
-        #                 vmin=wmin, vmax=wmax)
-        #E0s3 = mlab.mesh(X[nx+1:,ny:],
-        #                 Y[nx+1:,ny:],
-        #                 E0[nx+1:,ny:]/scale,
-        #                 scalars=W_Fermi[nx+1:,ny:],
-        #                 opacity=0.75,
-        #                 vmin=wmin, vmax=wmax)
-        #
-        #E0s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
-        #E0s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
-        #E0s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom
-        #
-        #mlab.surf(X[nx+1::wireframe_skip,::wireframe_skip],
-        #          Y[nx+1::wireframe_skip,::wireframe_skip],
-        #          E0[nx+1::wireframe_skip,::wireframe_skip]/scale,
-        #          opacity=0.05,
-        #          color=(0,0,0),
-        #          representation='wireframe',
-        #          vmin=wmin, vmax=wmax)
-        #
-        #mlab.surf(X[:nx+2:wireframe_skip,::wireframe_skip],
-        #          Y[:nx+2:wireframe_skip,::wireframe_skip],
-        #          E0[:nx+2:wireframe_skip,::wireframe_skip]/scale,
-        #          opacity=0.05,
-        #          color=(0,0,0),
-        #          representation='wireframe',
-        #          vmin=wmin, vmax=wmax)
- 
     else:
         s2 = mlab.mesh(X, Y, E0/scale,
                         scalars=W_Fermi, 
@@ -262,45 +229,50 @@ def plot_riemann_sheets(part=np.imag, scale=6.5, wireframe_skip=5.,
                             tube_radius=0.0005)
     
     
-    mlab.points3d(x[0], y[0], z[0]/scale,
-                  color=line_color,
-                  scale_factor=0.0075,
-                  mode='sphere')
+    #mlab.points3d(x[0], y[0], z[0]/scale,
+    #              color=line_color,
+    #              scale_factor=0.0075,
+    #              mode='sphere')
     
-    u, v, w = [ np.gradient(n) for n in x, y, z/scale ]
+    #u, v, w = [ np.gradient(n) for n in x, y, z/scale ]
     
-    if part is np.real:
-        x, y, z, u, v, w = [ n[-1] for n in x, y, z/scale, u, v, w ]
-        mlab.quiver3d(x, y, z, u, v, w,
-                    color=line_color,
-                    scale_factor=200,
-                    resolution=200,
-                    mode='cone'        
-                    )
-    else:
-        x, y, z, u, v, w = [ n[-1] for n in x, y, z/scale, u, v, w ]
-        mlab.quiver3d(x, y, z, u, v, w,
-                    color=line_color,
-                    scale_factor=200,
-                    resolution=50,
-                    mode='cone'
-                    )
+    #if part is np.real:
+    #    print "real"
+    #    x, y, z, u, v, w = [ n[-1] for n in x, y, z/scale, u, v, w ]
+    #    mlab.quiver3d(x, y, z, u, v, w,
+    #                color=line_color,
+    #                scale_factor=200,
+    #                resolution=200,
+    #                mode='cone'        
+    #                )
+    #else:
+    #x, y, z, u, v, w = [ n[-1] for n in x, y, z/scale, u, v, w ]
+    #mlab.quiver3d(x, y, z, u, v, w,
+    #            color=line_color,
+    #            #scale_factor=1750,
+    #            scale_factor=0.015,
+    #            resolution=200,
+    #            mode='cone',
+    #            scale_mode='scalar'
+    #            )
         
     #mlab.outline(extent=ext,
     #             line_width=2.5,
     #             color=(0.5, 0.5, 0.5))
     
-    mlab.axes(figure=fig,
-              color=(0.25,0.25,0.25),
-              extent=[X.min(),X.max(),
-                      Y.min()*0.95,Y.max()*0.95,
-                      E0.min()/3.5,E1.max()/3.5])
+    #mlab.axes(figure=fig,
+    #          color=(0.25,0.25,0.25),
+    #          extent=[X.min(),X.max(),
+    #                  Y.min()*0.95,Y.max()*0.95,
+    #                  E0.min()/3.5,E1.max()/3.5])
     
-    mlab.view(azimuth=40, elevation=55)
+    mlab.view(azimuth=40, elevation=55, distance=0.75)
     #mlab.view(focalpoint = [0.0, 1.0, 0.0])
-    mlab.draw()
-    fig.scene.render_window.aa_frames = 8
+    #mlab.draw()
+    #fig.scene.render_window.aa_frames = 8
     mlab.show()
+    #mlab.savefig("cone.png")
+    #mlab.show()
     
 
 
@@ -475,8 +447,8 @@ if __name__ == '__main__':
                 circle_EP(**params)
     else:
         params = {
-                "T": 10., 
-                "R": 1/20., 
+                "T": 150., 
+                "R": 0.049, 
                 "gamma": 2., 
                 "init_state": 'a', 
                 "init_loop_phase": 1*pi/2., #1*pi*0, 
