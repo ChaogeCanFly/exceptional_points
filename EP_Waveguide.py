@@ -401,7 +401,7 @@ def generate_length(eta=0.3, L=100, N=1.01,
                     input_xml="input.xml",
                     pphw="200", r_nx_part="50",
                     custom_directory=None,
-                    neumann=1, use_variable_length=False, 
+                    neumann=1, use_variable_length=False,
                     smearing=False):
     """Prepare length dependent greens_code input for VSC calculations.
     
@@ -638,8 +638,8 @@ def parse_arguments():
     if args.write_cfg:
         with open("EP_PARSE_SETTINGS.cfg", "w") as f:
             data = json.dumps(kwargs, sort_keys=True, indent=-1)
-            f.write(data)    
-
+            f.write(data)
+            
     return kwargs
     
    
