@@ -187,8 +187,8 @@ class EP_Waveguide(EP_Base):
         cb.set_label("Loss")
     
     
-    def get_boundary(self, x=None, eps=None, delta=None,
-                     d=None, kr=None, theta_boundary=None):
+    def get_boundary(self, x=None, eps=None, delta=None, L=None,
+                     d=None, kr=None, theta_boundary=None, smearing=False):
         """Get the boundary function xi as a function of the spatial coordinate x.
         
             Parameters:
@@ -205,6 +205,8 @@ class EP_Waveguide(EP_Base):
                     Boundary modulation frequency.
                 theta_boundary: float
                     Phase difference between lower and upper boundary.
+                smearing: bool
+                    Return a profile which is smeared out at the edges.
             
             Returns:
             --------
@@ -219,6 +221,8 @@ class EP_Waveguide(EP_Base):
             x = self.t
         if eps is None and delta is None:
             eps, delta = self.get_cycle_parameters(self.t)
+        if L is None:
+            L = self.L
         if d is None:
             d = self.d
         if kr is None:
@@ -229,11 +233,22 @@ class EP_Waveguide(EP_Base):
         # reverse x-coordinate for backward propagation
         if self.loop_direction == '+':
             x = x[...,::-1]
+            
+        def fermi(x, sigma=1):
+            """Return the Fermi-Dirac distribution."""
+            return 1./(np.exp(-x/sigma) + 1.)
         
         xi_lower = eps*np.sin((kr + delta)*x)
         xi_upper = d + eps*np.sin((kr + delta)*x + theta_boundary)
         
-        return xi_lower, xi_upper
+        if smearing:
+            kr = (self.N - np.sqrt(self.N**2 - 1))*pi
+            lambda0 = abs(pi/(kr + delta))
+            s = 1./(lambda0)
+            pre = fermi(x - lambda0, s)*fermi(L - x - lambda0, s)
+            return pre*xi_lower, pre*(xi_upper - d) + d
+        else:
+            return xi_lower, xi_upper
     
     
     def get_boundary_contour(self, X, Y):
@@ -386,7 +401,7 @@ def generate_length(eta=0.3, L=100, N=1.01,
                     input_xml="input.xml",
                     pphw="200", r_nx_part="50",
                     custom_directory=None,
-                    neumann=1, use_variable_length=False):
+                    neumann=1, use_variable_length=False, smearing=False):
     """Prepare length dependent greens_code input for VSC calculations.
     
     The waveguide boundary is prepared such that the length is an integer
@@ -428,6 +443,8 @@ def generate_length(eta=0.3, L=100, N=1.01,
                 Whether to use Neumann boundary conditions.
             use_variable_length: bool
                 Whether to use a multiple of the wavelength for the system size.
+            smearing: bool
+                Return a profile which is smeared out at the edges.
     """
     
     import os
@@ -483,7 +500,7 @@ def generate_length(eta=0.3, L=100, N=1.01,
             WG.x_EP *= eps_factor
             
         WG.y_EP += delta
-        xi_lower, xi_upper = WG.get_boundary()
+        xi_lower, xi_upper = WG.get_boundary(smearing=smearing)
         
         # print discretization data
         #with open(xml) as x:
@@ -562,12 +579,7 @@ def generate_heatmap(heatmap=False, **kwargs):
             
             
 def parse_arguments():
-    """
-    Parse input for function generate_length(*args, **kwargs).
-        
-        Parameters:
-        -----------
-            None
+    """Parse input for function generate_length(*args, **kwargs).
             
         Returns:
         --------
@@ -613,6 +625,8 @@ def parse_arguments():
                         help="Whether to use Neumann boundary conditions.")
     parser.add_argument("-u", "--use-variable-length", action="store_true",
                         help="Whether to use a multiple of the wavelength for the system size.")
+    parser.add_argument("-s", "--smearing", action="store_true",
+                        help="Return a profile which is smeared out at the edges.")
    # parser.add_argument("-H", "--heatmap", action="store_true",
    #                     help="Whether to calculate a (eta,L) heatmap.")
     
