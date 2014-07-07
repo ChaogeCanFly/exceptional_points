@@ -128,8 +128,8 @@ def compare_H_eff_to_S_matrix(N=1.01, eta=0.1, delta=0.0, eps=None,
     bmap = brewer2mpl.get_map('Paired', 'qualitative', 12)
     colors = bmap.mpl_colors
     
+    fig = plt.figure(1)
     plt.clf()
-    fig = plt.figure(0)
     ax = fig.add_axes([0.1, 0.1, 0.6, 0.75])
     
     T = Transmission_Matrix(N, eta, delta, eps, eps_factor, L, infile)
@@ -141,7 +141,7 @@ def compare_H_eff_to_S_matrix(N=1.01, eta=0.1, delta=0.0, eps=None,
     
     for (i, u) in enumerate(U):
         ax.semilogy(x, abs(u), c=colors[2*i], lw=2.0, label=labels[i])
-    
+
     # S-matrix (full system data)
     x, t00, t01, t10, t11 = T.S_matrix()
     trans = (t00, t01, t11)
@@ -151,9 +151,10 @@ def compare_H_eff_to_S_matrix(N=1.01, eta=0.1, delta=0.0, eps=None,
         ax.semilogy(abs(x), abs(t), color=colors[2*i+1],
                  lw=2.0, ls="--", mew=0.35, ms=7.5, label=labels[i])
 
-    ax.title(("N={N}, eta={eta}, delta={delta},")
-             ("eps_f={eps_factor}").format(N=N, eta=eta, delta=delta,
-                                           eps_factor=eps_factor))
+    ax.set_ylim(abs(t00).min(), abs(t00).max())
+#    ax.title(("N={N}, eta={eta}, delta={delta}, 
+#               eps_f={eps_factor}").format(N=N, eta=eta, delta=delta,
+#                                           eps_factor=eps_factor))
     ax.legend(bbox_to_anchor=(1.05, 1.0), loc=2, borderaxespad=0.)      
     plt.show(block=False)
     
