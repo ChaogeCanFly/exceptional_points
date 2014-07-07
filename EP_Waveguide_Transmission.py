@@ -117,13 +117,19 @@ class Transmission_Matrix(object):
     
 
 def compare_H_eff_to_S_matrix(N=1.01, eta=0.1, delta=0.0, eps=None,
-                              eps_factor=1.0, L=50, infile="S_matrix.dat"):
+                              eps_factor=1.0, L=50, infile="S_matrix.dat",
+                              write_cfg=False):
     """Plot the predictions for the length dependent evolution operator U and
     compare them to their respective S-matrix elements.
     """
     
-    import matplotlib.pyplot as plt
     import brewer2mpl
+    import json
+    import matplotlib.pyplot as plt
+    
+    if write_cfg:
+        with open("FIT.cfg", "w") as f:
+            f.write(N, eta, delta, eps, L, eps_factor)
     
     bmap = brewer2mpl.get_map('Paired', 'qualitative', 12)
     colors = bmap.mpl_colors
