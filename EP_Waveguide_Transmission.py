@@ -77,7 +77,7 @@ class Transmission_Matrix(object):
         
         M11, M12, M21, M22 = [ exp*m for m in (M11,M12,M21,M22) ]
         
-        #return M11, M12*self.beta, M21/self.beta, M22
+        #return self.x, M11, M12*self.beta, M21/self.beta, M22
         return self.x, M11, M12, M21, M22
     
     def get_U(self):
@@ -100,7 +100,7 @@ class Transmission_Matrix(object):
         
         M11, M12, M21, M22 = [ pre*m for m in (M11,M12,M21,M22) ]
         
-        #return M11, M12*self.beta, M21/self.beta, M22
+        #return self.x, M11, M12*self.beta, M21/self.beta, M22
         return self.x, M11, M12, M21, M22
    
     def S_matrix(self):
@@ -143,25 +143,29 @@ def compare_H_eff_to_S_matrix(N=1.01, eta=0.1, delta=0.0, eps=None,
    
     # time evolution operator U (effective model)
     x, U00, U01, U10, U11 = T.get_U()
-    U = (U00, U01, U11)
-    labels = (r"$|U_{00}|$", "$|U_{01}|$", "$|U_{11}|$")
+    U = (U00, U01, U10, U11)
+    labels = (r"$|U_{00}|$", r"$|U_{01}|$", r"$|U_{10}|$", r"$|U_{11}|$")
     
     for (i, u) in enumerate(U):
         ax.semilogy(x, abs(u), c=colors[2*i], lw=2.0, label=labels[i])
 
     # S-matrix (full system data)
     x, t00, t01, t10, t11 = T.S_matrix()
-    trans = (t00, t01, t11)
-    labels = (r"$|t_{00}|$", "$|t_{01}|$", "$|t_{11}|$")
+    trans = (t00, t01, t10, t11)
+    labels = (r"$|t_{00}|$", r"$|t_{01}|$", r"$|t_{10}|$", r"$|t_{11}|$")
     
     for (i, t) in enumerate(trans):
         ax.semilogy(abs(x), abs(t), color=colors[2*i+1],
-                 lw=2.0, ls="--", mew=0.35, ms=7.5, label=labels[i])
+                    lw=2.0, ls="--", mew=0.35, ms=7.5, label=labels[i])
 
+    ax.set_xlabel(r"$x$")
     ax.set_ylim(abs(t00).min(), abs(t00).max())
-#    ax.title(("N={N}, eta={eta}, delta={delta}, 
-#               eps_f={eps_factor}").format(N=N, eta=eta, delta=delta,
-#                                           eps_factor=eps_factor))
+    ax.set_title((r"$N={N}$, $\eta={eta}$, "
+                  r"$\delta={delta}$, " 
+                  r"$\epsilon={eps_factor} $"
+                  r"$\cdot \epsilon_{{EP}}$").format(N=N, eta=eta, 
+                                                     delta=delta, 
+                                                     eps_factor=eps_factor))
     ax.legend(bbox_to_anchor=(1.05, 1.0), loc=2, borderaxespad=0.)      
     plt.show(block=False)
     
