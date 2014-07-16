@@ -134,7 +134,7 @@ class EP_Waveguide(EP_Base):
             sign = -int(self.loop_direction + "1")
             
             lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
-            lambda2 = lambda t: 0.4 * sign * (w*t/pi - 1) + phi0
+            lambda2 = lambda t: 0.2 * sign * (w*t/pi - 1) + phi0
             
             return lambda1(t), lambda2(t)
         
@@ -565,8 +565,8 @@ def generate_heatmap(heatmap=False, **kwargs):
     L0 = kwargs['L']
     eta0 = kwargs['eta']
     
-    L_range = np.arange(0.8, 1.3, 0.1)*L0
-    eta_range = np.arange(0.8, 1.6, 0.1)*eta0
+    L_range = np.arange(0.1, 4.6, 0.5)*L0
+    eta_range = np.arange(0.1, 2.0, 0.2)*eta0
     
     if heatmap:
         for L in L_range:
@@ -628,8 +628,8 @@ def parse_arguments():
                         help="Whether to use a multiple of the wavelength for the system size.")
     parser.add_argument("-s", "--smearing", action="store_true",
                         help="Return a profile which is smeared out at the edges.")
-   # parser.add_argument("-H", "--heatmap", action="store_true",
-   #                     help="Whether to calculate a (eta,L) heatmap.")
+    parser.add_argument("-H", "--heatmap", action="store_true",
+                        help="Whether to calculate a (eta,L) heatmap.")
     
     args = parser.parse_args()
     kwargs = vars(args)
@@ -645,6 +645,6 @@ def parse_arguments():
    
 if __name__ == '__main__':
     
-    #generate_heatmap(**parse_arguments())
-    generate_length(**parse_arguments())
+    generate_heatmap(**parse_arguments())
+    #generate_length(**parse_arguments())
     
