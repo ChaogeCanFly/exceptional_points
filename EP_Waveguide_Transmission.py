@@ -32,6 +32,7 @@ class Transmission_Matrix(object):
         self.k0, self.k1 = [ np.sqrt(N**2 - n**2)*pi for n in (0,1) ]
         self.kr = self.k0 - self.k1
         
+        self.eta = eta
         self.eps = eta/(2*np.sqrt(2*self.k0*self.k1))
         if eps:
             self.eps = eps
@@ -39,7 +40,6 @@ class Transmission_Matrix(object):
             self.eps *= eps_factor
     
         self.N = N
-        self.eta = eta
         self.delta = delta
         self.L = L
         self.x = np.arange(0,L,0.1)
@@ -99,7 +99,7 @@ class Transmission_Matrix(object):
         M22 = self.gam1 - self.gam2*exp
         
         M11, M12, M21, M22 = [ pre*m for m in (M11,M12,M21,M22) ]
-        
+
         #return self.x, M11, M12*self.beta, M21/self.beta, M22
         return self.x, M11, M12, M21, M22
    
@@ -147,7 +147,8 @@ def compare_H_eff_to_S_matrix(N=1.01, eta=0.1, delta=0.0, eps=None,
     labels = (r"$|U_{00}|$", r"$|U_{01}|$", r"$|U_{10}|$", r"$|U_{11}|$")
     
     for (i, u) in enumerate(U):
-        ax.semilogy(x, abs(u), c=colors[2*i], lw=2.0, label=labels[i])
+        #ax.semilogy(x, abs(u), c=colors[2*i], lw=2.0, label=labels[i])
+        ax.plot(x, abs(u)**2, c=colors[2*i], lw=2.0, label=labels[i])
 
     # S-matrix (full system data)
     x, t00, t01, t10, t11 = T.S_matrix()
@@ -155,17 +156,26 @@ def compare_H_eff_to_S_matrix(N=1.01, eta=0.1, delta=0.0, eps=None,
     labels = (r"$|t_{00}|$", r"$|t_{01}|$", r"$|t_{10}|$", r"$|t_{11}|$")
     
     for (i, t) in enumerate(trans):
-        ax.semilogy(abs(x), abs(t), color=colors[2*i+1],
-                    lw=2.0, ls="--", mew=0.35, ms=7.5, label=labels[i])
+        #ax.semilogy(abs(x), abs(t), color=colors[2*i+1],
+        ax.plot(abs(x), abs(t)**2, color=colors[2*i+1],
+                    lw=2.0, ls="-", marker="o", mew=0.35, ms=7.5, label=labels[i])
 
     ax.set_xlabel(r"$x$")
     ax.set_ylim(abs(t00).min(), abs(t00).max())
-    ax.set_title((r"$N={N}$, $\eta={eta}$, "
-                  r"$\delta={delta}$, " 
-                  r"$\epsilon={eps_factor} $"
-                  r"$\cdot \epsilon_{{EP}}$").format(N=N, eta=eta, 
-                                                     delta=delta, 
-                                                     eps_factor=eps_factor))
+
+    if eps:
+        ax.set_title((r"$N={N}$, $\eta={eta}$, "
+                      r"$\delta={delta}$, " 
+                      r"$\epsilon={eps}$").format(N=N, eta=eta, 
+                                                  delta=delta, eps=eps))
+    else:
+        ax.set_title((r"$N={N}$, $\eta={eta}$, "
+                      r"$\delta={delta}$, " 
+                      r"$\epsilon={eps_factor} $"
+                      r"$\cdot \epsilon_{{EP}}$").format(N=N, eta=eta, 
+                                                         delta=delta, 
+                                                         eps_factor=eps_factor))
+
     ax.legend(bbox_to_anchor=(1.05, 1.0), loc=2, borderaxespad=0.)      
     plt.show(block=False)
     
