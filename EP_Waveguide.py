@@ -134,7 +134,7 @@ class EP_Waveguide(EP_Base):
             sign = -int(self.loop_direction + "1")
             
             lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
-            lambda2 = lambda t: 0.2 * sign * (w*t/pi - 1) + phi0
+            lambda2 = lambda t: 0.4 * sign * (w*t/pi - 1) + phi0
             
             return lambda1(t), lambda2(t)
         
@@ -634,7 +634,7 @@ def parse_arguments():
     args = parser.parse_args()
     kwargs = vars(args)
     
-    print json.dumps(kwargs, indent=4)
+    print json.dumps(kwargs, sort_keys=True, indent=-1)
     if args.write_cfg:
         with open("EP_PARSE_SETTINGS.cfg", "w") as f:
             data = json.dumps(kwargs, sort_keys=True, indent=-1)
