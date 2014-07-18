@@ -565,8 +565,8 @@ def generate_heatmap(heatmap=False, **kwargs):
     L0 = kwargs['L']
     eta0 = kwargs['eta']
     
-    L_range = np.arange(0.1, 4.6, 0.5)*L0
-    eta_range = np.arange(0.1, 2.0, 0.2)*eta0
+    L_range = np.arange(0.1, 4.35, 0.25)*L0
+    eta_range = np.arange(0.1, 2.35, 0.25)*eta0
     
     if heatmap:
         for L in L_range:
