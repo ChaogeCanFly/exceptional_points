@@ -278,76 +278,6 @@ class EP_Waveguide(EP_Base):
         return X, Y, Z
 
 
-    
-def generate_profile_heatmap():
-    """Generate a matrix of (eta, L) values for VSC calculations."""
-    
-    import os
-    import shutil
-    import fileinput
-    
-    pwd = os.getcwd()
-    xml = "{}/input.xml".format(pwd)
-    
-    for eta in np.arange(0.01, 0.055, 0.005)/100:
-        for L in np.arange(60, 150, 10):
-            for loop_dir in '-', '+':
-                directory = "{}/eta_{}_L_{}_{}".format(pwd, eta,
-                                                       L, loop_dir)
-                if not os.path.exists(directory):
-                    os.makedirs(directory)
-                os.chdir(directory)
-                    
-                params = {
-                    'L': L,
-                    'eta': eta,
-                    'N': 1.21,
-                    'init_loop_phase': 0.001,
-                    'loop_direction': loop_dir,
-                    'loop_type': 'Varcircle',
-                    'init_state': 'a'
-                }
-                
-                filename = ("N_{N}_{loop_type}_phase_{init_loop_phase:.3f}pi"
-                            "_initstate_{init_state}_L_{L}_eta_{eta}_"
-                            "{loop_direction}").format(**params).replace(".","")
-                params['init_loop_phase'] *= pi
-                
-                WG = EP_Waveguide(**params)
-                xi, _ = WG.get_boundary()
-
-                np.savetxt(filename + ".profile", zip(WG.t, xi))
-                
-                shutil.copy(xml, directory)
-                N_file = WG.tN
-                    
-                src_xml = open(xml)
-                out_xml = open("{}/input.xml".format(directory), "w")
-                
-                replacements = {
-                    r'name="L">L':
-                        r'name="L">{}'.format(L),
-                    r'name="N_file">N_file':
-                        r'name="N_file">{}'.format(N_file),
-                    r'name="file">file':
-                        r'name="file">{}.profile'.format(filename),
-
-                    r'name="Gamma0p_min">Gamma0p_min':
-                        r'name="Gamma0p_min">{}'.format(eta),
-                    r'name="Gamma0p_max">Gamma0p_min':
-                        r'name="Gamma0p_max">{}'.format(eta)
-                }
-                
-                for line in src_xml:
-                    for src, target in replacements.iteritems():
-                        line = line.replace(src, target)
-                    out_xml.write(line)
-                src_xml.close()
-                out_xml.close()
-                
-                os.chdir(pwd)
-                
-                
 class Generate_Profiles(EP_Waveguide):
     """."""
     def __init__(self, eps_factor=1.0, eps=None, delta=0.0,
@@ -418,6 +348,8 @@ def generate_length(eta=0.3, L=100, N=1.01,
                 Number of open modes int(k*d/pi).
             loop_type: str
                 Specifies path in (epsilon,delta) parameter space.
+            loop_direction: str ("-"|"+")
+                Loop direction around the EP.
             init_loop_phase: float
                 Starting angle on parameter trajectory.
             theta: float
@@ -600,6 +532,8 @@ def parse_arguments():
                         help="Number of open modes int(k*d/pi)" )
     parser.add_argument("-t", "--loop-type", default="Constant_delta", type=str,
                         help="Specifies path in (epsilon,delta) parameter space" )
+    parser.add_argument("-o", "--loop-direction", default="-", type=str,
+                        help="Loop direction around the EP" )
     parser.add_argument("--init-loop-phase", default=0.0, type=float,
                         help="Starting angle on parameter trajectory" )
     parser.add_argument("-T", "--theta", default=0.0, type=float,
