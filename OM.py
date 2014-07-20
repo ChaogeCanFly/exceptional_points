@@ -12,7 +12,7 @@ import brewer2mpl as brew
 
     
 def plot_riemann_sheets(part=np.real,
-                        scale=6.5, #1., #6.5,
+                        scale=3, #6.5
                         wireframe_skip=5.,
                         xN=153, yN=152, **kwargs):
     """Plot local Riemann sheet structure of the OM Hamiltonian."""
@@ -20,7 +20,7 @@ def plot_riemann_sheets(part=np.real,
     import mayavi.mlab as mlab
     from EP_Helpers import map_trajectory, get_height_profile
     import matplotlib.pyplot as plt
-    xN, yN = 31, 31
+    #xN, yN = 31, 31
     #part = np.imag
     part = np.real
     
@@ -54,10 +54,10 @@ def plot_riemann_sheets(part=np.real,
     fig = mlab.figure(size=(1400,1000), bgcolor=(1,1,1))
     
     line_color = (0.25, 0.25, 0.25)
-    #mlab.plot3d(x, y, z/scale,
-    #            color=line_color,
-    #            opacity=1.,
-    #            tube_radius=0.001)
+    mlab.plot3d(x, y, z/scale,
+                color=line_color,
+                opacity=1.,
+                tube_radius=0.001)
     
     W_Gauss_Fermi, W_Fermi, wmax, wmin = get_height_profile(X, Y, rho_y=1e-2, 
                                                             sigma_x=1e-4)
@@ -70,56 +70,56 @@ def plot_riemann_sheets(part=np.real,
                          E1[:nx+1,:ny+1]/scale,
                          scalars=W_Gauss_Fermi[:nx+1,:ny+1],
                          opacity=0.8,
-                         color=blue,
+                         #color=blue,
                          vmin=wmin, vmax=wmax)        
         E1s2 = mlab.mesh(X[:nx+1,ny:],
                          Y[:nx+1,ny:],
                          E1[:nx+1,ny:]/scale,
                          scalars=W_Fermi[:nx+1,ny:],         
                          opacity=0.8,
-                         color=blue,
+                         #color=blue,
                          vmin=wmin, vmax=wmax)
         # <!-- CONE
-        E0s1 = mlab.mesh(X[:nx+1,:ny+1],
-                         Y[:nx+1,:ny+1],
-                         E0[:nx+1,:ny+1]/scale,
-                         scalars=W_Gauss_Fermi[:nx+1,:ny+1],
-                         opacity=0.8,
-                         color=red,
-                         vmin=wmin, vmax=wmax)
-        E0s11 = mlab.mesh(X[nx+1:,:ny+1],
-                         Y[nx+1:,:ny+1],
-                         E0[nx+1:,:ny+1]/scale,
-                         scalars=W_Gauss_Fermi[nx+1:,:ny+1],
-                         opacity=0.8,
-                         color=blue,
-                         vmin=wmin, vmax=wmax)
+        ######E0s1 = mlab.mesh(X[:nx+1,:ny+1],
+        ######                 Y[:nx+1,:ny+1],
+        ######                 E0[:nx+1,:ny+1]/scale,
+        ######                 scalars=W_Gauss_Fermi[:nx+1,:ny+1],
+        ######                 opacity=0.8,
+        ######                 color=red,
+        ######                 vmin=wmin, vmax=wmax)
+        ######E0s11 = mlab.mesh(X[nx+1:,:ny+1],
+        ######                 Y[nx+1:,:ny+1],
+        ######                 E0[nx+1:,:ny+1]/scale,
+        ######                 scalars=W_Gauss_Fermi[nx+1:,:ny+1],
+        ######                 opacity=0.8,
+        ######                 color=blue,
+        ######                 vmin=wmin, vmax=wmax)
         # --> CONE
         
-        #E0s1 = mlab.mesh(X[...,:ny+1],
-                         #Y[...,:ny+1],
-                         #E0[...,:ny+1]/scale,
-                         #scalars=W_Gauss_Fermi[...,:ny+1],
-                         #opacity=0.8,
-                         #vmin=wmin, vmax=wmax)
+        E0s1 = mlab.mesh(X[...,:ny+1],
+                         Y[...,:ny+1],
+                         E0[...,:ny+1]/scale,
+                         scalars=W_Gauss_Fermi[...,:ny+1],
+                         opacity=0.8,
+                         vmin=wmin, vmax=wmax)
         E0s2 = mlab.mesh(X[:nx+1,ny:],
                          Y[:nx+1,ny:],
                          E0[:nx+1,ny:]/scale,
                          scalars=W_Fermi[:nx+1,ny:],         
                          opacity=0.8,
-                         color=red,
+                         #color=red,
                          vmin=wmin, vmax=wmax)
         E0s3 = mlab.mesh(X[nx+1:,ny:],
                          Y[nx+1:,ny:],
                          E0[nx+1:,ny:]/scale,
                          scalars=W_Fermi[nx+1:,ny:],
                          opacity=0.8,
-                         color=blue,
+                         #color=blue,
                          vmin=wmin, vmax=wmax)
         
-        #E0s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
-        #E0s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
-        #E0s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        E0s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
+        E0s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
+        E0s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom
         
         mlab.surf(X[nx+1::wireframe_skip,::wireframe_skip],
                   Y[nx+1::wireframe_skip,::wireframe_skip],
@@ -143,21 +143,21 @@ def plot_riemann_sheets(part=np.real,
                          E1[nx+1:,:ny+1]/scale,
                          scalars=W_Gauss_Fermi[nx+1:,:ny+1],
                          opacity=0.8,
-                         color=red, 
+                         #color=red, 
                          vmin=wmin, vmax=wmax)
         E1s3 = mlab.mesh(X[nx+1:,ny:],
                          Y[nx+1:,ny:],
                          E1[nx+1:,ny:]/scale,
                          scalars=W_Fermi[nx+1:,ny:],
                          opacity=0.8,
-                         color=red, 
+                         #color=red, 
                          vmin=wmin, vmax=wmax)
 
         
-        #E1s1p1.module_manager.scalar_lut_manager.lut.table = RdBu_custom
-        #E1s1p2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
-        #E1s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
-        #E1s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
+        E1s1p1.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        E1s1p2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        E1s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
+        E1s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
 
         mlab.surf(X[nx+1::wireframe_skip,::wireframe_skip],
                   Y[nx+1::wireframe_skip,::wireframe_skip],
@@ -229,12 +229,12 @@ def plot_riemann_sheets(part=np.real,
                             tube_radius=0.0005)
     
     
-    #mlab.points3d(x[0], y[0], z[0]/scale,
-    #              color=line_color,
-    #              scale_factor=0.0075,
-    #              mode='sphere')
+    mlab.points3d(x[0], y[0], z[0]/scale,
+                  color=line_color,
+                  scale_factor=0.0075,
+                  mode='sphere')
     
-    #u, v, w = [ np.gradient(n) for n in x, y, z/scale ]
+    u, v, w = [ np.gradient(n) for n in x, y, z/scale ]
     
     #if part is np.real:
     #    print "real"
@@ -246,34 +246,62 @@ def plot_riemann_sheets(part=np.real,
     #                mode='cone'        
     #                )
     #else:
-    #x, y, z, u, v, w = [ n[-1] for n in x, y, z/scale, u, v, w ]
-    #mlab.quiver3d(x, y, z, u, v, w,
-    #            color=line_color,
-    #            #scale_factor=1750,
-    #            scale_factor=0.015,
-    #            resolution=200,
-    #            mode='cone',
-    #            scale_mode='scalar'
-    #            )
+    x, y, z, u, v, w = [ n[-1] for n in x, y, z/scale, u, v, w ]
+    mlab.quiver3d(x, y, z, u, v, w,
+                color=line_color,
+                #scale_factor=1750,
+                scale_factor=0.015,
+                resolution=200,
+                mode='cone',
+                scale_mode='scalar'
+                )
         
     #mlab.outline(extent=ext,
     #             line_width=2.5,
     #             color=(0.5, 0.5, 0.5))
     
-    #mlab.axes(figure=fig,
-    #          color=(0.25,0.25,0.25),
-    #          extent=[X.min(),X.max(),
-    #                  Y.min()*0.95,Y.max()*0.95,
-    #                  E0.min()/3.5,E1.max()/3.5])
+    mlab.axes(figure=fig,
+              color=(0.25,0.25,0.25),
+              extent=[X.min(),X.max(),
+                      Y.min()*0.95,Y.max()*0.95,
+                      E0.min()/3.5,E1.max()/3.5])
     
     mlab.view(azimuth=40, elevation=55, distance=0.75)
+    mlab.view(azimuth=-50, elevation=65, distance=0.95)
     #mlab.view(focalpoint = [0.0, 1.0, 0.0])
     #mlab.draw()
-    #fig.scene.render_window.aa_frames = 8
-    mlab.show()
     #mlab.savefig("cone.png")
     #mlab.show()
+
+    engine = mlab.get_engine()
     
+    scene = engine.scenes[0]
+    scene.scene.camera.position = [0.34763136753239232, -0.37268098883113926, 0.19025556632156901]
+    scene.scene.camera.focal_point = [0.0, 0.49071651625633239, 0.0]
+    scene.scene.camera.view_angle = 30.0
+    scene.scene.camera.view_up = [-0.10361763966271739, 0.17406840710399826, 0.97926685556032378]
+    scene.scene.camera.clipping_range = [0.57179585985024317, 1.4283725482790282]
+    scene.scene.camera.compute_view_plane_normal()
+    scene.scene.render()
+
+    if part is np.imag:
+        surface1 = engine.scenes[0].children[1].children[0].children[0].children[0]
+        surface1.actor.property.backface_culling = True
+        surface2 = engine.scenes[0].children[2].children[0].children[0].children[0]
+        surface2.actor.property.frontface_culling = True
+        
+    
+    #mlab.show()
+    fig.scene.render_window.aa_frames = 8
+    if part is np.real:
+        str_part = "real"
+    else:
+        str_part = "imag"
+    mlab.savefig("{}.png".format(str_part))
+    mlab.axes(x_axis_visibility=False,
+              y_axis_visibility=False,
+              z_axis_visibility=False)
+    mlab.savefig("{}_no_axes.png".format(str_part))
 
 
 def circle_EP(**kwargs):
@@ -447,11 +475,11 @@ if __name__ == '__main__':
                 circle_EP(**params)
     else:
         params = {
-                "T": 150., 
-                "R": 0.049, 
-                "gamma": 2., 
-                "init_state": 'a', 
-                "init_loop_phase": 1*pi/2., #1*pi*0, 
+                "T": 45., 
+                "R": 0.1, 
+                "gamma": 1., 
+                "init_state": 'b', 
+                "init_loop_phase": 1*pi, #1*pi*0, 
                 "loop_direction": '-',
                 "calc_adiabatic_state": False
                 }
