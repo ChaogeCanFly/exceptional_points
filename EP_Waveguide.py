@@ -124,7 +124,8 @@ class EP_Waveguide(EP_Base):
             sign = -int(self.loop_direction + "1")
             
             lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
-            lambda2 = lambda t: 0.4 * sign * (w*t/pi - 1) + phi0
+            # take also sign change in w=2pi/T into account
+            lambda2 = lambda t: 0.4 * sign * (sign*w*t/pi - 1) + phi0
             
             return lambda1(t), lambda2(t)
         
@@ -230,7 +231,7 @@ class EP_Waveguide(EP_Base):
         
         xi_lower = eps*np.sin((kr + delta)*x)
         xi_upper = d + eps*np.sin((kr + delta)*x + theta_boundary)
-        
+
         if smearing:
             kr = (self.N - np.sqrt(self.N**2 - 1))*pi
             lambda0 = abs(pi/(kr + delta))
