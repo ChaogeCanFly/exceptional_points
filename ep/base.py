@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-from EP_Helpers import c_eig, c_trapz
-from scipy.integrate import complex_ode, ode
+from ep.helpers import c_eig, c_trapz
 import numpy as np
 from numpy import pi
+from scipy.integrate import complex_ode, ode
 
-class EP_Base:
-    """EP_Base class."""
+class Base:
+    """Base class."""
     
     def __init__(self, T=10, x_EP=0.0, y_EP=0.0, x_R0=0.8, y_R0=0.8,
                  loop_type="Circle", loop_direction='-', init_state='a',
@@ -306,8 +306,10 @@ class EP_Base:
         
         if self.init_state == 'a':
             eVec0_r = self.eVecs_r[0,:,0]
+
         elif self.init_state == 'b':
             eVec0_r = self.eVecs_r[0,:,1]
+
         elif self.init_state == 'c':
             eVec0_r = self.eVecs_r[0,:,0] + self.eVecs_r[0,:,1]
             eVec0_l = self.eVecs_l[0,:,0] + self.eVecs_l[0,:,1]
@@ -315,8 +317,8 @@ class EP_Base:
             print norm(eVec0_l, eVec0_r)
             print norm(eVec0_r.conj(), eVec0_r)
             eVec0_r /= norm(eVec0_r.conj(), eVec0_r)
+
         elif self.init_state == 'd':
-            #phase = exp(1j*0.77185547)
             phase = np.exp(1j*pi)
             eVec0_r = self.eVecs_r[0,:,0] + phase*self.eVecs_r[0,:,1]
             norm = lambda vl, vr: np.sqrt(vl.dot(vr))
