@@ -108,28 +108,6 @@ class EP_OptoMech(EP_Base):
         f = ((ep - Dp) * G - (e - D) * Gp)/(2.*e*(e - D))
 
         return f
-        
-        
-def plot_non_adiabatic_coupling():
-    OM = EP_OptoMech(T=64., R=1./16., init_state='b')
-    OM.w = 2.*pi/(OM.T/3.)
-    t, b0, b1 = OM.solve_ODE()
-    b0_ad, b1_ad = (OM.Psi_adiabatic[:,0],
-                    OM.Psi_adiabatic[:,1])
-    print t[-1], 2*pi/OM.w
-    #semilogy(t, abs(b0), "r-")
-    #semilogy(t, abs(b1), "g-")
-    f = OM.get_non_adiabatic_coupling()
-    e = OM.eVals[:,0]
-    
-    ylim(-3,10)
-    #plot(OM.t, -real(b1/b0*f)/imag(e), "r-")
-    #plot(OM.t, -real(b0/b1*f)/imag(e), "g-")
-    plot(OM.t, -real(f*b0/b1)/imag(e), "r-")
-    plot(OM.t, -real(f*b1/b0)/imag(e), "g-")
-    #plot(OM.t, abs(b0/b1), "g-")
-    show()
-    
 
 
 if __name__ == '__main__':
@@ -140,6 +118,4 @@ if __name__ == '__main__':
     t, cp, cm = OM.solve_ODE()
     R = abs(cp/cm)
     plot(t,R**(-1),"r-")
-    #semilogy(t, abs(cp), "r-")
-    #semilogy(t, abs(cm), "g-")
     show()
