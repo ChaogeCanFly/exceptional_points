@@ -120,16 +120,6 @@ class EP_Waveguide(EP_Base):
             lambda2 = lambda t: y_EP - x_EP*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
         
-        elif loop_type == "Bell_old":
-            """ Bug in loop_direction == '+' ! """
-            if self.loop_direction == '+':
-                a = -1
-            else:
-                a = +1
-            lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
-            lambda2 = lambda t: 20. * x_EP * (w*t/pi - a) + phi0
-            return lambda1(t), lambda2(t)
-        
         elif loop_type == "Bell":
             sign = -int(self.loop_direction + "1")
             
@@ -232,7 +222,7 @@ class EP_Waveguide(EP_Base):
         
         # reverse x-coordinate for backward propagation
         if self.loop_direction == '+':
-            x = x[...,::-1]
+            x = x[::-1]
             
         def fermi(x, sigma=1):
             """Return the Fermi-Dirac distribution."""
@@ -453,10 +443,6 @@ def generate_length(eta=0.3, L=100, N=1.01,
                 data = json.dumps(d, sort_keys=True, indent=-1)
                 f.write(data)
 
-        # truncate x and xi arrays to reduced length Ln
-        #N_file = int(WG.tN * Ln/L)
-        #x = WG.t[:N_file]
-        #xi = xi[:N_file]
         x = WG.t
         N_file = len(x)
         
