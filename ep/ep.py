@@ -177,62 +177,6 @@ def plot_flip_error():
         semilogy(Trange, abs(R1*R2), "ko-")
         show()
         
-def NA_solver():
-        """
-        Solve the Schroedinger equation by taking into account non-adiabatic
-        contributions.
-        
-        INCOMPLETE
-        """
-        h = EP_Base()
-        t, psi_a, psi_b = h.solve_ODE()
-        phi_a, phi_b = h.eVecs[:,:,0], h.eVecs[:,:,1]
-        
-        Phi = np.zeros((h.tN,2), complex)
-        PhiPrime = np.zeros((h.tN,2), complex)
-        Phi[0,1] = 1.
-        for n, tn in enumerate(h.t):
-            if n < h.tN-1:
-                alpha = phi_a[n,:].dot(phi_a[n+1,:])
-                #alpha = np.dot(phi_a[n,:], phi_a[n+1,:])
-                beta = phi_b[n,:].dot(phi_b[n+1,:])
-                #beta = np.dot(phi_b[n,:], phi_b[n+1,:])
-                theta = h.theta[n,0] - h.theta[n,1]
-                g_a = phi_a[n,:].dot(phi_b[n+1,:])*exp(-1j*theta)
-                #g_a = np.dot(phi_a[n,:], phi_b[n+1,:])*exp(-1j*theta)
-                g_b = phi_b[n,:].dot(phi_a[n+1,:])*exp(+1j*theta)
-                #g_b = np.dot(phi_b[n,:], phi_a[n+1,:])*exp(+1j*theta)
-                M = -1.*np.array([[alpha, g_a],
-                                [g_b, beta]], complex)
-                Phi[n+1,:] = M.dot(Phi[n,:])
-                PhiPrime[n+1,:] = Phi[n+1,:]*exp(-1j*h.theta[n,:])
-        
-        dt = h.dt
-        phi_a_gradient = np.gradient(phi_a, dt)[0]
-        phi_b_gradient = np.gradient(phi_b, dt)[0]
-        
-        #phi_a_in_b[:] = np.dot(phi_a[:,:], phi_b_gradient[:,:])
-        phi_a_in_b = (phi_a*phi_b_gradient).sum(axis=1)
-        #phi_b_in_a[:] = np.dot(phi_b[:,:], phi_a_gradient[:,:])
-        phi_b_in_a = (phi_b*phi_a_gradient).sum(axis=1)
-        
-        subplot2grid((1,5), (0,0), colspan=4)
-        f = plot
-        f(t, abs(exp(1j*(h.theta[:,0]-h.theta[:,1]))),
-                 "k-", label=r"imag$(exp(i\theta_{nm})$)")
-        #f(t, abs(exp(1j*(h.theta[:,0]-h.theta[:,1]))),
-        #         "k--", label=r"real($exp(i\theta_{nm})$)")
-        #f(t, real(phi_a_in_b), "r-", label=r"imag($\langle \phi_a | \dot \phi_b \rangle$)")
-        f(t, imag(phi_a_in_b), "r--", label=r"real($\langle \phi_a | \dot \phi_b \rangle$)")
-        #f(t, real(phi_b_in_a), "g-", label=r"imag($\langle \phi_b | \dot \phi_a \rangle$)")
-        f(t, imag(phi_b_in_a), "g--", label=r"real($\langle \phi_b | \dot \phi_a \rangle$)")
-        legend(bbox_to_anchor=(1.05, 1),
-               loc=2, ncol=1, borderaxespad=0.)
-        #semilogy(t, abs(PhiPrime[:,0]), "r-")
-        #semilogy(t, abs(PhiPrime[:,1]), "g-")
-        #h.plot_data_thief(0)
-        show()
-        
         
 if __name__ == '__main__':
     circle_EP()
