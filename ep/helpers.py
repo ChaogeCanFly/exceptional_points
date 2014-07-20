@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 from __future__ import division
-import numpy as np
-import os.path
 from matplotlib.pyplot import *
 from matplotlib.colors import LinearSegmentedColormap
-from numpy import cos, sin, pi, real, imag, abs, sqrt, exp, angle
-from scipy.linalg import eig, eigvals, inv, norm
-from scipy.integrate import trapz, ode, complex_ode, odeint
+import numpy as np
+from numpy import pi 
+import os.path
+from scipy.linalg import eig, inv, norm
+from scipy.integrate import trapz, ode, complex_ode
 
 
 class FileOperations():
@@ -117,8 +117,8 @@ def c_trapz(f, dx, **kwargs):
             c_trapz: (N,) ndarray
     """
     
-    real_int = trapz(real(f), dx=dx, **kwargs)
-    imag_int = trapz(imag(f), dx=dx, **kwargs)
+    real_int = trapz(f.real, dx=dx, **kwargs)
+    imag_int = trapz(f.imag, dx=dx, **kwargs)
     
     return real_int + 1j*imag_int
 
@@ -137,8 +137,8 @@ def c_gradient(f, dx):
             c_gradient: (N,) ndarray
     """
     
-    real_grad = np.gradient(real(f), dx)
-    imag_grad = np.gradient(imag(f), dx)
+    real_grad = np.gradient(f.real, dx)
+    imag_grad = np.gradient(f.imag, dx)
     
     return real_grad + 1j*imag_grad
 
