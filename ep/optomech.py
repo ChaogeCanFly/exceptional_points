@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
-from EP_Base import *
+from ep.base import Base
 import numpy as np
 from numpy import pi
 
-class EP_OptoMech(EP_Base):
-    """EP_OptoMech class."""
+class OptoMech(Base):
+    """OptoMech class."""
     
     def __init__(self, R=0.05, gamma=2.0, **kwargs):
         """Exceptional Points (EP) optomechanics class.
         
-        Copies methods and variables from EP_Base class.
+        Copies methods and variables from Base class.
         
             Additional parameters:
             ----------------------
@@ -20,7 +20,7 @@ class EP_OptoMech(EP_Base):
                     Relative loss between states |1> and |2>.
         """
         
-        EP_Base.__init__(self, **kwargs)
+        Base.__init__(self, **kwargs)
         self.R = R
         self.gamma = gamma
         self.x_EP = 0.0
@@ -112,7 +112,7 @@ class EP_OptoMech(EP_Base):
 
 if __name__ == '__main__':
     evolutions = 5
-    OM = EP_OptoMech(T=100.*evolutions, R=1/20., gamma=2., init_state='b',
+    OM = OptoMech(T=100.*evolutions, R=1/20., gamma=2., init_state='b',
                      init_loop_phase=pi, loop_direction='+')
     OM.w *= evolutions
     t, cp, cm = OM.solve_ODE()

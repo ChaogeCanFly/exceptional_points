@@ -1,16 +1,16 @@
 #!/usr/bin/env python2.7
 
-from EP_Base import *
+from ep.base import Base
 import numpy as np
 from numpy import pi
 
-class EP_Waveguide(EP_Base):
-    """EP_Waveguide class."""
+class Waveguide(Base):
+    """Waveguide class."""
     
     def __init__(self, L=100, d=1.0, eta=0.05, N=1.5, theta=0.0, **kwargs):
         """Exceptional Point (EP) waveguide class.
         
-        Copies methods and variables from EP_Base class and adds new parameters.
+        Copies methods and variables from Base class and adds new parameters.
         
             Additional parameters:
             ----------------------
@@ -24,7 +24,7 @@ class EP_Waveguide(EP_Base):
                     Phase difference between upper and lower boundary
         """
         
-        EP_Base.__init__(self, T=L, **kwargs)
+        Base.__init__(self, T=L, **kwargs)
         
         self.d = d                                  # wire width
         self.L = L                                  # wire length
@@ -269,7 +269,7 @@ class EP_Waveguide(EP_Base):
         return X, Y, Z
 
 
-class Generate_Profiles(EP_Waveguide):
+class Generate_Profiles(Waveguide):
     """."""
     def __init__(self, eps_factor=1.0, eps=None, delta=0.0,
                        full_evolution=False, write_cfg=True,
@@ -277,7 +277,7 @@ class Generate_Profiles(EP_Waveguide):
                        r_nx_part="50", custom_directory=None,
                        neumann=1, heatmap=False, **kwargs):
         
-        EP_Waveguide.__init__(self, **kwargs)
+        Waveguide.__init__(self, **kwargs)
         
         self.eps = eps
         self.eps_factor = eps_factor
@@ -416,7 +416,7 @@ def generate_length(eta=0.3, L=100, N=1.01,
                     "{loop_direction}").format(**params).replace(".","")
         params['init_loop_phase'] *= pi
         
-        WG = EP_Waveguide(**params)
+        WG = Waveguide(**params)
         
         if eps:
             WG.x_EP = eps
