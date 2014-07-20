@@ -5,10 +5,10 @@ import numpy as np
 from numpy import pi
 
 class Toymodel(Base):
-    """EP_Toymodel class."""
+    """Toymodel class."""
     
     def __init__(self, **kwargs):
-        """Copy methods and variables from EP_Base class."""
+        """Copy methods and variables from Base class."""
         EP_Base.__init__(self, **kwargs)
 
 

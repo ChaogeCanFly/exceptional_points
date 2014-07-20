@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from EP_Toymodel import *
+from ep.toymodel import Toymodel
 
 
 def circle_EP():
@@ -29,7 +29,7 @@ def circle_EP():
         for g in geometry:
             for direction in '+', '-': #, '+':
                 for init in 'c', : #'b':
-                    h = EP_Toymodel(T=T, loop_type=g, init_state=init,
+                    h = Toymodel(T=T, loop_type=g, init_state=init,
                                init_cond=params, loop_direction=direction)
                     
                     ##
