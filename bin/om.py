@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 
-import matplotlib
-#matplotlib.use('Agg')
-
-from EP_OptoMech import *
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
-from matplotlib.colors import LogNorm, LinearSegmentedColormap, ListedColormap
-from matplotlib.ticker import LogFormatter, MultipleLocator, FixedLocator
 import brewer2mpl as brew
-
+from ep.helpers import map_trajectory, get_height_profile
+from ep.optomech import OptoMech
+import matplotlib.pyplot as plt
+import mayavi.mlab as mlab
+from matplotlib.colors import LinearSegmentedColormap
     
 def plot_riemann_sheets(part=np.real,
                         scale=3, #6.5
@@ -17,14 +13,11 @@ def plot_riemann_sheets(part=np.real,
                         xN=153, yN=152, **kwargs):
     """Plot local Riemann sheet structure of the OM Hamiltonian."""
 
-    import mayavi.mlab as mlab
-    from EP_Helpers import map_trajectory, get_height_profile
-    import matplotlib.pyplot as plt
     #xN, yN = 31, 31
     #part = np.imag
     part = np.real
     
-    OM = EP_OptoMech(**kwargs)
+    OM = OptoMech(**kwargs)
     
     x, y = OM.get_cycle_parameters(OM.t)
     _, c1, c2 = OM.solve_ODE()
@@ -316,7 +309,7 @@ def circle_EP(**kwargs):
         --------
             None
     """
-    OM = EP_OptoMech(**kwargs)
+    OM = OptoMech(**kwargs)
     
     ##
     # plot amplitudes b0(x), b1(x)

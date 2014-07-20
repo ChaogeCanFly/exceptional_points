@@ -1,16 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
-import matplotlib
-#matplotlib.use('Agg')
-
-from EP_Waveguide import *
-from EP_Helpers import *
-from matplotlib import cm
-from matplotlib.colors import LogNorm
-from matplotlib.ticker import LogFormatter, MultipleLocator
-from matplotlib.ticker import FixedLocator, FormatStrFormatter
 import brewer2mpl as brew
-
+from ep.waveguide import Waveguide
+from ep.helpers import cmap_discretize, map_trajectory, set_scientific_axes
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+from matplotlib.ticker import FixedLocator
 
 
 def circle_EP(filename=None, write_profile=False, **kwargs):
@@ -18,7 +13,7 @@ def circle_EP(filename=None, write_profile=False, **kwargs):
     
     f = FileOperations(filename)
     
-    WG = EP_Waveguide(**kwargs)
+    WG = Waveguide(**kwargs)
     
     ##
     # plot amplitudes b0(x), b1(x)
@@ -200,7 +195,7 @@ class Diodicity:
         
         # flip-error R0
         self.kwargs['loop_direction'] = '-'
-        WG = EP_Waveguide(**self.kwargs)
+        WG = Waveguide(**self.kwargs)
         _, b0, b1 = WG.solve_ODE()
         R0_b0 = abs(b0[-1])
         R0_b1 = abs(b1[-1])
@@ -208,7 +203,7 @@ class Diodicity:
 
         # flip-error R1
         self.kwargs['loop_direction'] = '+'
-        WG = EP_Waveguide(**self.kwargs)
+        WG = Waveguide(**self.kwargs)
         _, b0, b1 = WG.solve_ODE()
         R1_b0 = abs(b0[-1])
         R1_b1 = abs(b1[-1])

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from ep.toymodel import Toymodel
+from ep.base import Base
 
 
 def circle_EP():
@@ -157,7 +158,7 @@ def plot_flip_error():
             ##
             # flip-error R1
             ##
-            h = EP_Base(T=T, loop_type=1, init_state='a',
+            h = Base(T=T, loop_type=1, init_state='a',
                        init_cond=params, loop_direction='-')
             _, psi_a, psi_b = h.solve_ODE()
             R1[n] = psi_b[-1]/psi_a[-1]
@@ -165,7 +166,7 @@ def plot_flip_error():
             ##
             # flip-error R2
             ##
-            h = EP_Base(T=T, loop_type=1, init_state='b',
+            h = Base(T=T, loop_type=1, init_state='b',
                        init_cond=params, loop_direction='-')
             _, psi_a, psi_b = h.solve_ODE()
             R2[n] = psi_a[-1]/psi_b[-1]
