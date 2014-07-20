@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-from EP_Base import *
+from ep.base import Base
 import numpy as np
 from numpy import pi
 
-class EP_Toymodel(EP_Base):
+class Toymodel(Base):
     """EP_Toymodel class."""
     
     def __init__(self, **kwargs):
