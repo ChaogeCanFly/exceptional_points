@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 import brewer2mpl as brew
 from ep.helpers import map_trajectory, get_height_profile
@@ -6,6 +6,8 @@ from ep.optomech import OptoMech
 import matplotlib.pyplot as plt
 import mayavi.mlab as mlab
 from matplotlib.colors import LinearSegmentedColormap
+import numpy as np
+from numpy import pi
     
 def plot_riemann_sheets(part=np.real,
                         scale=3, #6.5
@@ -472,7 +474,7 @@ if __name__ == '__main__':
                 "R": 0.1, 
                 "gamma": 1., 
                 "init_state": 'b', 
-                "init_loop_phase": 1*pi, #1*pi*0, 
+                "init_loop_phase": 1*pi, 
                 "loop_direction": '-',
                 "calc_adiabatic_state": False
                 }

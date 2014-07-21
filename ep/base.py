@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 from ep.helpers import c_eig, c_trapz
 import numpy as np

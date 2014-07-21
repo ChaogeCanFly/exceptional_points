@@ -2,7 +2,8 @@
 
 import brewer2mpl as brew
 from ep.waveguide import Waveguide
-from ep.helpers import cmap_discretize, map_trajectory, set_scientific_axes
+from ep.helpers import FileOperations, cmap_discretize
+from ep.helpers import map_trajectory, set_scientific_axes
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import FixedLocator

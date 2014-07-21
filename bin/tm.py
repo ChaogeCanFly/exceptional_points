@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 from ep.toymodel import Toymodel
 from ep.base import Base
