@@ -74,7 +74,7 @@ class OptoMech(Base):
                 g: float
         """
         
-        phi = self.init_loop_phase + self.w*t
+        phi = self.init_phase + self.w*t
         
         omega = self.R * np.sin(phi)
         g = self.R * np.cos(phi) + self.gamma/2.
@@ -113,7 +113,7 @@ class OptoMech(Base):
 if __name__ == '__main__':
     evolutions = 5
     OM = OptoMech(T=100.*evolutions, R=1/20., gamma=2., init_state='b',
-                     init_loop_phase=pi, loop_direction='+')
+                     init_phase=pi, loop_direction='+')
     OM.w *= evolutions
     t, cp, cm = OM.solve_ODE()
     R = abs(cp/cm)
