@@ -11,10 +11,10 @@ def circle_EP():
     part of the energy spectrum is plotted, as well as the distance
     of the trajectory in parameter space from the EP.
     """
-    for init_loop_phase in 5, : #range(13):
-    #for init_loop_phase in (0, ):
+    for init_phase in 5, : #range(13):
+    #for init_phase in (0, ):
     
-        p0 = init_loop_phase*2.*pi/12.
+        p0 = init_phase*2.*pi/12.
         
         params = getParamList(a2 = 0.0, b1 = 0.8, b2 = 0.8,
                               c1 = 0.1, c2 = 0.1, p = p0)
@@ -74,7 +74,7 @@ def circle_EP():
                     x0, y0 = h.get_cycle_parameters(0.)
                     x, y = h.get_cycle_parameters(h.t)
                     
-                    draw_arrow(h.loop_direction, h.init_loop_phase)
+                    draw_arrow(h.loop_direction, h.init_phase)
                     
                     plot(x[:500], y[:500], "b-")
                     offset=100
@@ -108,8 +108,8 @@ def circle_EP():
                                             imag(Ea), imag(Eb))
                     t_real = map_trajectory(abs(psi_a), abs(psi_b),
                                             real(Ea), real(Eb))
-                    np.savetxt("psi_imag_%s_%s.dat" % (g, init_loop_phase), (t,t_imag))
-                    np.savetxt("psi_real_%s_%s.dat" % (g, init_loop_phase), (t,t_real))
+                    np.savetxt("psi_imag_%s_%s.dat" % (g, init_phase), (t,t_imag))
+                    np.savetxt("psi_real_%s_%s.dat" % (g, init_phase), (t,t_real))
                     plot(t, t_imag, "k-")
                     plot(t, t_real, "k--")
                     
@@ -128,7 +128,7 @@ def circle_EP():
                     ##
                     # save figure
                     ##
-                    savefig("%s_%i_%s_%s.png" % (g, init_loop_phase,
+                    savefig("%s_%i_%s_%s.png" % (g, init_phase,
                                                  h.init_state, direction) )
                     clf()
                     #exit()
