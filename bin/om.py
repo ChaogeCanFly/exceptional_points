@@ -17,7 +17,7 @@ def plot_riemann_sheets(part=np.real,
 
     #xN, yN = 31, 31
     #part = np.imag
-    part = np.real
+    #part = np.real
     
     OM = OptoMech(**kwargs)
     
@@ -270,21 +270,48 @@ def plot_riemann_sheets(part=np.real,
 
     engine = mlab.get_engine()
     
-    scene = engine.scenes[0]
-    scene.scene.camera.position = [0.34763136753239232, -0.37268098883113926, 0.19025556632156901]
-    scene.scene.camera.focal_point = [0.0, 0.49071651625633239, 0.0]
-    scene.scene.camera.view_angle = 30.0
-    scene.scene.camera.view_up = [-0.10361763966271739, 0.17406840710399826, 0.97926685556032378]
-    scene.scene.camera.clipping_range = [0.57179585985024317, 1.4283725482790282]
-    scene.scene.camera.compute_view_plane_normal()
-    scene.scene.render()
+    if part is np.imag:
+        scene = engine.scenes[0]
+        scene.scene.camera.position = [0.34763136753239232, -0.37268098883113926, 0.19025556632156901]
+        scene.scene.camera.focal_point = [0.0, 0.49071651625633239, 0.0]
+        scene.scene.camera.view_angle = 30.0
+        scene.scene.camera.view_up = [-0.10361763966271739, 0.17406840710399826, 0.97926685556032378]
+        scene.scene.camera.clipping_range = [0.57179585985024317, 1.4283725482790282]
+        scene.scene.camera.compute_view_plane_normal()
+        scene.scene.render()
+    elif part is np.real:
+        scene = engine.scenes[0]
+        scene.scene.camera.position = [0.34763136753239232, -0.37268098883113926, 0.19025556632156901]
+        scene.scene.camera.position = [0.34763136753239232, -0.37268098883113926, 0.5025556632156901]
+        scene.scene.camera.focal_point = [0.0, 0.49071651625633239, 0.0]
+        scene.scene.camera.view_angle = 30.0
+        scene.scene.camera.view_up = [-0.10361763966271739, 0.17406840710399826, 0.97926685556032378]
+        scene.scene.camera.clipping_range = [0.57179585985024317, 1.4283725482790282]
+        scene.scene.camera.compute_view_plane_normal()
+        scene.scene.render()
 
     if part is np.imag:
         surface1 = engine.scenes[0].children[1].children[0].children[0].children[0]
         surface1.actor.property.backface_culling = True
         surface2 = engine.scenes[0].children[2].children[0].children[0].children[0]
         surface2.actor.property.frontface_culling = True
-        
+    elif part is np.real:
+        # frontface culling of map_trajectory
+        surface = engine.scenes[0].children[0].children[0].children[0].children[0].children[0]
+        surface.actor.property.frontface_culling = True
+        surface1 = engine.scenes[0].children[1].children[0].children[0].children[0]
+        surface1.actor.property.backface_culling = True
+        surface2 = engine.scenes[0].children[2].children[0].children[0].children[0]
+        surface2.actor.property.backface_culling = True
+        surface3 = engine.scenes[0].children[3].children[0].children[0].children[0]
+        surface3.actor.property.backface_culling = True
+        surface5 = engine.scenes[0].children[5].children[0].children[0].children[0]
+        surface5.actor.property.backface_culling = True
+        surface6 = engine.scenes[0].children[6].children[0].children[0].children[0].children[0]
+        surface6.actor.property.backface_culling = True
+        surface11 = engine.scenes[0].children[11].children[0].children[0].children[0].children[0]
+        surface11.actor.property.backface_culling = True
+
     
     #mlab.show()
     fig.scene.render_window.aa_frames = 8
@@ -437,7 +464,7 @@ def circle_EP(**kwargs):
                     wspace=0.6,
                     hspace=0.6)
     
-    filename = ("R_{R}_T_{T}_phase_{init_loop_phase}_"
+    filename = ("R_{R}_T_{T}_phase_{init_phase}_"
                 "state_{init_state}_{loop_direction}").format(**kwargs)
     print "writing ", filename
     savefig(filename + ".pdf")
@@ -446,37 +473,61 @@ def circle_EP(**kwargs):
                                       OM.eVecs_r[:,0,1], OM.eVecs_r[:,1,1]))
     clf()
 
-
-if __name__ == '__main__':
+def plot_figures(fig='2a', part='imag', direction='-',
+                 T=45., R=0.1, gamma=1.):
+    
+    import subprocess
     
     params = {
-        'T': 5,
-        #'R': 0.0625,
-        #'R': 0.5,
-        #'init_loop_phase': 3.70031,                # Im(lambda)=0, R=0.25
-        #'init_loop_phase': 3.86493,                # Im(lambda)=0, R=0.0625
-        #'init_loop_phase': 1.01208,                # Re(lambda)=0, R=0.25
-        #'init_loop_phase': 0.847457,               # Re(lambda)=0, R=0.0625
-        #'calc_adiabatic_state': True
+                "T": T, 
+                "R": R, 
+                "gamma": gamma
     }
     
+    if fig == '2a':
+        if direction == '-':
+            settings = {
+                    "init_state": 'b', 
+                    "init_phase": 0, 
+                    "loop_direction": '-',
+                    }
+        else:
+            settings = {
+                    "init_state": 'a', 
+                    "init_phase": 0, 
+                    "loop_direction": '+',
+                    }            
+    
+    elif fig == '2b':
+            settings = {
+                    "init_state": 'b', 
+                    "init_phase": pi, 
+                    "loop_direction": '-',
+                    }
+    
+    params.update(settings)
+    
+    if part is 'imag':
+        params['part'] = np.imag
+    else:
+        params['part'] = np.real
+        
+    plot_riemann_sheets(**params)
+    
+    for f in part, part + '_no_axes':
+        infile = f + '.png'
+        outfile = 'Fig{}_{}{}.png'.format(fig,f,direction)
+        call = ['convert', '-transparent', 'white', infile, outfile]
+        subprocess.check_call(call)
+    
+    
+if __name__ == '__main__':
+    
+
     print "Warning: is normalization symmetric?"
     
-    if 0:
-        for d in '+', : #'+', '-':
-            for s in 'a', : #'a', 'b':
-                params['loop_direction'] = d
-                params['init_state'] = s
-                circle_EP(**params)
-    else:
-        params = {
-                "T": 45., 
-                "R": 0.1, 
-                "gamma": 1., 
-                "init_state": 'b', 
-                "init_loop_phase": 1*pi, 
-                "loop_direction": '-',
-                "calc_adiabatic_state": False
-                }
-        
-        plot_riemann_sheets(**params)
+    import argh
+    import subprocess
+    
+    argh.dispatch_command(plot_figures)
+    
