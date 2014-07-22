@@ -106,7 +106,7 @@ class Waveguide(Base):
         x_EP, x_R0 = self.x_EP, self.x_R0
         y_EP, y_R0 = self.y_EP, self.y_R0
         w = self.w
-        phi0 = self.init_loop_phase
+        phi0 = self.init_phase
         loop_type = self.loop_type
             
         if loop_type == "Circle":
@@ -311,7 +311,7 @@ class Generate_Profiles(Waveguide):
 
     
 def generate_length(eta=0.3, L=100, N=1.01,
-                    init_loop_phase=0.0,
+                    init_phase=0.0,
                     loop_type="Varcircle",
                     loop_direction="-",
                     theta=0.0,
@@ -341,7 +341,7 @@ def generate_length(eta=0.3, L=100, N=1.01,
                 Specifies path in (epsilon,delta) parameter space.
             loop_direction: str ("-"|"+")
                 Loop direction around the EP.
-            init_loop_phase: float
+            init_phase: float
                 Starting angle on parameter trajectory.
             theta: float
                 Phase difference bewteen upper and lower boundary (in multiples of pi).
@@ -395,7 +395,7 @@ def generate_length(eta=0.3, L=100, N=1.01,
             'L': Ln,
             'eta': eta,
             'N': N,
-            'init_loop_phase': init_loop_phase,
+            'init_phase': init_phase,
             'loop_direction': loop_direction,
             'loop_type': loop_type,
             'theta': theta*pi,
@@ -411,10 +411,10 @@ def generate_length(eta=0.3, L=100, N=1.01,
             
         os.chdir(directory)
         
-        filename = ("N_{N}_{loop_type}_phase_{init_loop_phase:.3f}pi"
+        filename = ("N_{N}_{loop_type}_phase_{init_phase:.3f}pi"
                     "_L_{L}_eta_{eta}_"
                     "{loop_direction}").format(**params).replace(".","")
-        params['init_loop_phase'] *= pi
+        params['init_phase'] *= pi
         
         WG = Waveguide(**params)
         
