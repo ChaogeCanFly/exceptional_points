@@ -54,7 +54,7 @@ class Toymodel(Base):
         a1, b1 = self.x_EP, self.x_R0
         a2, b2 = self.y_EP, self.y_R0
         c1, c2 = 0, 0
-        p0 = self.init_loop_phase
+        p0 = self.init_phase
 
         def pacman_shape(t):
             p1, p2 = 1*pi/2 - 1.0, 2.0
