@@ -10,7 +10,7 @@ class Base:
     
     def __init__(self, T=10, x_EP=0.0, y_EP=0.0, x_R0=0.8, y_R0=0.8,
                  loop_type="Circle", loop_direction='-', init_state='a',
-                 init_loop_phase=0.0, calc_adiabatic_state=False):
+                 init_phase=0.0, calc_adiabatic_state=False):
         """Exceptional Point (EP) base class.
         
         The dynamics of a 2-level system are determined via an Runge-Kutta method
@@ -38,7 +38,7 @@ class Base:
                     Loop trajectory shape.
                 loop_direction : str, optional ("-"|"+")
                     Direction of evolution around the EP (-: counterclockwise, +: clockwise).
-                init_loop_phase : float, optional
+                init_phase : float, optional
                     Starting point of evolution on trajectory.
                 calc_adiabatic_state : bool, optional
                     Whether adiabatic solutions should also be calculated (note
@@ -66,7 +66,7 @@ class Base:
         # loop cycle parameters
         self.x_EP, self.x_R0 = x_EP, x_R0
         self.y_EP, self.y_R0 = y_EP, y_R0
-        self.init_loop_phase = init_loop_phase
+        self.init_phase = init_phase
         
         # wavefunction |Psi(t)>
         self.Psi = np.zeros((self.tN,2), dtype=np.complex256)
@@ -81,9 +81,6 @@ class Base:
         self.Psi_adiabatic = np.zeros((self.tN,2), dtype=np.complex256)
         self.theta = np.zeros((self.tN,2), dtype=np.complex256)
         
-        # flag to switch off the calculation of the adiabatic state
-        # this quantity is not needed for heatmap runs and slows down
-        # the code considerably
         self.calc_adiabatic_state = calc_adiabatic_state
  
  
