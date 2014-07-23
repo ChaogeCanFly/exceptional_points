@@ -113,9 +113,9 @@ class OptoMech(Base):
 if __name__ == '__main__':
     evolutions = 5
     OM = OptoMech(T=100.*evolutions, R=1/20., gamma=2., init_state='b',
-                     init_phase=pi, loop_direction='+')
+                  init_phase=pi, loop_direction='+')
     OM.w *= evolutions
     t, cp, cm = OM.solve_ODE()
     R = abs(cp/cm)
-    plot(t,R**(-1),"r-")
+    plot(t, R**(-1), "r-")
     show()
