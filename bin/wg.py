@@ -1,16 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
-import matplotlib
-#matplotlib.use('Agg')
-
-from EP_Waveguide import *
-from EP_Helpers import *
-from matplotlib import cm
-from matplotlib.colors import LogNorm
-from matplotlib.ticker import LogFormatter, MultipleLocator
-from matplotlib.ticker import FixedLocator, FormatStrFormatter
 import brewer2mpl as brew
-
+from ep.waveguide import Waveguide
+from ep.helpers import FileOperations, cmap_discretize
+from ep.helpers import map_trajectory, set_scientific_axes
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+from matplotlib.ticker import FixedLocator
 
 
 def circle_EP(filename=None, write_profile=False, **kwargs):
@@ -18,7 +14,7 @@ def circle_EP(filename=None, write_profile=False, **kwargs):
     
     f = FileOperations(filename)
     
-    WG = EP_Waveguide(**kwargs)
+    WG = Waveguide(**kwargs)
     
     ##
     # plot amplitudes b0(x), b1(x)
@@ -200,7 +196,7 @@ class Diodicity:
         
         # flip-error R0
         self.kwargs['loop_direction'] = '-'
-        WG = EP_Waveguide(**self.kwargs)
+        WG = Waveguide(**self.kwargs)
         _, b0, b1 = WG.solve_ODE()
         R0_b0 = abs(b0[-1])
         R0_b1 = abs(b1[-1])
@@ -208,7 +204,7 @@ class Diodicity:
 
         # flip-error R1
         self.kwargs['loop_direction'] = '+'
-        WG = EP_Waveguide(**self.kwargs)
+        WG = Waveguide(**self.kwargs)
         _, b0, b1 = WG.solve_ODE()
         R1_b0 = abs(b0[-1])
         R1_b1 = abs(b1[-1])
@@ -365,9 +361,9 @@ class ParseArguments:
                             help="Dissipation coefficient value")
         
         p_minor = parser.add_argument_group('Minor options')
-        p_minor.add_argument("-i", "--initstate", default="c", type=str,
+        p_minor.add_argument("-i", "--init-state", default="c", type=str,
                             help="Initial state")
-        p_minor.add_argument("-p", "--initphase", default=0.0, type=float,
+        p_minor.add_argument("-p", "--init-phase", default=0.0, type=float,
                             help="Initial phase (in multiples of pi)")
         p_minor.add_argument("-c", "--cycletype", default="Circle", type=str,
                             help="Cycle type" )
@@ -394,9 +390,9 @@ class ParseArguments:
 
     def get_filename(self):
         args = self.args.__dict__
-        #p0 = args.get('initphase')
-        filename = ("N_{N}_{cycletype}_phase_{initphase:.3f}pi"
-                    "_initstate_{initstate}").format(**args)
+        #p0 = args.get('init_phase')
+        filename = ("N_{N}_{cycletype}_phase_{init_phase:.3f}pi"
+                    "_init_state_{init_state}").format(**args)
         
         if not args.get('heatmap'):
             # add length and eta for --riemann and --loop
@@ -443,8 +439,8 @@ if __name__ == '__main__':
         'L': args.length,
         'N': args.N,
         'eta': args.eta,
-        'init_state': args.initstate,
-        'init_loop_phase': args.initphase*pi,
+        'init_state': args.init_state,
+        'init_phase': args.init_phase*pi,
         'loop_type': args.cycletype,
         'loop_direction': args.direction,
         'theta': args.theta,

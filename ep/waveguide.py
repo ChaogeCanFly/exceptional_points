@@ -1,16 +1,16 @@
 #!/usr/bin/env python2.7
 
-from EP_Base import *
+from ep.base import Base
 import numpy as np
 from numpy import pi
 
-class EP_Waveguide(EP_Base):
-    """EP_Waveguide class."""
+class Waveguide(Base):
+    """Waveguide class."""
     
     def __init__(self, L=100, d=1.0, eta=0.05, N=1.5, theta=0.0, **kwargs):
         """Exceptional Point (EP) waveguide class.
         
-        Copies methods and variables from EP_Base class and adds new parameters.
+        Copies methods and variables from Base class and adds new parameters.
         
             Additional parameters:
             ----------------------
@@ -24,7 +24,7 @@ class EP_Waveguide(EP_Base):
                     Phase difference between upper and lower boundary
         """
         
-        EP_Base.__init__(self, T=L, **kwargs)
+        Base.__init__(self, T=L, **kwargs)
         
         self.d = d                                  # wire width
         self.L = L                                  # wire length
@@ -106,7 +106,7 @@ class EP_Waveguide(EP_Base):
         x_EP, x_R0 = self.x_EP, self.x_R0
         y_EP, y_R0 = self.y_EP, self.y_R0
         w = self.w
-        phi0 = self.init_loop_phase
+        phi0 = self.init_phase
         loop_type = self.loop_type
             
         if loop_type == "Circle":
@@ -120,21 +120,12 @@ class EP_Waveguide(EP_Base):
             lambda2 = lambda t: y_EP - x_EP*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
         
-        elif loop_type == "Bell_old":
-            """ Bug in loop_direction == '+' ! """
-            if self.loop_direction == '+':
-                a = -1
-            else:
-                a = +1
-            lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
-            lambda2 = lambda t: 20. * x_EP * (w*t/pi - a) + phi0
-            return lambda1(t), lambda2(t)
-        
         elif loop_type == "Bell":
             sign = -int(self.loop_direction + "1")
             
             lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
-            lambda2 = lambda t: 0.4 * sign * (w*t/pi - 1) + phi0
+            # take also sign change in w=2pi/T into account
+            lambda2 = lambda t: 0.4 * sign * (sign*w*t/pi - 1) + phi0
             
             return lambda1(t), lambda2(t)
         
@@ -232,7 +223,7 @@ class EP_Waveguide(EP_Base):
         
         # reverse x-coordinate for backward propagation
         if self.loop_direction == '+':
-            x = x[...,::-1]
+            x = x[::-1]
             
         def fermi(x, sigma=1):
             """Return the Fermi-Dirac distribution."""
@@ -240,7 +231,7 @@ class EP_Waveguide(EP_Base):
         
         xi_lower = eps*np.sin((kr + delta)*x)
         xi_upper = d + eps*np.sin((kr + delta)*x + theta_boundary)
-        
+
         if smearing:
             kr = (self.N - np.sqrt(self.N**2 - 1))*pi
             lambda0 = abs(pi/(kr + delta))
@@ -278,77 +269,7 @@ class EP_Waveguide(EP_Base):
         return X, Y, Z
 
 
-    
-def generate_profile_heatmap():
-    """Generate a matrix of (eta, L) values for VSC calculations."""
-    
-    import os
-    import shutil
-    import fileinput
-    
-    pwd = os.getcwd()
-    xml = "{}/input.xml".format(pwd)
-    
-    for eta in np.arange(0.01, 0.055, 0.005)/100:
-        for L in np.arange(60, 150, 10):
-            for loop_dir in '-', '+':
-                directory = "{}/eta_{}_L_{}_{}".format(pwd, eta,
-                                                       L, loop_dir)
-                if not os.path.exists(directory):
-                    os.makedirs(directory)
-                os.chdir(directory)
-                    
-                params = {
-                    'L': L,
-                    'eta': eta,
-                    'N': 1.21,
-                    'init_loop_phase': 0.001,
-                    'loop_direction': loop_dir,
-                    'loop_type': 'Varcircle',
-                    'init_state': 'a'
-                }
-                
-                filename = ("N_{N}_{loop_type}_phase_{init_loop_phase:.3f}pi"
-                            "_initstate_{init_state}_L_{L}_eta_{eta}_"
-                            "{loop_direction}").format(**params).replace(".","")
-                params['init_loop_phase'] *= pi
-                
-                WG = EP_Waveguide(**params)
-                xi, _ = WG.get_boundary()
-
-                np.savetxt(filename + ".profile", zip(WG.t, xi))
-                
-                shutil.copy(xml, directory)
-                N_file = WG.tN
-                    
-                src_xml = open(xml)
-                out_xml = open("{}/input.xml".format(directory), "w")
-                
-                replacements = {
-                    r'name="L">L':
-                        r'name="L">{}'.format(L),
-                    r'name="N_file">N_file':
-                        r'name="N_file">{}'.format(N_file),
-                    r'name="file">file':
-                        r'name="file">{}.profile'.format(filename),
-
-                    r'name="Gamma0p_min">Gamma0p_min':
-                        r'name="Gamma0p_min">{}'.format(eta),
-                    r'name="Gamma0p_max">Gamma0p_min':
-                        r'name="Gamma0p_max">{}'.format(eta)
-                }
-                
-                for line in src_xml:
-                    for src, target in replacements.iteritems():
-                        line = line.replace(src, target)
-                    out_xml.write(line)
-                src_xml.close()
-                out_xml.close()
-                
-                os.chdir(pwd)
-                
-                
-class Generate_Profiles(EP_Waveguide):
+class Generate_Profiles(Waveguide):
     """."""
     def __init__(self, eps_factor=1.0, eps=None, delta=0.0,
                        full_evolution=False, write_cfg=True,
@@ -356,7 +277,7 @@ class Generate_Profiles(EP_Waveguide):
                        r_nx_part="50", custom_directory=None,
                        neumann=1, heatmap=False, **kwargs):
         
-        EP_Waveguide.__init__(self, **kwargs)
+        Waveguide.__init__(self, **kwargs)
         
         self.eps = eps
         self.eps_factor = eps_factor
@@ -390,7 +311,7 @@ class Generate_Profiles(EP_Waveguide):
 
     
 def generate_length(eta=0.3, L=100, N=1.01,
-                    init_loop_phase=0.0,
+                    init_phase=0.0,
                     loop_type="Varcircle",
                     loop_direction="-",
                     theta=0.0,
@@ -418,7 +339,9 @@ def generate_length(eta=0.3, L=100, N=1.01,
                 Number of open modes int(k*d/pi).
             loop_type: str
                 Specifies path in (epsilon,delta) parameter space.
-            init_loop_phase: float
+            loop_direction: str ("-"|"+")
+                Loop direction around the EP.
+            init_phase: float
                 Starting angle on parameter trajectory.
             theta: float
                 Phase difference bewteen upper and lower boundary (in multiples of pi).
@@ -472,7 +395,7 @@ def generate_length(eta=0.3, L=100, N=1.01,
             'L': Ln,
             'eta': eta,
             'N': N,
-            'init_loop_phase': init_loop_phase,
+            'init_phase': init_phase,
             'loop_direction': loop_direction,
             'loop_type': loop_type,
             'theta': theta*pi,
@@ -488,12 +411,12 @@ def generate_length(eta=0.3, L=100, N=1.01,
             
         os.chdir(directory)
         
-        filename = ("N_{N}_{loop_type}_phase_{init_loop_phase:.3f}pi"
+        filename = ("N_{N}_{loop_type}_phase_{init_phase:.3f}pi"
                     "_L_{L}_eta_{eta}_"
                     "{loop_direction}").format(**params).replace(".","")
-        params['init_loop_phase'] *= pi
+        params['init_phase'] *= pi
         
-        WG = EP_Waveguide(**params)
+        WG = Waveguide(**params)
         
         if eps:
             WG.x_EP = eps
@@ -521,10 +444,6 @@ def generate_length(eta=0.3, L=100, N=1.01,
                 data = json.dumps(d, sort_keys=True, indent=-1)
                 f.write(data)
 
-        # truncate x and xi arrays to reduced length Ln
-        #N_file = int(WG.tN * Ln/L)
-        #x = WG.t[:N_file]
-        #xi = xi[:N_file]
         x = WG.t
         N_file = len(x)
         
@@ -600,6 +519,8 @@ def parse_arguments():
                         help="Number of open modes int(k*d/pi)" )
     parser.add_argument("-t", "--loop-type", default="Constant_delta", type=str,
                         help="Specifies path in (epsilon,delta) parameter space" )
+    parser.add_argument("-o", "--loop-direction", default="-", type=str,
+                        help="Loop direction around the EP" )
     parser.add_argument("--init-loop-phase", default=0.0, type=float,
                         help="Starting angle on parameter trajectory" )
     parser.add_argument("-T", "--theta", default=0.0, type=float,

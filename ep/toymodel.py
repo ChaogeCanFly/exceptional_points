@@ -1,14 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
-from EP_Base import *
+from ep.base import Base
 import numpy as np
 from numpy import pi
 
-class EP_Toymodel(EP_Base):
-    """EP_Toymodel class."""
+class Toymodel(Base):
+    """Toymodel class."""
     
     def __init__(self, **kwargs):
-        """Copy methods and variables from EP_Base class."""
+        """Copy methods and variables from Base class."""
         EP_Base.__init__(self, **kwargs)
 
 
@@ -54,7 +54,7 @@ class EP_Toymodel(EP_Base):
         a1, b1 = self.x_EP, self.x_R0
         a2, b2 = self.y_EP, self.y_R0
         c1, c2 = 0, 0
-        p0 = self.init_loop_phase
+        p0 = self.init_phase
 
         def pacman_shape(t):
             p1, p2 = 1*pi/2 - 1.0, 2.0

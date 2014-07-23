@@ -1,16 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
-from EP_Base import *
+from ep.base import Base
 import numpy as np
 from numpy import pi
 
-class EP_OptoMech(EP_Base):
-    """EP_OptoMech class."""
+class OptoMech(Base):
+    """OptoMech class."""
     
     def __init__(self, R=0.05, gamma=2.0, **kwargs):
         """Exceptional Points (EP) optomechanics class.
         
-        Copies methods and variables from EP_Base class.
+        Copies methods and variables from Base class.
         
             Additional parameters:
             ----------------------
@@ -20,7 +20,7 @@ class EP_OptoMech(EP_Base):
                     Relative loss between states |1> and |2>.
         """
         
-        EP_Base.__init__(self, **kwargs)
+        Base.__init__(self, **kwargs)
         self.R = R
         self.gamma = gamma
         self.x_EP = 0.0
@@ -74,7 +74,7 @@ class EP_OptoMech(EP_Base):
                 g: float
         """
         
-        phi = self.init_loop_phase + self.w*t
+        phi = self.init_phase + self.w*t
         
         omega = self.R * np.sin(phi)
         g = self.R * np.cos(phi) + self.gamma/2.
@@ -108,38 +108,14 @@ class EP_OptoMech(EP_Base):
         f = ((ep - Dp) * G - (e - D) * Gp)/(2.*e*(e - D))
 
         return f
-        
-        
-def plot_non_adiabatic_coupling():
-    OM = EP_OptoMech(T=64., R=1./16., init_state='b')
-    OM.w = 2.*pi/(OM.T/3.)
-    t, b0, b1 = OM.solve_ODE()
-    b0_ad, b1_ad = (OM.Psi_adiabatic[:,0],
-                    OM.Psi_adiabatic[:,1])
-    print t[-1], 2*pi/OM.w
-    #semilogy(t, abs(b0), "r-")
-    #semilogy(t, abs(b1), "g-")
-    f = OM.get_non_adiabatic_coupling()
-    e = OM.eVals[:,0]
-    
-    ylim(-3,10)
-    #plot(OM.t, -real(b1/b0*f)/imag(e), "r-")
-    #plot(OM.t, -real(b0/b1*f)/imag(e), "g-")
-    plot(OM.t, -real(f*b0/b1)/imag(e), "r-")
-    plot(OM.t, -real(f*b1/b0)/imag(e), "g-")
-    #plot(OM.t, abs(b0/b1), "g-")
-    show()
-    
 
 
 if __name__ == '__main__':
     evolutions = 5
-    OM = EP_OptoMech(T=100.*evolutions, R=1/20., gamma=2., init_state='b',
-                     init_loop_phase=pi, loop_direction='+')
+    OM = OptoMech(T=100.*evolutions, R=1/20., gamma=2., init_state='b',
+                     init_phase=pi, loop_direction='+')
     OM.w *= evolutions
     t, cp, cm = OM.solve_ODE()
     R = abs(cp/cm)
     plot(t,R**(-1),"r-")
-    #semilogy(t, abs(cp), "r-")
-    #semilogy(t, abs(cm), "g-")
     show()
