@@ -105,8 +105,7 @@ class Waveguide(Base):
         
         x_EP, x_R0 = self.x_EP, self.x_R0
         y_EP, y_R0 = self.y_EP, self.y_R0
-        w = self.w
-        phi0 = self.init_phase
+        w, phi0 = self.w, self.init_phase
         loop_type = self.loop_type
             
         if loop_type == "Circle":
@@ -114,19 +113,21 @@ class Waveguide(Base):
             lambda2 = lambda t: y_EP + y_R0*np.sin(w*t + phi0)
             return lambda1(t), lambda2(t)
         
+        if loop_type == "Ellipse":
+            lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
+            lambda2 = lambda t: y_EP - 4.*x_EP*np.sin(w*t) + phi0
+            return lambda1(t), lambda2(t)
+        
         elif loop_type == "Varcircle":
-            y_EP = 0.0
-            lambda1 = lambda t: x_EP - x_EP*np.cos(w*t)
+            lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
             lambda2 = lambda t: y_EP - x_EP*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
         
         elif loop_type == "Bell":
             sign = -int(self.loop_direction + "1")
-            
             lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
             # take also sign change in w=2pi/T into account
             lambda2 = lambda t: 0.4 * sign * (sign*w*t/pi - 1) + phi0
-            
             return lambda1(t), lambda2(t)
         
         elif loop_type == "Constant":
@@ -521,7 +522,7 @@ def parse_arguments():
                         help="Specifies path in (epsilon,delta) parameter space" )
     parser.add_argument("-o", "--loop-direction", default="-", type=str,
                         help="Loop direction around the EP" )
-    parser.add_argument("--init-loop-phase", default=0.0, type=float,
+    parser.add_argument("--init-phase", default=0.0, type=float,
                         help="Starting angle on parameter trajectory" )
     parser.add_argument("-T", "--theta", default=0.0, type=float,
                         help="Phase difference bewteen upper and lower boundary (in multiples of pi)" )
