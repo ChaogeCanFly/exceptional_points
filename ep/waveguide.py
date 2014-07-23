@@ -484,8 +484,8 @@ def generate_heatmap(heatmap=False, **kwargs):
     L0 = kwargs['L']
     eta0 = kwargs['eta']
     
-    L_range = np.arange(0.1, 4.35, 0.25)*L0
-    eta_range = np.arange(0.1, 2.35, 0.25)*eta0
+    L_range = np.arange(0.25, 2.35, 0.25)*L0
+    eta_range = np.arange(0.1, 1.35, 0.25)*eta0
     
     if heatmap:
         for L in L_range:
@@ -521,7 +521,7 @@ def parse_arguments():
                         help="Specifies path in (epsilon,delta) parameter space" )
     parser.add_argument("-o", "--loop-direction", default="-", type=str,
                         help="Loop direction around the EP" )
-    parser.add_argument("--init-loop-phase", default=0.0, type=float,
+    parser.add_argument("--init-phase", default=0.0, type=float,
                         help="Starting angle on parameter trajectory" )
     parser.add_argument("-T", "--theta", default=0.0, type=float,
                         help="Phase difference bewteen upper and lower boundary (in multiples of pi)" )
