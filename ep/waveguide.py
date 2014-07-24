@@ -1,8 +1,11 @@
 #!/usr/bin/env python2.7
 
+import brewer2mpl as brew
 from ep.base import Base
+import matplotlib.pyplot as plt
 import numpy as np
 from numpy import pi
+
 
 class Waveguide(Base):
     """Waveguide class."""
@@ -115,7 +118,7 @@ class Waveguide(Base):
         
         if loop_type == "Ellipse":
             lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
-            lambda2 = lambda t: y_EP - 4.*x_EP*np.sin(w*t) + phi0
+            lambda2 = lambda t: y_EP - 8.*x_EP*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
         
         elif loop_type == "Varcircle":
@@ -156,8 +159,8 @@ class Waveguide(Base):
         X, Y = np.meshgrid(x,y)
         Z = abs(phi(X,Y))**2
         
-        p = pcolormesh(X,Y,Z)
-        #cb = colorbar(p)
+        p = plt.pcolormesh(X,Y,Z)
+        #cb = plt.colorbar(p)
         #cb.set_label("Wavefunction")
         
         
@@ -170,12 +173,11 @@ class Waveguide(Base):
         X, Y = np.meshgrid(x,y)
         Z = self.eta_x(X)
         
-        import brewer2mpl as brew
         bmap = brew.get_map('YlOrRd',
                             'sequential', 9).mpl_colormap
-        p = pcolormesh(X,Y,Z)
+        p = plt.pcolormesh(X,Y,Z)
         p.cmap = bmap
-        cb = colorbar(p, ax=cax)
+        cb = plt.colorbar(p, ax=cax)
         cb.set_label("Loss")
     
     
@@ -266,7 +268,7 @@ class Waveguide(Base):
         X, Y = np.meshgrid(x, y)
         X, Y, Z = self.get_boundary_contour(X, Y)
         
-        contourf(X, Y, Z, [0.9,1], colors="k")
+        plt.contourf(X, Y, Z, [0.9,1], colors="k")
         return X, Y, Z
 
 
