@@ -52,9 +52,9 @@ class Waveguide(Base):
         """Return longitudinal wavevector."""
         return pi*np.sqrt(self.N**2 - n**2)
     
-    #def eta_x(self, x):
-    #    """Return position dependent dissipation coefficient."""
-    #    return self.eta * np.sin(pi/self.T * x)
+    def eta_x(self, x):
+        """Return position dependent dissipation coefficient."""
+        return self.eta * np.sin(pi/self.T * x)
     
     def H(self, t, x=None, y=None):
         """Return parametrically dependent Hamiltonian at time t,
