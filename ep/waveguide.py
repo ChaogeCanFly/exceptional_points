@@ -1,8 +1,11 @@
 #!/usr/bin/env python2.7
 
+import brewer2mpl as brew
 from ep.base import Base
+import matplotlib.pyplot as plt
 import numpy as np
 from numpy import pi
+
 
 class Waveguide(Base):
     """Waveguide class."""
@@ -49,9 +52,9 @@ class Waveguide(Base):
         """Return longitudinal wavevector."""
         return pi*np.sqrt(self.N**2 - n**2)
     
-    #def eta_x(self, x):
-    #    """Return position dependent dissipation coefficient."""
-    #    return self.eta * np.sin(pi/self.T * x)
+    def eta_x(self, x):
+        """Return position dependent dissipation coefficient."""
+        return self.eta * np.sin(pi/self.T * x)
     
     def H(self, t, x=None, y=None):
         """Return parametrically dependent Hamiltonian at time t,
@@ -105,8 +108,7 @@ class Waveguide(Base):
         
         x_EP, x_R0 = self.x_EP, self.x_R0
         y_EP, y_R0 = self.y_EP, self.y_R0
-        w = self.w
-        phi0 = self.init_phase
+        w, phi0 = self.w, self.init_phase
         loop_type = self.loop_type
             
         if loop_type == "Circle":
@@ -114,19 +116,21 @@ class Waveguide(Base):
             lambda2 = lambda t: y_EP + y_R0*np.sin(w*t + phi0)
             return lambda1(t), lambda2(t)
         
+        if loop_type == "Ellipse":
+            lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
+            lambda2 = lambda t: y_EP - 8.*x_EP*np.sin(w*t) + phi0
+            return lambda1(t), lambda2(t)
+        
         elif loop_type == "Varcircle":
-            y_EP = 0.0
-            lambda1 = lambda t: x_EP - x_EP*np.cos(w*t)
+            lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
             lambda2 = lambda t: y_EP - x_EP*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
         
         elif loop_type == "Bell":
             sign = -int(self.loop_direction + "1")
-            
             lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
             # take also sign change in w=2pi/T into account
             lambda2 = lambda t: 0.4 * sign * (sign*w*t/pi - 1) + phi0
-            
             return lambda1(t), lambda2(t)
         
         elif loop_type == "Constant":
@@ -155,8 +159,8 @@ class Waveguide(Base):
         X, Y = np.meshgrid(x,y)
         Z = abs(phi(X,Y))**2
         
-        p = pcolormesh(X,Y,Z)
-        #cb = colorbar(p)
+        p = plt.pcolormesh(X,Y,Z)
+        #cb = plt.colorbar(p)
         #cb.set_label("Wavefunction")
         
         
@@ -169,12 +173,11 @@ class Waveguide(Base):
         X, Y = np.meshgrid(x,y)
         Z = self.eta_x(X)
         
-        import brewer2mpl as brew
         bmap = brew.get_map('YlOrRd',
                             'sequential', 9).mpl_colormap
-        p = pcolormesh(X,Y,Z)
+        p = plt.pcolormesh(X,Y,Z)
         p.cmap = bmap
-        cb = colorbar(p, ax=cax)
+        cb = plt.colorbar(p, ax=cax)
         cb.set_label("Loss")
     
     
@@ -265,7 +268,7 @@ class Waveguide(Base):
         X, Y = np.meshgrid(x, y)
         X, Y, Z = self.get_boundary_contour(X, Y)
         
-        contourf(X, Y, Z, [0.9,1], colors="k")
+        plt.contourf(X, Y, Z, [0.9,1], colors="k")
         return X, Y, Z
 
 
@@ -484,8 +487,8 @@ def generate_heatmap(heatmap=False, **kwargs):
     L0 = kwargs['L']
     eta0 = kwargs['eta']
     
-    L_range = np.arange(0.1, 3.2, 0.2)*L0
-    eta_range = np.arange(0.1, 2.0, 0.2)*eta0
+    L_range = np.arange(0.25, 2.35, 0.25)*L0
+    eta_range = np.arange(0.1, 1.35, 0.25)*eta0
     
     if heatmap:
         for L in L_range:
@@ -521,7 +524,7 @@ def parse_arguments():
                         help="Specifies path in (epsilon,delta) parameter space" )
     parser.add_argument("-o", "--loop-direction", default="-", type=str,
                         help="Loop direction around the EP" )
-    parser.add_argument("--init-loop-phase", default=0.0, type=float,
+    parser.add_argument("--init-phase", default=0.0, type=float,
                         help="Starting angle on parameter trajectory" )
     parser.add_argument("-T", "--theta", default=0.0, type=float,
                         help="Phase difference bewteen upper and lower boundary (in multiples of pi)" )
