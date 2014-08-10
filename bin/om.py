@@ -20,14 +20,30 @@ def plot_riemann_sheets(part=np.real,
     #part = np.real
     
     OM = OptoMech(**kwargs)
-    
     x, y = OM.get_cycle_parameters(OM.t)
     _, c1, c2 = OM.solve_ODE()
     
     e1 = part(OM.eVals[:,0])
     e2 = part(OM.eVals[:,1])
     z = map_trajectory(c1, c2, e1, e2)
-    #z = e1    
+    #z = e1
+    
+    ############################################################################
+    # two trajectories
+    import copy
+    kwargs2 = copy.deepcopy(kwargs)
+    kwargs2['init_state'] = 'b'
+    kwargs2['loop_direction'] = '+'
+    OM2 = OptoMech(**kwargs2)
+    xT, yT = OM2.get_cycle_parameters(OM2.t)
+    _, c1T, c2T = OM2.solve_ODE()
+    
+    e1T = part(OM.eVals[:,0])
+    e2T = part(OM.eVals[:,1])
+    zT = map_trajectory(c1T, c2T, e1T, e2T)
+    ############################################################################
+    
+
     
     X, Y, Z = OM.sample_H(xN=xN, yN=yN)
     E1 = part(Z[...,1])
@@ -49,10 +65,19 @@ def plot_riemann_sheets(part=np.real,
     fig = mlab.figure(size=(1400,1000), bgcolor=(1,1,1))
     
     line_color = (0.25, 0.25, 0.25)
-    mlab.plot3d(x, y, z/scale,
+    arrow_ending = 750
+    mlab.plot3d(x[:-arrow_ending], y[:-arrow_ending], z[:-arrow_ending]/scale,
                 color=line_color,
                 opacity=1.,
-                tube_radius=0.001)
+                tube_radius=0.003)
+    ############################################################################
+    # two trajectories
+    line_colorT = (0.75, 0.75, 0.75)
+    mlab.plot3d(xT[:-arrow_ending], yT[:-arrow_ending], zT[:-arrow_ending]/scale,
+                color=(0.5,0.5,0.5),
+                opacity=1.,
+                tube_radius=0.003)
+    ############################################################################
     
     W_Gauss_Fermi, W_Fermi, wmax, wmin = get_height_profile(X, Y, rho_y=1e-2, 
                                                             sigma_x=1e-4)
@@ -75,20 +100,20 @@ def plot_riemann_sheets(part=np.real,
                          #color=blue,
                          vmin=wmin, vmax=wmax)
         # <!-- CONE
-        ######E0s1 = mlab.mesh(X[:nx+1,:ny+1],
-        ######                 Y[:nx+1,:ny+1],
-        ######                 E0[:nx+1,:ny+1]/scale,
-        ######                 scalars=W_Gauss_Fermi[:nx+1,:ny+1],
-        ######                 opacity=0.8,
-        ######                 color=red,
-        ######                 vmin=wmin, vmax=wmax)
-        ######E0s11 = mlab.mesh(X[nx+1:,:ny+1],
-        ######                 Y[nx+1:,:ny+1],
-        ######                 E0[nx+1:,:ny+1]/scale,
-        ######                 scalars=W_Gauss_Fermi[nx+1:,:ny+1],
-        ######                 opacity=0.8,
-        ######                 color=blue,
-        ######                 vmin=wmin, vmax=wmax)
+        ###E0s1 = mlab.mesh(X[:nx+1,:ny+1],
+        ###                 Y[:nx+1,:ny+1],
+        ###                 E0[:nx+1,:ny+1]/scale,
+        ###                 scalars=W_Gauss_Fermi[:nx+1,:ny+1],
+        ###                 opacity=0.8,
+        ###                 color=red,
+        ###                 vmin=wmin, vmax=wmax)
+        ###E0s11 = mlab.mesh(X[nx+1:,:ny+1],
+        ###                 Y[nx+1:,:ny+1],
+        ###                 E0[nx+1:,:ny+1]/scale,
+        ###                 scalars=W_Gauss_Fermi[nx+1:,:ny+1],
+        ###                 opacity=0.8,
+        ###                 color=blue,
+        ###                 vmin=wmin, vmax=wmax)
         # --> CONE
         
         E0s1 = mlab.mesh(X[...,:ny+1],
@@ -175,11 +200,13 @@ def plot_riemann_sheets(part=np.real,
                         scalars=W_Fermi, 
                         representation='surface',
                         opacity=0.8,
+                        #color=blue,
                         vmin=-wmin, vmax=wmax)        
         s1 = mlab.mesh(X, Y, E1/scale,
                         scalars=W_Fermi, 
                         representation='surface',
-                        opacity=0.8, 
+                        opacity=0.8,
+                        #color=red,
                         vmin=-wmin, vmax=wmax)
         
         s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
@@ -226,34 +253,36 @@ def plot_riemann_sheets(part=np.real,
     
     mlab.points3d(x[0], y[0], z[0]/scale,
                   color=line_color,
-                  scale_factor=0.0075,
+                  scale_factor=0.0125,
                   mode='sphere')
     
     u, v, w = [ np.gradient(n) for n in x, y, z/scale ]
-    
-    #if part is np.real:
-    #    print "real"
-    #    x, y, z, u, v, w = [ n[-1] for n in x, y, z/scale, u, v, w ]
-    #    mlab.quiver3d(x, y, z, u, v, w,
-    #                color=line_color,
-    #                scale_factor=200,
-    #                resolution=200,
-    #                mode='cone'        
-    #                )
-    #else:
-    x, y, z, u, v, w = [ n[-1] for n in x, y, z/scale, u, v, w ]
+    x, y, z, u, v, w = [ n[-arrow_ending] for n in x, y, z/scale, u, v, w ]
     mlab.quiver3d(x, y, z, u, v, w,
                 color=line_color,
-                #scale_factor=1750,
-                scale_factor=0.015,
+                scale_factor=0.025,
                 resolution=200,
                 mode='cone',
                 scale_mode='scalar'
                 )
-        
-    #mlab.outline(extent=ext,
-    #             line_width=2.5,
-    #             color=(0.5, 0.5, 0.5))
+    
+    ############################################################################
+    # two trajectories
+    mlab.points3d(xT[0], yT[0], zT[0]/scale,
+                  color=line_colorT,
+                  scale_factor=0.0125,
+                  mode='sphere')
+    
+    uT, vT, wT = [ np.gradient(n) for n in xT, yT, zT/scale ]
+    xT, yT, zT, uT, vT, wT = [ n[-arrow_ending] for n in xT, yT, zT/scale, uT, vT, wT ]
+    mlab.quiver3d(xT, yT, zT, uT, vT, wT,
+                color=line_colorT,
+                scale_factor=0.025,
+                resolution=200,
+                mode='cone',
+                scale_mode='scalar'
+                )
+    ############################################################################
     
     mlab.axes(figure=fig,
               color=(0.25,0.25,0.25),
@@ -261,13 +290,6 @@ def plot_riemann_sheets(part=np.real,
                       Y.min()*0.95,Y.max()*0.95,
                       E0.min()/3.5,E1.max()/3.5])
     
-    mlab.view(azimuth=40, elevation=55, distance=0.75)
-    mlab.view(azimuth=-50, elevation=65, distance=0.95)
-    #mlab.view(focalpoint = [0.0, 1.0, 0.0])
-    #mlab.draw()
-    #mlab.savefig("cone.png")
-    #mlab.show()
-
     engine = mlab.get_engine()
     
     if part is np.imag:
@@ -291,30 +313,45 @@ def plot_riemann_sheets(part=np.real,
         scene.scene.render()
 
     if part is np.imag:
-        surface1 = engine.scenes[0].children[1].children[0].children[0].children[0]
-        surface1.actor.property.backface_culling = True
-        surface2 = engine.scenes[0].children[2].children[0].children[0].children[0]
-        surface2.actor.property.frontface_culling = True
+        pass
+        #surface1 = engine.scenes[0].children[1].children[0].children[0].children[0]
+        #surface1.actor.property.backface_culling = True
+        #surface2 = engine.scenes[0].children[2].children[0].children[0].children[0]
+        #surface2.actor.property.frontface_culling = True
     elif part is np.real:
         # frontface culling of map_trajectory
-        surface = engine.scenes[0].children[0].children[0].children[0].children[0].children[0]
-        surface.actor.property.frontface_culling = True
-        surface1 = engine.scenes[0].children[1].children[0].children[0].children[0]
-        surface1.actor.property.backface_culling = True
-        surface2 = engine.scenes[0].children[2].children[0].children[0].children[0]
-        surface2.actor.property.backface_culling = True
-        surface3 = engine.scenes[0].children[3].children[0].children[0].children[0]
-        surface3.actor.property.backface_culling = True
-        surface5 = engine.scenes[0].children[5].children[0].children[0].children[0]
-        surface5.actor.property.backface_culling = True
-        surface6 = engine.scenes[0].children[6].children[0].children[0].children[0].children[0]
-        surface6.actor.property.backface_culling = True
-        surface11 = engine.scenes[0].children[11].children[0].children[0].children[0].children[0]
-        surface11.actor.property.backface_culling = True
+        pass
+        #surface = engine.scenes[0].children[0].children[0].children[0].children[0].children[0]
+        #surface.actor.property.frontface_culling = True
+        #surface1 = engine.scenes[0].children[1].children[0].children[0].children[0]
+        #surface1.actor.property.backface_culling = True
+        #surface2 = engine.scenes[0].children[2].children[0].children[0].children[0]
+        #surface2.actor.property.backface_culling = True
+        #surface3 = engine.scenes[0].children[3].children[0].children[0].children[0]
+        #surface3.actor.property.backface_culling = True
+        #surface5 = engine.scenes[0].children[5].children[0].children[0].children[0]
+        #surface5.actor.property.backface_culling = True
+        #surface6 = engine.scenes[0].children[6].children[0].children[0].children[0].children[0]
+        #surface6.actor.property.backface_culling = True
+        #surface11 = engine.scenes[0].children[11].children[0].children[0].children[0].children[0]
+        #surface11.actor.property.backface_culling = True
 
+
+    # settings for Fig. 2a) and 2b)
+    if 1:
+        scene = engine.scenes[0]
+        scene.scene.camera.position = [0.39731242769716185, 1.2410028647957307, 0.42627834802260051]
+        scene.scene.camera.focal_point = [0.0, 0.49071651625633239, 0.0]
+        scene.scene.camera.view_angle = 30.0
+        scene.scene.camera.view_up = [-0.16459501739522236, -0.41992228721278874, 0.89250980552072745]
+        scene.scene.camera.clipping_range = [0.53243401166881033, 1.4779210054119616]
+        scene.scene.camera.compute_view_plane_normal()
+        scene.scene.render()
     
-    #mlab.show()
+    # settings for Fig. 2b)
+    
     fig.scene.render_window.aa_frames = 8
+    #mlab.show()
     if part is np.real:
         str_part = "real"
     else:
@@ -326,152 +363,6 @@ def plot_riemann_sheets(part=np.real,
     mlab.savefig("{}_no_axes.png".format(str_part))
 
 
-def circle_EP(**kwargs):
-    """Calculate trajectories around the EP.
-    
-        Parameters:
-        -----------
-            L:  float, optional
-                System length.
-                
-        Returns:
-        --------
-            None
-    """
-    OM = OptoMech(**kwargs)
-    
-    ##
-    # plot amplitudes b0(x), b1(x)
-    ##
-    subplot2grid((2,3), (0,0), colspan=2)
-    
-    x, b0, b1 = OM.solve_ODE()
-    
-    # get adiabatic predictions
-    b0_ad, b1_ad = (OM.Psi_adiabatic[:,0],
-                    OM.Psi_adiabatic[:,1])
-    
-    # account for initial population of states a and b
-    b0_ad *= abs(b0[0])
-    b1_ad *= abs(b1[0])
-
-    # plot data
-    semilogy(x, abs(b0), "r-", label=r"$|b_0|$")
-    semilogy(x, abs(b1), "g-", label=r"$|b_1|$")
-    semilogy(x, abs(b0_ad), "b--", label=r"$|b_0^{\mathrm{ad}}|$")
-    semilogy(x, abs(b1_ad), "k--", label=r"$|b_1^{\mathrm{ad}}|$")
-    #np.savetxt('data.dat', zip(x, abs(b0), abs(b1), abs(b0_ad)))
-    xlim(0, OM.T)
-    ymin, ymax = ylim()
-    ylim(1e-7, 1e9)
-    
-    xlabel("t [a.u.]")
-    ylabel(r"Amplitudes $|b_n(x)|$")
-    
-    print "Diodicity D =", abs(b0[-1])/abs(b1[-1])
-    
-    params = {'legend.fontsize': 'small',
-              'size': 'xsmall'}
-    rcParams.update(params)
-    
-    legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
-           ncol=4, mode="expand", borderaxespad=0.,
-           labelspacing=0.2,
-           columnspacing=0.5,
-           handlelength=3,
-           handletextpad=0.2)
-    
-    ##
-    # plot real/imag(E1(t)), imag(E2(t))
-    ##
-    ax1 = subplot2grid((2,3), (1,0), colspan=2)
-    ax2 = ax1.twinx()
-    set_scientific_axes(ax1, axis='y')
-    set_scientific_axes(ax2, axis='y')
-    
-    Ea, Eb = OM.eVals[:,0], OM.eVals[:,1]
-    t_imag = map_trajectory(abs(b0), abs(b1),
-                             imag(Ea), imag(Eb))
-    t_real = map_trajectory(abs(b0), abs(b1),
-                             real(Ea), real(Eb))
-
-    ax1.plot(x, imag(Ea), "r-", label=r"$\mathrm{Im} E_0$")
-    ax1.plot(x, imag(Eb), "g-", label=r"$\mathrm{Im} E_1$") 
-    ax1.plot(x, t_imag, "k-", label=r'$\mathrm{Im}$ $\mathrm{projection}$')
-    ax2.plot(x, real(Ea), "r--", label=r"$\mathrm{Re} E_0$")
-    ax2.plot(x, real(Eb), "g--", label=r"$\mathrm{Re} E_1$")
-    ax2.plot(x, t_real, "k--", label=r'$\mathrm{Re}$ $\mathrm{projection}$')
-    
-    ax1.set_xlabel("t [a.u.]")
-    ax1.set_ylabel("Energy")
-    ax1.yaxis.set_label_position('left')
-    
-    lines1, labels1 = ax1.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    ax2.legend(lines1 + lines2,
-               labels1 + labels2,
-               bbox_to_anchor=(0., 1.02, 1., .102),
-               loc=3, ncol=2, mode="expand",
-               borderaxespad=0.,
-               labelspacing=0.2,
-               columnspacing=0.5,
-               handlelength=2.5,
-               handletextpad=0.2
-               )
-    
-    ##
-    # plot path around EP
-    ##
-    ax = subplot2grid((2,3), (0,2), aspect=1)
-    set_scientific_axes(ax, axis='both')
-    ax.xaxis.set_label_position('top')
-    ax.yaxis.set_label_position('right')
-    
-    xlabel(r"$\epsilon$")
-    ylabel(r"$\delta$")
-    plot([real(OM.B1),imag(OM.B1)],
-         [real(OM.B2),imag(OM.B2)],"ko-")
-    
-    dx = dy = OM.R * 0.2
-    x0, y0 = OM.get_cycle_parameters(0.)
-    x1, y1 = OM.get_cycle_parameters(OM.t)
-    xlim(min(x1)-dx,max(x1)+dx)
-    ylim(min(y1)-dy,max(y1)+dy)
-    
-    plot(x1, y1, "grey", ls="dotted")
-    plot(x0, y0, "ro", mew=0.0, mec='r')
-    offset=OM.tN/3.
-    start=offset/4.
-    quiver(x1[start:-1:offset], y1[start:-1:offset],
-           x1[1+start::offset]-x1[start:-1:offset],
-           y1[1+start::offset]-y1[start:-1:offset],
-           units='xy', angles='xy', headwidth=6.,
-           color='k', zorder=10)
-           #width=2e-2,
-           #scale_units='inches',
-           #scale=0.0015, color='k', zorder=1)
-    tick_params(axis='both', which='major', labelsize=8)
-    text(real(OM.B1) - OM.R*0.15,
-         imag(OM.B1) + OM.R*0.2, "EP")
-    
-    ##
-    # save figure
-    ##
-    subplots_adjust(#left=0.125,
-                    bottom=None,
-                    #right=0.9,
-                    top=None,
-                    wspace=0.6,
-                    hspace=0.6)
-    
-    filename = ("R_{R}_T_{T}_phase_{init_phase}_"
-                "state_{init_state}_{loop_direction}").format(**kwargs)
-    print "writing ", filename
-    savefig(filename + ".pdf")
-    np.savetxt(filename + ".dat", zip(OM.Psi[:,0], OM.Psi[:,1], b0, b1, Ea, Eb,
-                                      OM.eVecs_r[:,0,0], OM.eVecs_r[:,1,0],
-                                      OM.eVecs_r[:,0,1], OM.eVecs_r[:,1,1]))
-    clf()
 
 def plot_figures(fig='2a', part='imag', direction='-',
                  T=45., R=0.1, gamma=1.):
@@ -485,29 +376,27 @@ def plot_figures(fig='2a', part='imag', direction='-',
     }
     
     if fig == '2a':
-        if direction == '-':
-            settings = {
-                    "init_state": 'b', 
-                    "init_phase": 0, 
-                    "loop_direction": '-',
-                    }
-        else:
-            settings = {
-                    "init_state": 'a', 
-                    "init_phase": 0, 
-                    "loop_direction": '+',
-                    }            
-    
+        settings = {
+                "init_state": 'b', 
+                "init_phase": 0, 
+                "loop_direction": '-',
+                }
     elif fig == '2b':
-            settings = {
-                    "init_state": 'b', 
-                    "init_phase": pi, 
-                    "loop_direction": '-',
-                    }
+        settings = {
+                "init_state": 'a', 
+                "init_phase": 0, 
+                "loop_direction": '+',
+                }            
+    elif fig == '2c':
+        settings = {
+                "init_state": 'b', 
+                "init_phase": pi, 
+                "loop_direction": '-',
+                }
     
     params.update(settings)
     
-    if part is 'imag':
+    if part == 'imag':
         params['part'] = np.imag
     else:
         params['part'] = np.real
@@ -516,18 +405,14 @@ def plot_figures(fig='2a', part='imag', direction='-',
     
     for f in part, part + '_no_axes':
         infile = f + '.png'
-        outfile = 'Fig{}_{}{}.png'.format(fig,f,direction)
-        call = ['convert', '-transparent', 'white', infile, outfile]
+        outfile = 'Fig{}_{}{}_new.png'.format(fig,f,direction)
+        call = ['convert', '-transparent', 'white', '-trim', infile, outfile]
         subprocess.check_call(call)
     
     
 if __name__ == '__main__':
-    
-
     print "Warning: is normalization symmetric?"
     
     import argh
-    import subprocess
-    
     argh.dispatch_command(plot_figures)
     
