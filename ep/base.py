@@ -3,7 +3,8 @@
 from ep.helpers import c_eig, c_trapz
 import numpy as np
 from numpy import pi
-from scipy.integrate import complex_ode, ode
+from scipy.integrate import complex_ode
+
 
 class Base:
     """Base class."""
@@ -83,17 +84,14 @@ class Base:
         
         self.calc_adiabatic_state = calc_adiabatic_state
  
- 
     def get_cycle_parameters(self, t):
         """get_cycle_parameters method is overwritten by inheriting classes."""
         pass
 
-
     def H(self, t, x, y):
         """Hamiltonian H is overwritten by inheriting classes."""
         pass
-    
-    
+
     def sample_H(self, xN=None, yN=None):
         """Sample local eigenvalue geometry of Hamiltonian H.
         
@@ -186,7 +184,6 @@ class Base:
                 #print z_4D.max()
         return X, Y, Z, F
        
-        
     def _get_c_eigensystem(self):
         """Calculate the instantaneous eigenvalues and eigenvectors for
         all times t=0,...,T and remove any discontinuities."""
@@ -242,7 +239,6 @@ class Base:
         self.eVals = eVals
         self.eVecs_l = eVecs_l
         self.eVecs_r = eVecs_r
-        
     
     def _get_adiabatic_state(self, n):
         """Calculate the adiabatical dynamic phase factor exp(1j*theta).
@@ -263,7 +259,6 @@ class Base:
         exp_a, exp_b = [ np.exp(1j*theta) for theta in self.theta[n,:] ]
         
         return exp_a, exp_b
-            
 
     def _get_gain_state(self):
         """Determine the (relative) gain and loss states.
@@ -284,7 +279,6 @@ class Base:
             self.eVals[:,:] = self.eVals[:,::-1]
             self.eVecs_r[:,:,:] = self.eVecs_r[:,:,::-1]
             self.eVecs_l[:,:,:] = self.eVecs_l[:,:,::-1]
-
     
     def _get_init_state(self):
         """Return the initial state vector at time t=0.
@@ -322,7 +316,6 @@ class Base:
             eVec0_r /= norm(eVec0_r.conj(), eVec0_r)
         
         return eVec0_r
- 
    
     def solve_ODE(self):
         """Iteratively solve the ODE dy/dt = f(t,y) on a discretized time-grid.

@@ -9,7 +9,7 @@ class Toymodel(Base):
     
     def __init__(self, **kwargs):
         """Copy methods and variables from Base class."""
-        EP_Base.__init__(self, **kwargs)
+        Base.__init__(self, **kwargs)
 
 
     def H(self, t):
@@ -111,8 +111,8 @@ class Toymodel(Base):
                 
         """
         
-        xlabel("time [a.u.]")
-        ylabel("Amplutide")
+        plt.xlabel("time [a.u.]")
+        plt.ylabel("Amplutide")
         
         dtf_a1_x, dtf_a1_y = np.loadtxt("datathief/datathief_fig_a_a1t.dat",
                                         unpack=True)
@@ -124,13 +124,13 @@ class Toymodel(Base):
                                         unpack=True, delimiter=",")
         
         if not init_state:
-            title(r"$\varphi_0$ = gain state")
-            semilogy(dtf_a1_x, dtf_a1_y, "k-o",  label=r"$a_1(t)$")
-            semilogy(dtf_b1_x, dtf_b1_y, "k-s", label=r"$b_1(t)$")
+            plt.title(r"$\varphi_0$ = gain state")
+            plt.semilogy(dtf_a1_x, dtf_a1_y, "k-o",  label=r"$a_1(t)$")
+            plt.semilogy(dtf_b1_x, dtf_b1_y, "k-s", label=r"$b_1(t)$")
         else:
-            title(r"$\varphi_0$ = loss state")
-            semilogy(dtf_a2_x, dtf_a2_y, "k-o",  label=r"$a_2(t)$")
-            semilogy(dtf_b2_x, dtf_b2_y, "k-s", label=r"$b_2(t)$")
+            plt.title(r"$\varphi_0$ = loss state")
+            plt.semilogy(dtf_a2_x, dtf_a2_y, "k-o",  label=r"$a_2(t)$")
+            plt.semilogy(dtf_b2_x, dtf_b2_y, "k-s", label=r"$b_2(t)$")
             
 
 if __name__ == '__main__':

@@ -2,10 +2,9 @@ from __future__ import division
 from matplotlib.pyplot import *
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
-from numpy import pi 
-import os.path
-from scipy.linalg import eig, inv, norm
-from scipy.integrate import trapz, ode, complex_ode
+from numpy import pi
+from scipy.linalg import eig
+from scipy.integrate import trapz
 
 
 class FileOperations():
@@ -14,25 +13,25 @@ class FileOperations():
     
         ### possibly outdated -> json.dumps ###
     """
-    
+
     def __init__(self, filename=None):
         filename = '{}.cfg'.format(filename)
         self.file = open(filename, 'a')
-        
+
     def write(self, text):
         print text
         self.file.write(text)
         self.file.write("\n")
-    
+
     def close(self):
         self.file.close()
-        
+
 
 def c_eig(H, left=False, **kwargs):
     """Wrapper for scipy.linalg.eig(H) that returns modified eigenvalues
     and eigenvectors.
     
-    The returned vectors are normalized according to the biorthogonal product, i.e.,
+    The returned vectors are normalized according to the biorthogonal product,
         
         <psi_l|phi_r> = delta_{psi,phi}
     
