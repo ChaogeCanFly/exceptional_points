@@ -61,7 +61,9 @@ class Generate_Profiles(object):
 
         Attributes:
         -----------
-
+            cwd: str
+                Current working directory.
+            WG: Waveguide class object
 
         Notes:
         -----
@@ -94,9 +96,9 @@ class Generate_Profiles(object):
         self.use_variable_length = use_variable_length
         self.smearing = smearing
 
-        self.pwd = os.getcwd()
+        self.cwd = os.getcwd()
         self.WG = Waveguide(**waveguide_args)
-        self.xml = "{}/{}".format(self.pwd, input_xml)
+        self.xml = "{}/{}".format(self.cwd, input_xml)
 
         if heatmap:
             self._heatmap()
@@ -145,9 +147,9 @@ class Generate_Profiles(object):
 
 
             if self.custom_directory:
-                self.directory = self.pwd + "/" + self.custom_directory
+                self.directory = self.cwd + "/" + self.custom_directory
             else:
-                self.directory = (self.pwd + "{}/eta_{eta:.3f}_L_{L}_Ln_"
+                self.directory = (self.cwd + "{}/eta_{eta:.3f}_L_{L}_Ln_"
                                   "{Ln:.3f}_{loop_direction}").format(**params)
                 if not os.path.exists(self.directory):
                     os.makedirs(self.directory)
@@ -207,7 +209,7 @@ class Generate_Profiles(object):
             with open(self.directory + "/input.xml", "w") as out_xml:
                 out_xml.write(src_xml)
 
-            os.chdir(self.pwd)
+            os.chdir(self.cwd)
 
 
 def parse_arguments():
