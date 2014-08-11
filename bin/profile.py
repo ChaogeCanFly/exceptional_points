@@ -58,6 +58,8 @@ class Generate_Profiles(object):
                 size.
             smearing: bool
                 Return a profile which is smeared out at the edges.
+            heatmap: bool
+                Whether to calculate a (eta,L) heatmap.
 
         Attributes:
         -----------
@@ -73,11 +75,11 @@ class Generate_Profiles(object):
 
     """
     def __init__(self, eps_factor=1.0, eps=None, delta=0.0,
-                 full_evolution=False, write_cfg=True,
-                 input_xml="input.xml", pphw="200",
-                 nx_part="50", custom_directory=None,
-                 neumann=1, use_variable_length=False, smearing=False,
-                 heatmap=False, **waveguide_args):
+            full_evolution=False, write_cfg=True,
+            input_xml="input.xml", pphw="200",
+            nx_part="50", custom_directory=None,
+            neumann=1, use_variable_length=False, smearing=False,
+            heatmap=False, **waveguide_args):
 
         self.waveguide_args = waveguide_args
         # make waveguide_args available in class namespace
@@ -100,14 +102,16 @@ class Generate_Profiles(object):
         self.WG = Waveguide(**waveguide_args)
         self.xml = "{}/{}".format(self.cwd, input_xml)
 
-        if heatmap:
+        self.heatmap = heatmap
+
+        if self.heatmap:
             self._heatmap()
         else:
             self._length()
 
     def _heatmap(self):
         """Generate a heatmap in (eta, L) space.
-        
+
         #TODO: add custom ranges for L and eta
         """
 
@@ -122,7 +126,7 @@ class Generate_Profiles(object):
                 for eta in eta_range:
                     self.waveguide_args['L'] = L
                     self.waveguide_args['eta'] = eta
-                    self._length(**self.waveguide_args)
+                    self._length()
 
     def _length(self):
         """Generate length-dependent input-files for VSC runs."""
@@ -137,7 +141,8 @@ class Generate_Profiles(object):
             L_range = L_range[-1:]
 
         for Ln in L_range:
-            params = {'L': Ln}
+            self.Ln = Ln
+            params = {'Ln': Ln}
             params.update(**self.waveguide_args)
 
             params['init_phase'] *= pi
@@ -145,11 +150,10 @@ class Generate_Profiles(object):
                              "_eta_{eta}_{loop_direction}").format(**params)
             self.filename.replace(".", "")
 
-
             if self.custom_directory:
                 self.directory = self.cwd + "/" + self.custom_directory
             else:
-                self.directory = (self.cwd + "{}/eta_{eta:.3f}_L_{L}_Ln_"
+                self.directory = (self.cwd + "/eta_{eta:.3f}_L_{L}_Ln_"
                                   "{Ln:.3f}_{loop_direction}").format(**params)
                 if not os.path.exists(self.directory):
                     os.makedirs(self.directory)
@@ -165,7 +169,7 @@ class Generate_Profiles(object):
             if self.write_cfg:
                 with open("EP_SETTINGS.cfg", "w") as f:
                     d = {key: value for key, value in vars(self.WG).items()
-                          if not isinstance(value, np.ndarray)}
+                            if not isinstance(value, np.ndarray)}
                     data = json.dumps(d, sort_keys=True, indent=-1)
                     f.write(data)
 
@@ -178,20 +182,20 @@ class Generate_Profiles(object):
 
             self._copy_and_replace(self.xml)
 
-        def _copy_and_replace(self, infile):
-            """Copy the input file and write to output file with replaced
-            values."""
+    def _copy_and_replace(self, infile):
+        """Copy the input file and write to output file with replaced
+        values."""
 
-            shutil.copy(self.xml, self.directory)
+        shutil.copy(self.xml, self.directory)
 
-            N_file = len(self.WG.x)
-            file_upper = self.filename + ".upper_profile"
-            file_lower = self.filename + ".lower_profile"
+        N_file = len(self.WG.t)
+        file_upper = self.filename + ".upper_profile"
+        file_lower = self.filename + ".lower_profile"
 
-            replacements = {
+        replacements = {
                 'modes"> modes':     'modes"> {}'.format(self.N),
                 'halfwave"> pphw':   'halfwave"> {}'.format(self.pphw),
-                'L"> L':             'L"> {}'.format(Ln),
+                'L"> L':             'L"> {}'.format(self.Ln),
                 'N_file"> N_file':   'N_file"> {}'.format(N_file),
                 'file"> file_upper': 'file"> {}'.format(file_upper),
                 'file"> file_lower': 'file"> {}'.format(file_lower),
@@ -200,16 +204,16 @@ class Generate_Profiles(object):
                 'Gamma0"> Gamma0':   'Gamma0"> {}'.format(self.eta)
                 }
 
-            with open(self.xml) as src_xml:
-                src_xml = src_xml.read()
+        with open(self.xml) as src_xml:
+            src_xml = src_xml.read()
 
-            for src, target in replacements.iteritems():
-                src_xml = src_xml.replace(src, target)
+        for src, target in replacements.iteritems():
+            src_xml = src_xml.replace(src, target)
 
-            with open(self.directory + "/input.xml", "w") as out_xml:
-                out_xml.write(src_xml)
+        with open(self.directory + "/input.xml", "w") as out_xml:
+            out_xml.write(src_xml)
 
-            os.chdir(self.cwd)
+        os.chdir(self.cwd)
 
 
 def parse_arguments():
@@ -226,45 +230,45 @@ def parse_arguments():
     parser = argparse.ArgumentParser(formatter_class=help_formatter)
 
     parser.add_argument("--eta", nargs="?", default=0.0, type=float,
-                        help="Dissipation coefficient")
+            help="Dissipation coefficient")
     parser.add_argument("-L", nargs="?", default=100, type=float,
-                        help="Waveguide length")
+            help="Waveguide length")
     parser.add_argument("--N", nargs="?", default=1.05, type=float,
-                        help="Number of open modes int(k*d/pi)")
+            help="Number of open modes int(k*d/pi)")
     parser.add_argument("-t", "--loop-type", default="Bell", type=str,
-                        help="Specifies path in (epsilon,delta) parameter space")
+            help="Specifies path in (epsilon,delta) parameter space")
     parser.add_argument("-o", "--loop-direction", default="-", type=str,
-                        help="Loop direction around the EP")
+            help="Loop direction around the EP")
     parser.add_argument("--init-phase", default=0.0, type=float,
-                        help="Starting angle on parameter trajectory")
+            help="Starting angle on parameter trajectory")
     parser.add_argument("-T", "--theta", default=0.0, type=float,
-                        help="Phase difference bewteen upper and lower boundary (in multiples of pi)")
+            help="Phase difference bewteen upper and lower boundary (in multiples of pi)")
     parser.add_argument("--eps-factor", nargs="?", default=1.0, type=float,
-                        help="Constant to shift x_EP -> x_EP * eps_factor")
+            help="Constant to shift x_EP -> x_EP * eps_factor")
     parser.add_argument("--eps", nargs="?", default=None, type=float,
-                        help="Set value for x_EP to eps (only done if not None)")
+            help="Set value for x_EP to eps (only done if not None)")
     parser.add_argument("-d", "--delta", nargs="?", default=0.0, type=float,
-                        help="Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta)")
+            help="Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta)")
     parser.add_argument("-f", "--full-evolution", action="store_true",
-                        help="Whether to build intermediate waveguide boundaries with x < L")
+            help="Whether to build intermediate waveguide boundaries with x < L")
     parser.add_argument("-w", "--write-cfg", action="store_false",
-                        help="Whether to NOT write WG class attributes to file")
+            help="Whether to NOT write WG class attributes to file")
     parser.add_argument("-i", "--input-xml", default="input.xml", type=str,
-                        help="Input xml file to be supplied with length-dependent data")
+            help="Input xml file to be supplied with length-dependent data")
     parser.add_argument("-p", "--pphw", default=200, type=int,
-                        help="Points per half wavelength (determines grid-spacing)")
+            help="Points per half wavelength (determines grid-spacing)")
     parser.add_argument("-x", "--nx-part", default=100, type=int,
-                        help="Parts into which the Border Hamiltonian rectangle is divided into")
+            help="Parts into which the Border Hamiltonian rectangle is divided into")
     parser.add_argument("-c", "--custom-directory", default=None, type=str,
-                        help="Custom directory into which to copy the .xml and .profile files.")
+            help="Custom directory into which to copy the .xml and .profile files.")
     parser.add_argument("-n", "--neumann", default=1, type=int,
-                        help="Whether to use Neumann boundary conditions.")
+            help="Whether to use Neumann boundary conditions.")
     parser.add_argument("-u", "--use-variable-length", action="store_true",
-                        help="Whether to use a multiple of the wavelength for the system size.")
+            help="Whether to use a multiple of the wavelength for the system size.")
     parser.add_argument("-s", "--smearing", action="store_true",
-                        help="Return a profile which is smeared out at the edges.")
+            help="Return a profile which is smeared out at the edges.")
     parser.add_argument("-H", "--heatmap", action="store_true",
-                        help="Whether to calculate a (eta,L) heatmap.")
+            help="Whether to calculate a (eta,L) heatmap.")
 
     parse_args = parser.parse_args()
     kwargs = vars(parse_args)
@@ -279,4 +283,4 @@ def parse_arguments():
 
 
 if __name__ == '__main__':
-    Generate_Profiles(**parse_arguments)
+    Generate_Profiles(**parse_arguments())
