@@ -101,6 +101,7 @@ class Generate_Profiles(object):
         self.cwd = os.getcwd()
         self.WG = Waveguide(**waveguide_args)
         self.xml = "{}/{}".format(self.cwd, input_xml)
+        #self.xml = os.path.abspath(input_xml)
 
         self.heatmap = heatmap
 
@@ -129,7 +130,11 @@ class Generate_Profiles(object):
                     self._length()
 
     def _length(self):
-        """Generate length-dependent input-files for VSC runs."""
+        """Generate length-dependent input-files for VSC runs.
+        
+        #TODO: * replace cwd with os.path.abspath()
+               * combine filename and directory?
+        """
 
         if self.use_variable_length:
             lambda0 = np.abs(pi/(self.WG.kr + self.delta))
@@ -152,9 +157,13 @@ class Generate_Profiles(object):
 
             if self.custom_directory:
                 self.directory = self.cwd + "/" + self.custom_directory
+                # self.directory = os.path.abspath(self.custom_directory)
             else:
                 self.directory = (self.cwd + "/eta_{eta:.3f}_L_{L}_Ln_"
                                   "{Ln:.3f}_{loop_direction}").format(**params)
+                # self.directory = ("/eta_{eta:.3f}_L_{L}_Ln_{Ln:.3f}_"
+                #                   "{loop_direction}").format(**params)
+                # self.directory = os.path.abspath(self.directory)
                 if not os.path.exists(self.directory):
                     os.makedirs(self.directory)
 
