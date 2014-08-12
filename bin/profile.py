@@ -39,8 +39,6 @@ class Generate_Profiles(object):
                 Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta).
             full_evolution: bool
                 Whether to build intermediate waveguide boundaries with x < L.
-            write_cfg: bool
-                Whether to write WG class attributes to file.
             input_xml: str
                 Input xml file to be supplied with length-dependent data.
             pphw: int
@@ -75,7 +73,7 @@ class Generate_Profiles(object):
 
     """
     def __init__(self, eps_factor=1.0, eps=None, delta=0.0,
-            full_evolution=False, write_cfg=True,
+            full_evolution=False,
             input_xml="input.xml", pphw="200",
             nx_part="50", custom_directory=None,
             neumann=1, use_variable_length=False, smearing=False,
@@ -89,7 +87,6 @@ class Generate_Profiles(object):
         self.eps_factor = eps_factor
         self.delta = delta
         self.full_evolution = full_evolution
-        self.write_cfg = write_cfg
         self.input_xml = input_xml
         self.pphw = pphw
         self.nx_part = nx_part
@@ -100,8 +97,7 @@ class Generate_Profiles(object):
 
         self.cwd = os.getcwd()
         self.WG = Waveguide(**waveguide_args)
-        self.xml = "{}/{}".format(self.cwd, input_xml)
-        #self.xml = os.path.abspath(input_xml)
+        self.xml = os.path.abspath(input_xml)
 
         self.heatmap = heatmap
 
@@ -175,12 +171,11 @@ class Generate_Profiles(object):
                 self.WG.x_EP *= self.eps_factor
 
             # print wire properties to file
-            if self.write_cfg:
-                with open("EP_SETTINGS.cfg", "w") as f:
-                    d = {key: value for key, value in vars(self.WG).items()
-                            if not isinstance(value, np.ndarray)}
-                    data = json.dumps(d, sort_keys=True, indent=-1)
-                    f.write(data)
+            with open("EP_SETTINGS.cfg", "w") as f:
+                d = {key: value for key, value in vars(self.WG).items()
+                        if not isinstance(value, np.ndarray)}
+                data = json.dumps(d, sort_keys=True, indent=-1)
+                f.write(data)
 
             self.WG.y_EP += self.delta
             x = self.WG.t
@@ -191,11 +186,13 @@ class Generate_Profiles(object):
 
             self._copy_and_replace(self.xml)
 
+            os.chdir(self.cwd)
+
     def _copy_and_replace(self, infile):
         """Copy the input file and write to output file with replaced
         values."""
 
-        shutil.copy(self.xml, self.directory)
+        shutil.copy(infile, self.directory)
 
         N_file = len(self.WG.t)
         file_upper = self.filename + ".upper_profile"
@@ -222,15 +219,13 @@ class Generate_Profiles(object):
         with open(self.directory + "/input.xml", "w") as out_xml:
             out_xml.write(src_xml)
 
-        os.chdir(self.cwd)
-
 
 def parse_arguments():
-    """Parse input for function generate_length(*args, **kwargs).
+    """Parse input for function Generate_Profiles(*args, **kwargs).
 
         Returns:
         --------
-            kwargs: dict
+            parse_args: dict
     """
     import json
     import argparse
@@ -239,56 +234,64 @@ def parse_arguments():
     parser = argparse.ArgumentParser(formatter_class=help_formatter)
 
     parser.add_argument("--eta", nargs="?", default=0.0, type=float,
-            help="Dissipation coefficient")
+                        help="Dissipation coefficient")
     parser.add_argument("-L", nargs="?", default=100, type=float,
-            help="Waveguide length")
+                        help="Waveguide length")
     parser.add_argument("--N", nargs="?", default=1.05, type=float,
-            help="Number of open modes int(k*d/pi)")
+                        help="Number of open modes int(k*d/pi)")
     parser.add_argument("-t", "--loop-type", default="Bell", type=str,
-            help="Specifies path in (epsilon,delta) parameter space")
+                        help="Specifies path in (eps,delta) parameter space")
     parser.add_argument("-o", "--loop-direction", default="-", type=str,
-            help="Loop direction around the EP")
+                        help="Loop direction around the EP")
     parser.add_argument("--init-phase", default=0.0, type=float,
-            help="Starting angle on parameter trajectory")
+                        help="Starting angle on parameter trajectory")
     parser.add_argument("-T", "--theta", default=0.0, type=float,
-            help="Phase difference bewteen upper and lower boundary (in multiples of pi)")
+                        help=("Phase difference between upper and lower "
+                              "boundary (in multiples of pi)"))
     parser.add_argument("--eps-factor", nargs="?", default=1.0, type=float,
-            help="Constant to shift x_EP -> x_EP * eps_factor")
+                        help="Constant to shift x_EP -> x_EP * eps_factor")
     parser.add_argument("--eps", nargs="?", default=None, type=float,
-            help="Set value for x_EP to eps (only done if not None)")
+                        help="Set value for x_EP to eps (only if not None)")
     parser.add_argument("-d", "--delta", nargs="?", default=0.0, type=float,
-            help="Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta)")
+                        help=("Constant to set y_EP (or, equivalently, "
+                              "y_EP -> y_EP + delta)"))
     parser.add_argument("-f", "--full-evolution", action="store_true",
-            help="Whether to build intermediate waveguide boundaries with x < L")
+                        help=("Whether to build intermediate waveguide "
+                              "boundaries with x < L"))
     parser.add_argument("-w", "--write-cfg", action="store_false",
-            help="Whether to NOT write WG class attributes to file")
+                        help="Whether to NOT write WG class attributes to file")
     parser.add_argument("-i", "--input-xml", default="input.xml", type=str,
-            help="Input xml file to be supplied with length-dependent data")
+                        help=("Input xml file to be supplied with length-"
+                              "dependent data"))
     parser.add_argument("-p", "--pphw", default=200, type=int,
-            help="Points per half wavelength (determines grid-spacing)")
+                        help=("Points per half wavelength (determines grid-"
+                              "spacing)"))
     parser.add_argument("-x", "--nx-part", default=100, type=int,
-            help="Parts into which the Border Hamiltonian rectangle is divided into")
+                        help=("Parts into which the Border Hamiltonian "
+                              "rectangle is divided into"))
     parser.add_argument("-c", "--custom-directory", default=None, type=str,
-            help="Custom directory into which to copy the .xml and .profile files.")
+                        help=("Custom directory into which to copy the .xml "
+                              "and .profile files."))
     parser.add_argument("-n", "--neumann", default=1, type=int,
-            help="Whether to use Neumann boundary conditions.")
+                        help="Whether to use Neumann boundary conditions.")
     parser.add_argument("-u", "--use-variable-length", action="store_true",
-            help="Whether to use a multiple of the wavelength for the system size.")
+                        help=("Whether to use a multiple of the wavelength for "
+                              "the system size."))
     parser.add_argument("-s", "--smearing", action="store_true",
-            help="Return a profile which is smeared out at the edges.")
+                        help=("Return a profile which is smeared out at "
+                              "the edges."))
     parser.add_argument("-H", "--heatmap", action="store_true",
-            help="Whether to calculate a (eta,L) heatmap.")
+                        help="Whether to calculate a (eta,L) heatmap.")
 
-    parse_args = parser.parse_args()
-    kwargs = vars(parse_args)
+    parse_args = vars(parser.parse_args())
 
-    print json.dumps(kwargs, sort_keys=True, indent=-1)
-    if parse_args.write_cfg:
-        with open("EP_PARSE_SETTINGS.cfg", "w") as f:
-            data = json.dumps(kwargs, sort_keys=True, indent=-1)
-            f.write(data)
+    print json.dumps(parse_args, sort_keys=True, indent=-1)
 
-    return kwargs
+    with open("EP_PARSE_SETTINGS.cfg", "w") as f:
+        data = json.dumps(parse_args, sort_keys=True, indent=-1)
+        f.write(data)
+
+    return parse_args
 
 
 if __name__ == '__main__':
