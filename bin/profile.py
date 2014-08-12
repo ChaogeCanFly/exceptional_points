@@ -73,11 +73,11 @@ class Generate_Profiles(object):
 
     """
     def __init__(self, eps_factor=1.0, eps=None, delta=0.0,
-            full_evolution=False,
-            input_xml="input.xml", pphw="200",
-            nx_part="50", custom_directory=None,
-            neumann=1, use_variable_length=False, smearing=False,
-            heatmap=False, **waveguide_args):
+                 full_evolution=False,
+                 input_xml="input.xml", pphw="200",
+                 nx_part="50", custom_directory=None,
+                 neumann=1, use_variable_length=False, smearing=False,
+                 heatmap=False, **waveguide_args):
 
         self.waveguide_args = waveguide_args
         # make waveguide_args available in class namespace
@@ -147,9 +147,16 @@ class Generate_Profiles(object):
             params.update(**self.waveguide_args)
 
             params['init_phase'] *= pi
-            self.filename = ("N_{N}_{loop_type}_phase_{init_phase:.3f}pi_L_{L}"
-                             "_eta_{eta}_{loop_direction}").format(**params)
-            self.filename.replace(".", "")
+            ID = ("N_{N}_t_{loop_type}_phase_{init_phase:.3f}_L_{L}_Ln_{Ln}_"
+                  "eta_{eta}_direction_{loop_direction}").format(**params)
+            # ID.replace(".", "")
+            self.filename = ID
+            self.directory = os.path.abspath(ID)
+
+            # self.filename = ("N_{N}_{loop_type}_phase_{init_phase:.3f}pi_L_{L}"
+            #                  "_eta_{eta}_{loop_direction}").format(**params)
+            # self.directory = (self.cwd + "/eta_{eta:.3f}_L_{L}_Ln_"
+            #                   "{Ln:.3f}_{loop_direction}").format(**params)
 
             if self.custom_directory:
                 self.directory = self.cwd + "/" + self.custom_directory
