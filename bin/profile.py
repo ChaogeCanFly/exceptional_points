@@ -88,20 +88,25 @@ class Generate_Profiles(object):
         self.delta = delta
         self.full_evolution = full_evolution
         self.input_xml = input_xml
+        self.xml = os.path.abspath(input_xml)
         self.pphw = pphw
         self.nx_part = nx_part
         self.custom_directory = custom_directory
         self.neumann = neumann
         self.use_variable_length = use_variable_length
         self.smearing = smearing
+        self.heatmap = heatmap
 
         self.cwd = os.getcwd()
         self.WG = Waveguide(**waveguide_args)
-        self.xml = os.path.abspath(input_xml)
 
-        self.heatmap = heatmap
+        if self.eps:
+            self.WG.x_EP = self.eps
+        else:
+            self.WG.x_EP *= self.eps_factor
+        self.WG.y_EP += self.delta
 
-        if self.heatmap:
+        if heatmap:
             self._heatmap()
         else:
             self._length()
@@ -118,19 +123,14 @@ class Generate_Profiles(object):
         L_range = np.arange(0.25, 2.35, 0.25)*L0
         eta_range = np.arange(0.1, 1.35, 0.25)*eta0
 
-        if self.heatmap:
-            for L in L_range:
-                for eta in eta_range:
-                    self.waveguide_args['L'] = L
-                    self.waveguide_args['eta'] = eta
-                    self._length()
+        for L in L_range:
+            for eta in eta_range:
+                self.waveguide_args['L'] = L
+                self.waveguide_args['eta'] = eta
+                self._length()
 
     def _length(self):
-        """Generate length-dependent input-files for VSC runs.
-        
-        #TODO: * replace cwd with os.path.abspath()
-               * combine filename and directory?
-        """
+        """Generate length-dependent input-files for VSC runs."""
 
         if self.use_variable_length:
             lambda0 = np.abs(pi/(self.WG.kr + self.delta))
@@ -151,40 +151,24 @@ class Generate_Profiles(object):
                   "eta_{eta}_direction_{loop_direction}").format(**params)
             # ID.replace(".", "")
             self.filename = ID
-            self.directory = os.path.abspath(ID)
-
-            # self.filename = ("N_{N}_{loop_type}_phase_{init_phase:.3f}pi_L_{L}"
-            #                  "_eta_{eta}_{loop_direction}").format(**params)
-            # self.directory = (self.cwd + "/eta_{eta:.3f}_L_{L}_Ln_"
-            #                   "{Ln:.3f}_{loop_direction}").format(**params)
 
             if self.custom_directory:
-                self.directory = self.cwd + "/" + self.custom_directory
-                # self.directory = os.path.abspath(self.custom_directory)
+                self.directory = os.path.abspath(self.custom_directory)
             else:
-                self.directory = (self.cwd + "/eta_{eta:.3f}_L_{L}_Ln_"
-                                  "{Ln:.3f}_{loop_direction}").format(**params)
-                # self.directory = ("/eta_{eta:.3f}_L_{L}_Ln_{Ln:.3f}_"
-                #                   "{loop_direction}").format(**params)
-                # self.directory = os.path.abspath(self.directory)
-                if not os.path.exists(self.directory):
-                    os.makedirs(self.directory)
+                self.directory = os.path.abspath(ID)
+
+            if not os.path.exists(self.directory):
+                os.makedirs(self.directory)
 
             os.chdir(self.directory)
 
-            if self.eps:
-                self.WG.x_EP = self.eps
-            else:
-                self.WG.x_EP *= self.eps_factor
-
-            # print wire properties to file
+            # print profile properties to file
             with open("EP_SETTINGS.cfg", "w") as f:
                 d = {key: value for key, value in vars(self.WG).items()
                         if not isinstance(value, np.ndarray)}
                 data = json.dumps(d, sort_keys=True, indent=-1)
                 f.write(data)
 
-            self.WG.y_EP += self.delta
             x = self.WG.t
             xi_lower, xi_upper = self.WG.get_boundary(smearing=self.smearing)
 
@@ -192,7 +176,6 @@ class Generate_Profiles(object):
             np.savetxt(self.filename + ".lower_profile", zip(x, xi_lower))
 
             self._copy_and_replace(self.xml)
-
             os.chdir(self.cwd)
 
     def _copy_and_replace(self, infile):
@@ -223,7 +206,8 @@ class Generate_Profiles(object):
         for src, target in replacements.iteritems():
             src_xml = src_xml.replace(src, target)
 
-        with open(self.directory + "/input.xml", "w") as out_xml:
+        out_xml = os.path.abspath("input.xml")
+        with open(out_xml, "w") as out_xml:
             out_xml.write(src_xml)
 
 
