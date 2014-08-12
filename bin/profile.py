@@ -127,6 +127,15 @@ class Generate_Profiles(object):
     def _length(self):
         """Generate length-dependent input-files for VSC runs."""
 
+        # calculate the waveguide data
+        self.WG = Waveguide(**self.waveguide_args)
+
+        if self.eps:
+            self.WG.x_EP = self.eps
+        else:
+            self.WG.x_EP *= self.eps_factor
+        self.WG.y_EP += self.delta
+
         if self.use_variable_length:
             lambda0 = np.abs(pi/(self.WG.kr + self.delta))
             L_range = np.arange(lambda0, self.L, 2*lambda0)
@@ -141,8 +150,8 @@ class Generate_Profiles(object):
 
             ID_params = {'Ln': Ln}
             ID_params.update(**self.waveguide_args)
-            ID = ("N_{N}_t_{loop_type}_phase_{init_phase:.3f}_L_{L}_Ln_{Ln}_"
-                  "eta_{eta}_direction_{loop_direction}").format(**ID_params)
+            ID = ("N_{N}_t_{loop_type}_phase_{init_phase:.3f}_L_{L}_Ln_{Ln:.3f}"
+                  "_eta_{eta}_direction_{loop_direction}").format(**ID_params)
             # ID.replace(".", "")
             self.filename = ID
 
@@ -162,15 +171,6 @@ class Generate_Profiles(object):
                         if not isinstance(value, np.ndarray)}
                 data = json.dumps(d, sort_keys=True, indent=-1)
                 f.write(data)
-
-            # calculate the waveguide data
-            self.WG = Waveguide(**self.waveguide_args)
-
-            if self.eps:
-                self.WG.x_EP = self.eps
-            else:
-                self.WG.x_EP *= self.eps_factor
-            self.WG.y_EP += self.delta
 
             x = self.WG.t
             xi_lower, xi_upper = self.WG.get_boundary(smearing=self.smearing)
@@ -252,8 +252,6 @@ def parse_arguments():
     parser.add_argument("-f", "--full-evolution", action="store_true",
                         help=("Whether to build intermediate waveguide "
                               "boundaries with x < L"))
-    parser.add_argument("-w", "--write-cfg", action="store_false",
-                        help="Whether to NOT write WG class attributes to file")
     parser.add_argument("-i", "--input-xml", default="input.xml", type=str,
                         help=("Input xml file to be supplied with length-"
                               "dependent data"))
