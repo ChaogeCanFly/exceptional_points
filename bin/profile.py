@@ -98,13 +98,7 @@ class Generate_Profiles(object):
         self.heatmap = heatmap
 
         self.cwd = os.getcwd()
-        self.WG = Waveguide(**waveguide_args)
 
-        if self.eps:
-            self.WG.x_EP = self.eps
-        else:
-            self.WG.x_EP *= self.eps_factor
-        self.WG.y_EP += self.delta
 
         if heatmap:
             self._heatmap()
@@ -125,8 +119,9 @@ class Generate_Profiles(object):
 
         for L in L_range:
             for eta in eta_range:
-                self.waveguide_args['L'] = L
-                self.waveguide_args['eta'] = eta
+                params = {'L': L,
+                          'eta': eta}
+                self.waveguide_args.update(**params)
                 self._length()
 
     def _length(self):
@@ -143,12 +138,11 @@ class Generate_Profiles(object):
 
         for Ln in L_range:
             self.Ln = Ln
-            params = {'Ln': Ln}
-            params.update(**self.waveguide_args)
 
-            params['init_phase'] *= pi
+            ID_params = {'Ln': Ln}
+            ID_params.update(**self.waveguide_args)
             ID = ("N_{N}_t_{loop_type}_phase_{init_phase:.3f}_L_{L}_Ln_{Ln}_"
-                  "eta_{eta}_direction_{loop_direction}").format(**params)
+                  "eta_{eta}_direction_{loop_direction}").format(**ID_params)
             # ID.replace(".", "")
             self.filename = ID
 
@@ -168,6 +162,15 @@ class Generate_Profiles(object):
                         if not isinstance(value, np.ndarray)}
                 data = json.dumps(d, sort_keys=True, indent=-1)
                 f.write(data)
+
+            # calculate the waveguide data
+            self.WG = Waveguide(**self.waveguide_args)
+
+            if self.eps:
+                self.WG.x_EP = self.eps
+            else:
+                self.WG.x_EP *= self.eps_factor
+            self.WG.y_EP += self.delta
 
             x = self.WG.t
             xi_lower, xi_upper = self.WG.get_boundary(smearing=self.smearing)
