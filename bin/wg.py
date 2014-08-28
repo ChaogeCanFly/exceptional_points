@@ -267,8 +267,8 @@ class Diodicity:
             self.Z = np.dstack((Z0,Z1))
 
         # set global fontsize to 10
-        plt..rcParams.update({'font.size': 10,
-                              'axes.titlesize': 10})
+        plt.rcParams.update({'font.size': 10,
+                             'axes.titlesize': 10})
 
         f, axes = plt.subplots(nrows=1, ncols=2)
         plt.subplots_adjust(wspace=0.25)
