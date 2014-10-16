@@ -153,7 +153,6 @@ class Generate_Profiles(object):
             ID_params.update(**self.waveguide_args)
             ID = ("N_{N}_t_{loop_type}_phase_{init_phase:.3f}_L_{L}_Ln_{Ln:.3f}"
                   "_eta_{eta}_direction_{loop_direction}").format(**ID_params)
-            # ID.replace(".", "")
             self.filename = ID
 
             if self.custom_directory:
