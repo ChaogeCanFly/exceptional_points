@@ -34,7 +34,7 @@ class Generate_Profiles(object):
             eps_factor: float
                 Constant to shift x_EP -> x_EP * eps_factor.
             eps: float
-                Set value for x_EP to eps (only done if set_x_EP=True).
+                Set value for x_EP to eps.
             delta: float
                 Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta).
             full_evolution: bool
@@ -99,7 +99,6 @@ class Generate_Profiles(object):
 
         self.cwd = os.getcwd()
 
-
         if heatmap:
             self._heatmap()
         else:
@@ -114,8 +113,10 @@ class Generate_Profiles(object):
         L0 = self.L
         eta0 = self.eta
 
-        L_range = np.arange(0.25, 2.35, 0.25)*L0
-        eta_range = np.arange(0.1, 1.35, 0.25)*eta0
+        # L_range = np.arange(0.25, 2.35, 0.25)*L0
+        L_range = np.arange(0.25, 2.75, 0.25)*L0
+        # eta_range = np.arange(0.1, 1.35, 0.25)*eta0
+        eta_range = np.arange(0.1, 1.75, 0.25)*eta0
 
         for L in L_range:
             for eta in eta_range:
