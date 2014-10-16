@@ -171,12 +171,22 @@ class Generate_Profiles(object):
                 data = json.dumps(d, sort_keys=True, indent=-1)
                 f.write(data)
 
+            # print epsilon/delta values
+            try:
+                x_eps, y_delta = self.WG.get_cycle_parameters(self.WG.t)
+                # save some disk space
+                x_eps, y_delta = [ x[::25] for x in x_eps, y_delta ]
+                np.savetxt(self.filename + ".eps_delta", zip(x_eps, y_delta))
+            except:
+                print "Warning: cannot write .eps_delta file"
+
+            # print profile
             x = self.WG.t
             xi_lower, xi_upper = self.WG.get_boundary(smearing=self.smearing)
-
             np.savetxt(self.filename + ".upper_profile", zip(x, xi_upper))
             np.savetxt(self.filename + ".lower_profile", zip(x, xi_lower))
-
+            
+            # write to xml and return to cwd
             self._copy_and_replace(self.xml)
             os.chdir(self.cwd)
 
