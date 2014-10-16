@@ -99,58 +99,58 @@ class Waveguide(Base):
             -----------
                 t: float
                     Time t.
-                    
+ 
             Returns:
             --------
                 x, y: float
                     Trajectory coordinates (x,y) at time t.
         """
-        
+
         x_EP, x_R0 = self.x_EP, self.x_R0
         y_EP, y_R0 = self.y_EP, self.y_R0
         w, phi0 = self.w, self.init_phase
         loop_type = self.loop_type
-            
+
         if loop_type == "Circle":
             lambda1 = lambda t: x_EP + x_R0*np.cos(w*t + phi0)
             lambda2 = lambda t: y_EP + y_R0*np.sin(w*t + phi0)
             return lambda1(t), lambda2(t)
-        
+
         if loop_type == "Ellipse":
             lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
             lambda2 = lambda t: y_EP - 8.*x_EP*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
-        
+
         elif loop_type == "Varcircle":
             lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
             lambda2 = lambda t: y_EP - x_EP*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
-        
+
         elif loop_type == "Bell":
             sign = -int(self.loop_direction + "1")
             lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
             # take also sign change in w=2pi/T into account
             lambda2 = lambda t: 0.4 * sign * (sign*w*t/pi - 1) + phi0
             return lambda1(t), lambda2(t)
-        
+
         elif loop_type == "Constant":
             return x_EP, y_EP
-        
+
         elif loop_type == "Constant_delta":
             return x_EP * (1.0 - np.cos(w*t)), y_EP
-        
+
         else:
             raise Exception(("Error: loop_type {}"
                              "does not exist!").format(loop_type))
-        
+
 
     def draw_wavefunction(self):
         """Plot wavefunction."""
-        
+
         x, b0, b1 = self.t, self.phi_a, self.phi_b
         yN = len(x)/self.T
         y = np.linspace(-0.1,self.d+0.1,yN)
-        
+
         def phi(x,y):
             phi = b0 + b1 * (np.sqrt(2.*self.k0/self.k1) *
                               np.cos(pi*y)*np.exp(-1j*self.kr*x))
@@ -158,33 +158,33 @@ class Waveguide(Base):
 
         X, Y = np.meshgrid(x,y)
         Z = abs(phi(X,Y))**2
-        
+
         p = plt.pcolormesh(X,Y,Z)
         #cb = plt.colorbar(p)
         #cb.set_label("Wavefunction")
-        
-        
+
+
     def draw_dissipation_coefficient(self, cax=None):
         """Plot position dependent dissipation coefficient."""
-        
+
         x, b0, b1 = self.t, self.phi_a, self.phi_b
         y = np.linspace(-0.1,self.d+0.1,2)
-        
+
         X, Y = np.meshgrid(x,y)
         Z = self.eta_x(X)
-        
+
         bmap = brew.get_map('YlOrRd',
                             'sequential', 9).mpl_colormap
         p = plt.pcolormesh(X,Y,Z)
         p.cmap = bmap
         cb = plt.colorbar(p, ax=cax)
         cb.set_label("Loss")
-    
-    
+
+
     def get_boundary(self, x=None, eps=None, delta=None, L=None,
                      d=None, kr=None, theta_boundary=None, smearing=False):
         """Get the boundary function xi as a function of the spatial coordinate x.
-        
+
             Parameters:
             -----------
                 x: ndarray
@@ -201,7 +201,7 @@ class Waveguide(Base):
                     Phase difference between lower and upper boundary.
                 smearing: bool
                     Return a profile which is smeared out at the edges.
-            
+
             Returns:
             --------
                 xi_lower: float
@@ -209,7 +209,7 @@ class Waveguide(Base):
                 xi_upper: float
                     Upper boundary function.
         """
-        
+
         # if variables not supplied set defaults
         if x is None:
             x = self.t
@@ -223,15 +223,15 @@ class Waveguide(Base):
             kr = self.kr
         if theta_boundary is None:
             theta_boundary = self.theta_boundary
-        
+
         # reverse x-coordinate for backward propagation
         if self.loop_direction == '+':
             x = x[::-1]
-            
+
         def fermi(x, sigma=1):
             """Return the Fermi-Dirac distribution."""
             return 1./(np.exp(-x/sigma) + 1.)
-        
+
         xi_lower = eps*np.sin((kr + delta)*x)
         xi_upper = d + eps*np.sin((kr + delta)*x + theta_boundary)
 
@@ -243,31 +243,31 @@ class Waveguide(Base):
             return pre*xi_lower, pre*(xi_upper - d) + d
         else:
             return xi_lower, xi_upper
-    
-    
+
+
     def get_boundary_contour(self, X, Y):
         """Get the boundary contour."""
-        
+
         lower, upper = self.get_boundary(X)
         mask_upper = Y > upper
         mask_lower = Y < lower
         Z = mask_upper + mask_lower
         
         return X, Y, Z
-    
-    
+
+
     def draw_boundary(self):
         """Draw the boundary profile."""
-        
+
         x = self.t #self.t[::2]
         #eps, delta = self.get_cycle_parameters(x)
-        
+
         yN = len(x)/self.T
         y = np.linspace(-0.1, self.d+0.1, yN)
 
         X, Y = np.meshgrid(x, y)
         X, Y, Z = self.get_boundary_contour(X, Y)
-        
+
         plt.contourf(X, Y, Z, [0.9,1], colors="k")
         return X, Y, Z
 
@@ -565,8 +565,8 @@ class Waveguide(Base):
 #             f.write(data)
 #             
 #     return kwargs
-#     
-   
+
+
 if __name__ == '__main__':
     pass
     #generate_heatmap(**parse_arguments())

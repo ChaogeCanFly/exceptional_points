@@ -1,13 +1,15 @@
 #!/usr/bin/env python2.7
 
-import brewer2mpl as brew
-from ep.waveguide import Waveguide
-from ep.helpers import FileOperations, cmap_discretize
-from ep.helpers import map_trajectory, set_scientific_axes
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import FixedLocator
 import numpy as np
+
+import brewer2mpl as brew
+
+from ep.waveguide import Waveguide
+from ep.helpers import FileOperations, cmap_discretize
+from ep.helpers import map_trajectory, set_scientific_axes
 
 
 def circle_EP(filename=None, write_profile=False, **kwargs):
