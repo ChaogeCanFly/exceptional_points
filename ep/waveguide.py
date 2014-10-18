@@ -126,6 +126,11 @@ class Waveguide(Base):
             lambda2 = lambda t: y_EP - x_EP*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
 
+        elif loop_type == "Varcircle_eps_shifted":
+            lambda1 = lambda t: x_EP * (1. - np.cos(w*t)) - 0.01
+            lambda2 = lambda t: y_EP - x_EP*np.sin(w*t) + phi0
+            return lambda1(t), lambda2(t)
+
         elif loop_type == "Bell":
             sign = -int(self.loop_direction + "1")
             lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
