@@ -187,7 +187,7 @@ class Generate_Profiles(object):
             # make sure that N_file = r_nx
             nyout = self.N*self.pphw + 1.
             self.r_nx = np.floor(Ln*nyout)
-            x = np.linspace(0, Ln, self.r_nx + 1)
+            x = np.linspace(0, Ln, self.r_nx)
             xi_lower, xi_upper = self.WG.get_boundary(x=x, smearing=self.smearing)
             np.savetxt(self.filename + ".upper_profile", zip(x, xi_upper))
             np.savetxt(self.filename + ".lower_profile", zip(x, xi_lower))
