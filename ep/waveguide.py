@@ -126,9 +126,11 @@ class Waveguide(Base):
             lambda2 = lambda t: y_EP - x_EP*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
 
-        elif loop_type == "Varcircle_eps_shifted":
-            lambda1 = lambda t: x_EP * (1. - np.cos(w*t)) - 0.01
-            lambda2 = lambda t: y_EP - x_EP*np.sin(w*t) + phi0
+        elif loop_type == "Varcircle_phase":
+            R = x_EP
+            phase = np.arccos(1 - phi0/R)
+            lambda1 = lambda t: R*(1. - np.cos(w*t + phase)) - phi0
+            lambda2 = lambda t: y_EP - R*np.sin(w*t + phase)
             return lambda1(t), lambda2(t)
 
         elif loop_type == "Bell":
@@ -218,8 +220,10 @@ class Waveguide(Base):
         # if variables not supplied set defaults
         if x is None:
             x = self.t
-        if eps is None and delta is None:
+        if eps is None and delta is None and x is None:
             eps, delta = self.get_cycle_parameters(self.t)
+        else:
+            eps, delta = self.get_cycle_parameters(x)
         if L is None:
             L = self.L
         if d is None:
