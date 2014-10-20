@@ -184,10 +184,10 @@ class Generate_Profiles(object):
                 print "Warning: cannot write .eps_delta file"
 
             # print profile
-            # x = self.WG.t
+            # make sure that N_file = r_nx
             nyout = self.N*self.pphw + 1.
-            r_nx = np.floor(L*nyout)
-            x = np.linspace(0, L, r_nx)
+            self.r_nx = np.floor(Ln*nyout)
+            x = np.linspace(0, Ln, self.r_nx + 1)
             xi_lower, xi_upper = self.WG.get_boundary(x=x, smearing=self.smearing)
             np.savetxt(self.filename + ".upper_profile", zip(x, xi_upper))
             np.savetxt(self.filename + ".lower_profile", zip(x, xi_lower))
@@ -202,7 +202,7 @@ class Generate_Profiles(object):
 
         shutil.copy(infile, self.directory)
 
-        N_file = len(self.WG.t)
+        N_file = self.r_nx
         file_upper = self.filename + ".upper_profile"
         file_lower = self.filename + ".lower_profile"
 
