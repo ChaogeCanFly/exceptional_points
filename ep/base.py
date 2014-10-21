@@ -72,8 +72,8 @@ class Base:
         # wavefunction |Psi(t)>
         self.Psi = np.zeros((self.tN,2), dtype=np.complex256)
 
-        # instantaneous eigenvalues E_a, E_b and
-        # corresponding eigenvectors |phi_a> and |phi_b>
+        # instantaneous eigenvalues E_a, E_b and corresponding eigenvectors
+        # |phi_a> and |phi_b>
         self.eVals = np.zeros((self.tN,2), dtype=np.complex256)
         self.eVecs_r = np.zeros((self.tN,2,2), dtype=np.complex256)
         self.eVecs_l = np.zeros((self.tN,2,2), dtype=np.complex256)
@@ -103,7 +103,9 @@ class Base:
             Returns:
             --------
                 X, Y: (N,N) ndarray
+                    Spatial (mesh)grids.
                 Z: (N,N,2) ndarray
+                    Eigenvalues evaluated on the X/Y grid.
         """
 
         if xN is None:
@@ -210,10 +212,6 @@ class Base:
             phase_0_L = np.angle(eVecs_l[k,:,0]) - np.angle(eVecs_l[k+1,:,1])
             phase_1_R = np.angle(eVecs_r[k+1,:,0]) - np.angle(eVecs_r[k,:,1])
             phase_1_L = np.angle(eVecs_l[k+1,:,0]) - np.angle(eVecs_l[k,:,1])
-            #phase_0_R = phase_1_R = 0.0
-            #phase_0_L = phase_1_L = 0.0
-            #print "phase_0: ", phase_0_R/pi
-            #print "phase_1: ", phase_1_R/pi
 
             # account for phase-jump v0(k) -> v1(k+1)
             eVecs_r[k+1:,:,1] *= np.exp(+1j*phase_0_R)
@@ -223,10 +221,10 @@ class Base:
             eVecs_l[:k+1,:,1] *= np.exp(+1j*phase_1_L)
 
             for e in eVals, eVecs_r, eVecs_l:
-                e[...,0], e[...,1] = (
-                                np.concatenate((e[:k+1,...,0], e[k+1:,...,1])),
-                                np.concatenate((e[:k+1,...,1], e[k+1:,...,0]))
-                                )
+                e[...,0], e[...,1] = (np.concatenate((e[:k+1,...,0],
+                                                      e[k+1:,...,1])),
+                                      np.concatenate((e[:k+1,...,1],
+                                                      e[k+1:,...,0])))
 
         #print np.einsum('ijk,ijk -> ik', eVecs_l, eVecs_r)
 
@@ -235,7 +233,7 @@ class Base:
         self.eVecs_r = eVecs_r
 
     def _get_adiabatic_state(self, n):
-        """Calculate the adiabatical dynamic phase factor exp(1j*theta).
+        """Calculate the adiabatic prediction exp(1j*theta).
 
             Parameters:
             -----------
@@ -244,7 +242,7 @@ class Base:
 
             Returns:
             --------
-                dynamical phase: float
+                adiabatic prediction: float
         """
 
         E_a, E_b = [ self.eVals[:n,i] for i in (0,1) ]
@@ -280,10 +278,6 @@ class Base:
         Depending on the self.init_state variable, a vector |phi_i(0)> is
         returned, with i = a, b or c/d (= linear combinations of a and b).
 
-            Parameters:
-            -----------
-                None
-
             Returns:
             --------
                 eVec0_r: (2,) ndarray
@@ -313,10 +307,6 @@ class Base:
 
     def solve_ODE(self):
         """Iteratively solve the ODE dy/dt = f(t,y) on a discretized time-grid.
-
-            Parameters:
-            -----------
-                    None
 
             Returns:
             --------
