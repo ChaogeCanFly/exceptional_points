@@ -220,9 +220,7 @@ class Waveguide(Base):
         # if variables not supplied set defaults
         if x is None:
             x = self.t
-        if eps is None and delta is None and x is None:
-            eps, delta = self.get_cycle_parameters(self.t)
-        else:
+        if eps is None and delta is None:
             eps, delta = self.get_cycle_parameters(x)
         if L is None:
             L = self.L
