@@ -114,7 +114,7 @@ class Generate_Profiles(object):
         eta0 = self.eta
 
         # L_range = np.arange(0.25, 2.35, 0.25)*L0
-        L_range = np.arange(0.25, 2.75, 0.25)*L0
+        L_range = np.arange(0.25, 1.75, 0.1)*L0
         # eta_range = np.arange(0.1, 1.35, 0.25)*eta0
         eta_range = np.arange(0.1, 1.75, 0.25)*eta0
 
@@ -122,6 +122,8 @@ class Generate_Profiles(object):
             for eta in eta_range:
                 params = {'L': L,
                           'eta': eta}
+                print "Warning: check length values in the .xml and .profile files!"
+                self.L = L
                 self.waveguide_args.update(**params)
                 self._length()
 
@@ -172,12 +174,27 @@ class Generate_Profiles(object):
                 data = json.dumps(d, sort_keys=True, indent=-1)
                 f.write(data)
 
-            x = self.WG.t
-            xi_lower, xi_upper = self.WG.get_boundary(smearing=self.smearing)
+            # print epsilon/delta values
+            try:
+                x_eps, y_delta = self.WG.get_cycle_parameters(self.WG.t)
+                # save some disk space
+                x_eps, y_delta = [ x[::25] for x in x_eps, y_delta ]
+                np.savetxt(self.filename + ".eps_delta", zip(x_eps, y_delta))
+            except:
+                print "Warning: cannot write .eps_delta file"
 
+            # print profile
+            # make sure that N_file = r_nx
+            nyout = self.N*self.pphw
+            dx = 1./(nyout + 1.)
+            self.r_nx = int(Ln/dx)
+            x = np.linspace(0, Ln, self.r_nx)
+
+            xi_lower, xi_upper = self.WG.get_boundary(x=x, smearing=self.smearing)
             np.savetxt(self.filename + ".upper_profile", zip(x, xi_upper))
             np.savetxt(self.filename + ".lower_profile", zip(x, xi_lower))
-
+            
+            # write to xml and return to cwd
             self._copy_and_replace(self.xml)
             os.chdir(self.cwd)
 
@@ -187,7 +204,7 @@ class Generate_Profiles(object):
 
         shutil.copy(infile, self.directory)
 
-        N_file = len(self.WG.t)
+        N_file = self.r_nx
         file_upper = self.filename + ".upper_profile"
         file_lower = self.filename + ".lower_profile"
 
