@@ -52,10 +52,10 @@ class OptoMech(Base):
         else:
             omega, g = x, y
 
-        H11 = - omega - 1j * self.gamma/2.
+        H11 = -omega - 1j*self.gamma/2.
         H12 = g
         H21 = H12
-        H22 = - H11
+        H22 = -H11
 
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
@@ -75,10 +75,14 @@ class OptoMech(Base):
                 g: float
         """
 
-        phi = self.init_phase + self.w*t
-
-        omega = self.R * np.sin(phi)
-        g = self.R * np.cos(phi) + self.gamma/2.
+        if self.loop_type == "Outside_circle":
+            phi = self.init_phase + self.w*t
+            omega = self.R * np.sin(phi)
+            g = self.R * np.cos(phi) + self.gamma/2. + self.R*1.1
+        else:
+            phi = self.init_phase + self.w*t
+            omega = self.R * np.sin(phi)
+            g = self.R * np.cos(phi) + self.gamma/2.
 
         return omega, g
 
@@ -88,10 +92,6 @@ class OptoMech(Base):
             <1(t)|dH/dt|2(t)> = <2(t)|dH/dt|1(t)>,
 
         where |1(t)> and |2(t)> are the instantaneous eigenstates at time t.
-
-            Parameters:
-            -----------
-                None
 
             Returns:
             --------
@@ -110,12 +110,65 @@ class OptoMech(Base):
         return f
 
 
-if __name__ == '__main__':
-    evolutions = 5
-    OM = OptoMech(T=100.*evolutions, R=1/20., gamma=2., init_state='b',
-                  init_phase=np.pi, loop_direction='+')
-    OM.w *= evolutions
+def plot_figures(fignum='2a', direction='-', show=False,
+                 T=45., R=0.1, gamma=1.):
+
+    import brewer2mpl
+    cmap = brewer2mpl.get_cmap("")
+
+    params = { "T": T, 
+               "R": R, 
+               "gamma": gamma,
+               "loop_type": "Outside_circle"}
+
+    if fignum == '2a':
+        settings = { "init_state": 'a',
+                     "init_phase": 0,
+                     "loop_direction": '+'}
+    elif fignum == '2b':
+        settings = { "init_state": 'b',
+                     "init_phase": 0, 
+                     "loop_direction": '-'}
+    elif fignum == '2c':
+        settings = { "init_state": 'b',
+                     "init_phase": np.pi,
+                     "loop_direction": '-'}
+
+    params.update(settings)
+    OM = OptoMech(**params)
+
     t, cp, cm = OM.solve_ODE()
-    R = np.abs(cp/cm)
-    plt.plot(t, R**(-1), "r-")
-    plt.show()
+    Psi = OM.Psi
+
+    # f, (ax1, ax2) = plt.subplots(ncols=2)
+    f, ax1 = plt.subplots()
+
+    ax1.semilogy(t, np.abs(Psi[:,0])**2, "r-", label=r"$|\alpha_+(t)|^2$")
+    ax1.semilogy(t, np.abs(Psi[:,1])**2, "b-", label=r"$|\alpha_-(t)|^2$")
+    ax1.semilogy(t, np.abs(cp)**2, "k-", label=r"$|c_+(t)|^2$")
+    ax1.semilogy(t, np.abs(cm)**2, "g-", label=r"$|c_-(t)|^2$")
+    ax1.legend(loc="lower right")
+    ax1.set_xlabel(r"$t$")
+    m = [ (abs(x)**2).max() for x in Psi, cp, cm ]
+    ax1.set_ylim(1e-3, max(m))
+
+    omega, g = OM.get_cycle_parameters(t)
+    # np.savetxt("parameters_{}.dat".format(fignum), zip(g, omega))
+
+    ax2 = plt.axes([0.2, 0.65, .2, .2])
+    ax2.plot(gamma/2, 0, "ko")
+    ax2.plot(g, omega, "r-")
+    ax2.set_xlim(gamma/4, 3/4.*gamma)
+    ax2.set_ylim(-gamma/4., gamma/4.)
+
+    if show:
+        plt.show()
+    else:
+        plt.savefig("{}.png".format(fignum))
+
+
+if __name__ == '__main__':
+    print "Warning: is normalization symmetric?"
+
+    import argh
+    argh.dispatch_command(plot_figures)
