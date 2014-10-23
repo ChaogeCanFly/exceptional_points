@@ -78,7 +78,7 @@ class OptoMech(Base):
         if self.loop_type == "Outside_circle":
             phi = self.init_phase + self.w*t
             omega = self.R * np.sin(phi)
-            g = self.R * np.cos(phi) + self.gamma/2. + self.R*1.1
+            g = self.R * np.cos(phi) + self.gamma/2. + self.R*0.9
         else:
             phi = self.init_phase + self.w*t
             omega = self.R * np.sin(phi)
@@ -114,7 +114,8 @@ def plot_figures(fignum='2a', direction='-', show=False,
                  T=45., R=0.1, gamma=1.):
 
     import brewer2mpl
-    cmap = brewer2mpl.get_cmap("")
+    cmap = brewer2mpl.get_map('Set1', 'qualitative', 9)
+    colors = cmap.mpl_colors
 
     params = { "T": T, 
                "R": R, 
@@ -143,10 +144,10 @@ def plot_figures(fignum='2a', direction='-', show=False,
     # f, (ax1, ax2) = plt.subplots(ncols=2)
     f, ax1 = plt.subplots()
 
-    ax1.semilogy(t, np.abs(Psi[:,0])**2, "r-", label=r"$|\alpha_+(t)|^2$")
-    ax1.semilogy(t, np.abs(Psi[:,1])**2, "b-", label=r"$|\alpha_-(t)|^2$")
-    ax1.semilogy(t, np.abs(cp)**2, "k-", label=r"$|c_+(t)|^2$")
-    ax1.semilogy(t, np.abs(cm)**2, "g-", label=r"$|c_-(t)|^2$")
+    ax1.semilogy(t, np.abs(Psi[:,0])**2, ls="-", ms="o", color=colors[0], label=r"$|\alpha_+(t)|^2$")
+    ax1.semilogy(t, np.abs(Psi[:,1])**2, ls="-", ms="o", color=colors[1], label=r"$|\alpha_-(t)|^2$")
+    ax1.semilogy(t, np.abs(cp)**2, ls="--", color=colors[2], label=r"$|c_+(t)|^2$")
+    ax1.semilogy(t, np.abs(cm)**2, ls="--", color=colors[3], label=r"$|c_-(t)|^2$")
     ax1.legend(loc="lower right")
     ax1.set_xlabel(r"$t$")
     m = [ (abs(x)**2).max() for x in Psi, cp, cm ]
@@ -157,7 +158,7 @@ def plot_figures(fignum='2a', direction='-', show=False,
 
     ax2 = plt.axes([0.2, 0.65, .2, .2])
     ax2.plot(gamma/2, 0, "ko")
-    ax2.plot(g, omega, "r-")
+    ax2.plot(g, omega, ls="-", color=colors[0])
     ax2.set_xlim(gamma/4, 3/4.*gamma)
     ax2.set_ylim(-gamma/4., gamma/4.)
 
