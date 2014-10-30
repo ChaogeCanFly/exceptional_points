@@ -9,12 +9,12 @@ from numpy import pi
 
 class Waveguide(Base):
     """Waveguide class."""
-    
+
     def __init__(self, L=100, d=1.0, eta=0.05, N=1.5, theta=0.0, **kwargs):
         """Exceptional Point (EP) waveguide class.
-        
+
         Copies methods and variables from Base class and adds new parameters.
-        
+
             Additional parameters:
             ----------------------
                 d: float
@@ -26,9 +26,9 @@ class Waveguide(Base):
                 theta: float
                     Phase difference between upper and lower boundary
         """
-        
+
         Base.__init__(self, T=L, **kwargs)
-        
+
         self.d = d                                  # wire width
         self.L = L                                  # wire length
         self.eta = eta                              # dissipation coefficient
@@ -37,69 +37,67 @@ class Waveguide(Base):
         self.k0, self.k1 = self.k(0), self.k(1)     # longitudinal wavenumbers
                                                     # for mode n=0 and n=1
         self.kr = self.k0 - self.k1                 # wavenumber difference
-        
+
         self.theta_boundary = theta                 # phase angle between upper
                                                     # and lower boundary
         self.x_EP = eta / (2.*np.sqrt(self.k0*self.k1 * (1. + np.cos(theta))))
         self.y_EP = 0.0
-        
+
         # change initial conditions
         self.x_R0 = self.x_EP     # circling radius
         self.y_R0 = self.x_EP     # circling radius
-    
-    
+
     def k(self, n):
         """Return longitudinal wavevector."""
         return pi*np.sqrt(self.N**2 - n**2)
-    
+
     def eta_x(self, x):
         """Return position dependent dissipation coefficient."""
         return self.eta * np.sin(pi/self.T * x)
-    
+
     def H(self, t, x=None, y=None):
         """Return parametrically dependent Hamiltonian at time t,
             H = H(x(t), y(t)).
-        
+
         If x and y are specified directly, t is ignored and H(x,y) is
         returned instead.
-        
+
             Parameters:
             -----------
                 t: float
                 x, y: float, optional
-                
+
             Returns:
             --------
                 H: (2,2) ndarray
         """
-        
+
         if x is None and y is None:
             eps, delta = self.get_cycle_parameters(t)
         else:
             eps, delta = x, y
-            
-        B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * 
+
+        B = (-1j * (np.exp(1j*self.theta_boundary) + 1) *
                       self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
-        
+
         H11 = -self.k0 - 1j*self.eta/2.
         H12 = B*eps
         H21 = B.conj()*eps
         H22 = -self.k0 - delta - 1j*self.eta*self.k0/(2.*self.k1)
-        
+
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
-        
+
         return H
-  
-  
+
     def get_cycle_parameters(self, t):
         """Return the loop parameters at time t.
-        
+
             Parameters:
             -----------
                 t: float
                     Time t.
- 
+
             Returns:
             --------
                 x, y: float
@@ -150,7 +148,6 @@ class Waveguide(Base):
             raise Exception(("Error: loop_type {}"
                              "does not exist!").format(loop_type))
 
-
     def draw_wavefunction(self):
         """Plot wavefunction."""
 
@@ -170,7 +167,6 @@ class Waveguide(Base):
         #cb = plt.colorbar(p)
         #cb.set_label("Wavefunction")
 
-
     def draw_dissipation_coefficient(self, cax=None):
         """Plot position dependent dissipation coefficient."""
 
@@ -186,7 +182,6 @@ class Waveguide(Base):
         p.cmap = bmap
         cb = plt.colorbar(p, ax=cax)
         cb.set_label("Loss")
-
 
     def get_boundary(self, x=None, eps=None, delta=None, L=None,
                      d=None, kr=None, theta_boundary=None, smearing=False):
@@ -261,7 +256,6 @@ class Waveguide(Base):
         Z = mask_upper + mask_lower
         
         return X, Y, Z
-
 
     def draw_boundary(self):
         """Draw the boundary profile."""
