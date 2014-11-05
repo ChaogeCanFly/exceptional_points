@@ -253,7 +253,6 @@ class Waveguide(Base):
         else:
             return xi_lower, xi_upper
 
-
     def get_boundary_contour(self, X, Y):
         """Get the boundary contour."""
 
@@ -280,7 +279,7 @@ class Waveguide(Base):
         return X, Y, Z
 
 
-def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1, 
+def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1,
                  direction="-", x_EP=0.05):
 
     import brewer2mpl
