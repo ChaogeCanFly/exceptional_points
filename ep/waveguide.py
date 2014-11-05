@@ -138,6 +138,13 @@ class Waveguide(Base):
             lambda2 = lambda t: 0.4 * sign * (sign*w*t/pi - 1) + phi0
             return lambda1(t), lambda2(t)
 
+        elif loop_type == "Bell_small_width":
+            sign = -int(self.loop_direction + "1")
+            lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
+            # take also sign change in w=2pi/T into account
+            lambda2 = lambda t: 0.2 * sign * (sign*w*t/pi - 1) + phi0
+            return lambda1(t), lambda2(t)
+
         elif loop_type == "Constant":
             return x_EP, y_EP
 
@@ -273,5 +280,68 @@ class Waveguide(Base):
         return X, Y, Z
 
 
+def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1, 
+                 direction="-", x_EP=0.05):
+
+    import brewer2mpl
+    cmap = brewer2mpl.get_map('Set1', 'qualitative', 9)
+    colors = cmap.mpl_colors
+
+    params = { "L": L,
+               "N": N,
+               "eta": eta,
+               "init_phase": phase,
+               "loop_direction": direction,
+               "init_state": "c",
+               "calc_adiabatic_state": True,
+               "loop_type": "Bell_small_width"}
+
+    WG = Waveguide(**params)
+    WG.x_EP = x_EP
+    t, cp, cm = WG.solve_ODE()
+
+    # get adiabatic predictions
+    cp_ad, cm_ad = (WG.Psi_adiabatic[:,0],
+                    WG.Psi_adiabatic[:,1])
+    cp_ad *= abs(cp[0])
+    cm_ad *= abs(cm[0])
+
+    f, ax1 = plt.subplots()
+
+    ax1.semilogy(t, np.abs(cp), ls="-", color=colors[2], label=r"$|c_+(t)|^2$")
+    ax1.semilogy(t, np.abs(cm), ls="-", color=colors[3], label=r"$|c_-(t)|^2$")
+    ax1.semilogy(t, np.abs(cp_ad), ls="--", ms="o", color=colors[2], label=r"$|c_+(t)|^2$")
+    ax1.semilogy(t, np.abs(cm_ad), ls="--", ms="o", color=colors[3], label=r"$|c_-(t)|^2$")
+    ax1.legend(loc="lower left")
+    ax1.set_xlabel(r"$t$")
+    ax1.set_ylim(1e-6, 1.5e1)
+
+    eps, delta = WG.get_cycle_parameters(t)
+
+    ax2 = plt.axes([0.65, 0.65, .2, .2])
+    k0, k1 = [ pi*np.sqrt(N**2 - n**2) for n in 0, 1 ]
+    ax2.plot(eta/(2*np.sqrt(2*k0*k1)), "ko")
+    ax2.plot(eps, delta, ls="-", color=colors[0])
+    ax2.set_xlim(-0.05, 0.05)
+    ax2.set_ylim(-0.5, 0.5)
+
+    R = np.abs(cp/cm)
+    # R = np.abs(cm/cp)
+
+    print R[-1], 1./R[-1]
+
+    ax3 = plt.axes([0.35, 0.15, .2, .2])
+    ax3.plot(t, R, ls="-", color=colors[0])
+    ax3.set_ylim(1e-2, np.max(R))
+
+    if show:
+        plt.show()
+    else:
+        plt.savefig("{}.png".format('wg'))
+
+
 if __name__ == '__main__':
-    pass
+    print "Warning: is normalization symmetric?"
+
+    import argh
+    argh.dispatch_command(plot_figures)
