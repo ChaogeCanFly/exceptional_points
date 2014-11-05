@@ -261,7 +261,7 @@ class Waveguide(Base):
         mask_upper = Y > upper
         mask_lower = Y < lower
         Z = mask_upper + mask_lower
-        
+
         return X, Y, Z
 
     def draw_boundary(self):
