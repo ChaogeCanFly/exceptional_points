@@ -116,25 +116,25 @@ class Generate_Profiles(object):
             self._length()
 
     def _heatmap(self):
-        """Generate a heatmap in (eta, L) space.
+        """Generate a heatmap in (eta, L) space."""
 
-        #TODO: add custom ranges for L and eta
-        """
+        try:
+            L_range = np.arange(*self.L)
+        except:
+            L_range = self.L
+        print "L_range", L_range
+        try:
+            eta_range = np.arange(*self.eta)
+        except:
+            eta_range = self.eta
+        print "eta_range", eta_range
 
-        L0 = self.L
-        eta0 = self.eta
-
-        # L_range = np.arange(0.25, 2.35, 0.25)*L0
-        L_range = np.arange(0.25, 1.75, 0.1)*L0
-        # eta_range = np.arange(0.1, 1.35, 0.25)*eta0
-        eta_range = np.arange(0.1, 1.75, 0.25)*eta0
-
-        for L in L_range:
-            for eta in eta_range:
-                params = {'L': L,
-                          'eta': eta}
+        for Ln in L_range:
+            for eta_n in eta_range:
+                params = {'L': Ln,
+                          'eta': eta_n}
                 print "Warning: check length values in the .xml and .profile files!"
-                self.L = L
+                self.L = Ln
                 self.waveguide_args.update(**params)
                 self._length()
 
@@ -255,10 +255,10 @@ def parse_arguments():
 
     parser = argparse.ArgumentParser(formatter_class=help_formatter)
 
-    parser.add_argument("--eta", nargs="?", default=0.0, type=float,
-                        help="Dissipation coefficient")
-    parser.add_argument("-L", nargs="?", default=100, type=float,
-                        help="Waveguide length")
+    parser.add_argument("--eta", nargs="+", default=[0 1 1], type=float,
+                        help="Dissipation coefficient (eta_min eta_max eta_incr)")
+    parser.add_argument("-L", nargs="+", default=[100 100 1]], type=float,
+                        help="Waveguide length (L_min L_max L_incr)")
     parser.add_argument("--N", nargs="?", default=1.05, type=float,
                         help="Number of open modes int(k*d/pi)")
     parser.add_argument("-t", "--loop-type", default="Bell", type=str,
