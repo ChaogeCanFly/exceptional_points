@@ -6,9 +6,20 @@ import numpy as np
 from numpy import pi
 import os
 import shutil
+import subprocess
+import sys
 
 from ep.waveguide import Waveguide
 
+def get_git_log(lines=5):
+    """Return the 'git log' output of the calling file."""
+
+    path = os.path.dirname(os.path.realpath(sys.argv[0]))
+    gitpath = os.path.join(path, "..", ".git")
+    cmd = "git --git-dir {} log".format(gitpath)
+    gitlog = subprocess.check_output(cmd.split())
+
+    return " ".join(gitlog.splitlines()[:lines])
 
 class Generate_Profiles(object):
     """A class to prepare length dependent greens_code input for VSC
@@ -294,11 +305,17 @@ def parse_arguments():
 
     parse_args = vars(parser.parse_args())
 
+    # add git log output
+    parse_args.update({"git log": get_git_log()})
+
     print json.dumps(parse_args, sort_keys=True, indent=-1)
 
     with open("EP_PARSE_SETTINGS.cfg", "w") as f:
         data = json.dumps(parse_args, sort_keys=True, indent=-1)
         f.write(data)
+
+    # remove git log output
+    parse_args.pop("git log")
 
     return parse_args
 
