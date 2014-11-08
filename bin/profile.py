@@ -118,15 +118,16 @@ class Generate_Profiles(object):
     def _heatmap(self):
         """Generate a heatmap in (eta, L) space."""
 
-        try:
+        if len(self.L) == 3:
             L_range = np.arange(*self.L)
-        except:
-            L_range = self.L
+        else:
+            L_range = [self.L[0]]
         print "L_range", L_range
-        try:
+
+        if len(self.eta) == 3:
             eta_range = np.arange(*self.eta)
-        except:
-            eta_range = self.eta
+        else:
+            eta_range = [self.eta[0]]
         print "eta_range", eta_range
 
         for Ln in L_range:
@@ -255,9 +256,9 @@ def parse_arguments():
 
     parser = argparse.ArgumentParser(formatter_class=help_formatter)
 
-    parser.add_argument("--eta", nargs="+", default=[0 1 1], type=float,
+    parser.add_argument("--eta", nargs="+", default=[0, 1, 1], type=float,
                         help="Dissipation coefficient (eta_min eta_max eta_incr)")
-    parser.add_argument("-L", nargs="+", default=[100 100 1]], type=float,
+    parser.add_argument("-L", nargs="+", default=[100, 101, 1], type=float,
                         help="Waveguide length (L_min L_max L_incr)")
     parser.add_argument("--N", nargs="?", default=1.05, type=float,
                         help="Number of open modes int(k*d/pi)")
