@@ -136,6 +136,7 @@ class Generate_Profiles(object):
                           'eta': eta_n}
                 print "Warning: check length values in the .xml and .profile files!"
                 self.L = Ln
+                self.eta = eta_n
                 self.waveguide_args.update(**params)
                 self._length()
 
