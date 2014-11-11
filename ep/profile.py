@@ -186,7 +186,7 @@ class Generate_Profiles(object):
             with open("EP_SETTINGS.cfg", "w") as f:
                 d = {key: value for key, value in vars(self.WG).items()
                         if not isinstance(value, np.ndarray)}
-                data = json.dumps(d, sort_keys=True, indent=-1)
+                data = json.dumps(d, sort_keys=True, indent=4)
                 f.write(data)
 
             # print epsilon/delta values
@@ -312,10 +312,10 @@ def parse_arguments():
     # add git log output
     parse_args.update({"git log": get_git_log()})
 
-    print json.dumps(parse_args, sort_keys=True, indent=-1)
+    print json.dumps(parse_args, sort_keys=True, indent=4)
 
     with open("EP_PARSE_SETTINGS.cfg", "w") as f:
-        data = json.dumps(parse_args, sort_keys=True, indent=-1)
+        data = json.dumps(parse_args, sort_keys=True, indent=4)
         f.write(data)
 
     # remove git log output
