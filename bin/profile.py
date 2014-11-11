@@ -11,6 +11,7 @@ import sys
 
 from ep.waveguide import Waveguide
 
+
 def get_git_log(lines=5):
     """Return the 'git log' output of the calling file."""
 
@@ -20,6 +21,7 @@ def get_git_log(lines=5):
     gitlog = subprocess.check_output(cmd.split())
 
     return " ".join(gitlog.splitlines()[:lines])
+
 
 class Generate_Profiles(object):
     """A class to prepare length dependent greens_code input for VSC
