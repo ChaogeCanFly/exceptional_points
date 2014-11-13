@@ -13,15 +13,15 @@ from ep.waveguide import Waveguide
 import helpers
 
 
-def get_git_log(lines=5):
-    """Return the 'git log' output of the calling file."""
-
-    path = os.path.dirname(os.path.realpath(sys.argv[0]))
-    gitpath = os.path.join(path, "..", ".git")
-    cmd = "git --git-dir {} log".format(gitpath)
-    gitlog = subprocess.check_output(cmd.split())
-
-    return " ".join(gitlog.splitlines()[:lines])
+# def get_git_log(lines=5):
+#     """Return the 'git log' output of the calling file."""
+#
+#     path = os.path.dirname(os.path.realpath(sys.argv[0]))
+#     gitpath = os.path.join(path, "..", ".git")
+#     cmd = "git --git-dir {} log".format(gitpath)
+#     gitlog = subprocess.check_output(cmd.split())
+#
+#     return " ".join(gitlog.splitlines()[:lines])
 
 
 class Generate_Profiles(object):
@@ -314,7 +314,7 @@ def parse_arguments():
     parse_args = vars(parser.parse_args())
 
     # add git log output
-    parse_args.update({"git log": get_git_log()})
+    parse_args.update({"git log": helpers.get_git_log()})
 
     print json.dumps(parse_args, sort_keys=True, indent=4)
 
