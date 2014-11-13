@@ -10,6 +10,7 @@ import subprocess
 import sys
 
 from ep.waveguide import Waveguide
+import helpers
 
 
 def get_git_log(lines=5):
@@ -235,15 +236,18 @@ class Generate_Profiles(object):
                 'Gamma0"> Gamma0':   'Gamma0"> {}'.format(self.eta)
                 }
 
-        with open(self.xml) as src_xml:
-            src_xml = src_xml.read()
-
-        for src, target in replacements.iteritems():
-            src_xml = src_xml.replace(src, target)
-
         out_xml = os.path.abspath("input.xml")
-        with open(out_xml, "w") as out_xml:
-            out_xml.write(src_xml)
+        helpers.replace_in_file(infile, out_xml, **replacements)
+
+        # with open(self.xml) as src_xml:
+        #     src_xml = src_xml.read()
+        #
+        # for src, target in replacements.iteritems():
+        #     src_xml = src_xml.replace(src, target)
+        #
+        # out_xml = os.path.abspath("input.xml")
+        # with open(out_xml, "w") as out_xml:
+        #     out_xml.write(src_xml)
 
 
 def parse_arguments():
