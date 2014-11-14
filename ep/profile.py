@@ -314,7 +314,7 @@ def parse_arguments():
     parse_args = vars(parser.parse_args())
 
     # add git log output
-    parse_args.update({"git log": helpers.get_git_log()})
+    parse_args.update({"git log": helpers.get_git_log(relative_git_path="..")})
 
     print json.dumps(parse_args, sort_keys=True, indent=4)
 
