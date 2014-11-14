@@ -237,17 +237,16 @@ class Generate_Profiles(object):
                 }
 
         out_xml = os.path.abspath("input.xml")
-        helpers.replace_in_file(infile, out_xml, **replacements)
 
-        # with open(self.xml) as src_xml:
-        #     src_xml = src_xml.read()
-        #
-        # for src, target in replacements.iteritems():
-        #     src_xml = src_xml.replace(src, target)
-        #
-        # out_xml = os.path.abspath("input.xml")
-        # with open(out_xml, "w") as out_xml:
-        #     out_xml.write(src_xml)
+        with open(self.xml) as src_xml:
+            src_xml = src_xml.read()
+
+        for src, target in replacements.iteritems():
+            src_xml = src_xml.replace(src, target)
+
+        out_xml = os.path.abspath("input.xml")
+        with open(out_xml, "w") as out_xml:
+            out_xml.write(src_xml)
 
 
 def parse_arguments():
