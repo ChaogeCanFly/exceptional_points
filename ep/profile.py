@@ -297,8 +297,8 @@ def parse_arguments():
     parser.add_argument("-s", "--smearing", action="store_true",
                         help=("Return a profile which is smeared out at "
                               "the edges."))
-    parser.add_argument("-H", "--heatmap", action="store_true",
-                        help="Whether to calculate a (eta,L) heatmap.")
+    parser.add_argument("-H", "--heatmap", action="store_false",
+                        help="Whether to NOT calculate a (eta,L) heatmap.")
 
     parse_args = vars(parser.parse_args())
 
