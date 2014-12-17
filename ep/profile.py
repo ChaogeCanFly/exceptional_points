@@ -10,18 +10,7 @@ import subprocess
 import sys
 
 from ep.waveguide import Waveguide
-import helpers
-
-
-# def get_git_log(lines=5):
-#     """Return the 'git log' output of the calling file."""
-#
-#     path = os.path.dirname(os.path.realpath(sys.argv[0]))
-#     gitpath = os.path.join(path, "..", ".git")
-#     cmd = "git --git-dir {} log".format(gitpath)
-#     gitlog = subprocess.check_output(cmd.split())
-#
-#     return " ".join(gitlog.splitlines()[:lines])
+import helper_functions
 
 
 class Generate_Profiles(object):
@@ -205,6 +194,7 @@ class Generate_Profiles(object):
             dx = 1./(nyout + 1.)
             self.r_nx = int(Ln/dx)
             x = np.linspace(0, Ln, self.r_nx)
+            print "r_nx:", self.r_nx
 
             xi_lower, xi_upper = self.WG.get_boundary(x=x, smearing=self.smearing)
             np.savetxt(self.filename + ".upper_profile", zip(x, xi_upper))
@@ -313,7 +303,7 @@ def parse_arguments():
     parse_args = vars(parser.parse_args())
 
     # add git log output
-    parse_args.update({"git log": helpers.get_git_log(relative_git_path="..")})
+    parse_args.update({"git log": helper_functions.get_git_log(relative_git_path="..")})
 
     print json.dumps(parse_args, sort_keys=True, indent=4)
 
