@@ -1,9 +1,11 @@
 #!/usr/bin/env python2.7
 
-from ep.helpers import c_eig, c_trapz
+from mayavi import mlab
 import numpy as np
 from numpy import pi
 from scipy.integrate import complex_ode
+
+from ep.helpers import c_eig, c_trapz
 
 
 class Base:
@@ -92,11 +94,16 @@ class Base:
         """Hamiltonian H is overwritten by inheriting classes."""
         pass
 
-    def sample_H(self, xN=None, yN=None):
+    def _sample_H(self, xmin=None, xmax=None, xN=None, ymin=None, ymax=None,
+                  yN=None):
         """Sample local eigenvalue geometry of Hamiltonian H.
 
             Parameters:
             -----------
+                xmin, xmax: float
+                    Dimensions in x-direction.
+                ymin, ymax: float
+                    Dimensions in y-direction.
                 xN, yN: int
                     Number of sampling points in x and y direction.
 
@@ -113,10 +120,16 @@ class Base:
         if yN is None:
             yN = xN
 
-        x = np.linspace(self.x_EP - 0.15*self.x_R0,
-                        self.x_EP + 0.15*self.x_R0, xN)
-        y = np.linspace(self.y_EP - 0.15*self.y_R0,
-                        self.y_EP + 0.15*self.y_R0, yN)
+        if xmin is None or xmax is None:
+            xmin = self.x_EP - 0.15*self.x_R0
+            xmax = self.x_EP + 0.15*self.x_R0
+
+        if ymin is None or ymax is None:
+            ymin = self.y_EP - 0.15*self.y_R0
+            ymax = self.y_EP + 0.15*self.y_R0
+
+        x = np.linspace(xmin, xmax, xN)
+        y = np.linspace(ymin, ymax, yN)
 
         X, Y = np.meshgrid(x, y, indexing='ij')
         Z = np.zeros((xN,yN,2), dtype=complex)
@@ -127,6 +140,35 @@ class Base:
                 Z[i,j,:] = c_eig(H)[0]
 
         return X, Y, Z
+
+    def plot_3D_spectrum(self, xmin=None, xmax=None, xN=None, ymin=None,
+                         ymax=None, yN=None):
+        """Plot the Riemann sheet structure arount the EP.
+
+            Parameters:
+            -----------
+                xmin, xmax: float
+                    Dimensions in x-direction.
+                ymin, ymax: float
+                    Dimensions in y-direction.
+                xN, yN: int
+                    Number of sampling points in x and y direction.
+        """
+        X, Y, Z = self._sample_H(xmin, xmax, xN, ymin, ymax, yN)
+
+        Z0, Z1 = [ Z[...,n] for n in 0, 1 ]
+
+        mlab.figure(0)
+        mlab.surf(X, Y, Z[...,0].real)
+        mlab.surf(X, Y, Z[...,1].real)
+        mlab.axes(zlabel="Re(E)")
+
+        mlab.figure(1)
+        mlab.mesh(X, Y, Z0.imag)
+        mlab.mesh(X, Y, Z1.imag)
+        mlab.axes(zlabel="Im(E)")
+
+        mlab.show()
 
     def iso_sample_H(self, part=np.real, xN=None, yN=None, zN=None):
         """Sample local eigenvalue geometry of H implicitly.
