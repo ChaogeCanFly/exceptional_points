@@ -224,7 +224,7 @@ def plot_riemann_sheets(part=np.real,
                   color=(0,0,0),
                   representation='wireframe',
                   vmin=wmin, vmax=wmax)
-        
+
         mlab.surf(X[:nx+2:wireframe_skip,::wireframe_skip],
                   Y[:nx+2:wireframe_skip,::wireframe_skip],
                   E1[:nx+2:wireframe_skip,::wireframe_skip]/scale,
@@ -232,7 +232,7 @@ def plot_riemann_sheets(part=np.real,
                   color=(0,0,0),
                   representation='wireframe',
                   vmin=wmin, vmax=wmax)
-        
+
     else:
         s2 = mlab.mesh(X, Y, E0/scale,
                         scalars=W_Fermi, 
@@ -246,10 +246,10 @@ def plot_riemann_sheets(part=np.real,
                         opacity=0.8,
                         color=red,
                         vmin=-wmin, vmax=wmax)
-        
+
         s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
         s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
-        
+
         mlab.surf(X[::wireframe_skip,::wireframe_skip],
                   Y[::wireframe_skip,::wireframe_skip],
                   E1[::wireframe_skip,::wireframe_skip]/scale,
@@ -257,7 +257,7 @@ def plot_riemann_sheets(part=np.real,
                   opacity=0.05, 
                   color=(0,0,0),
                   vmin=-wmin, vmax=wmax)
-        
+
         mlab.surf(X[::wireframe_skip,::wireframe_skip],
                   Y[::wireframe_skip,::wireframe_skip],
                   E0[::wireframe_skip,::wireframe_skip]/scale,
@@ -265,7 +265,7 @@ def plot_riemann_sheets(part=np.real,
                   opacity=0.05,
                   color=(0,0,0),
                   vmin=-wmin, vmax=wmax)
-    
+
     for E in E0, E1:
         for xx, yy, zz in ([X[:,0],  Y[:,0],  E[:,0]/scale],
                            [X[:,-1], Y[:,-1], E[:,-1]/scale],
