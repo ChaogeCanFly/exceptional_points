@@ -1,8 +1,10 @@
 #!/usr/bin/env python2.7
 
-from ep.base import Base
 import numpy as np
 from numpy import pi
+
+from ep.base import Base
+
 
 class Toymodel(Base):
     """Toymodel class."""
@@ -11,13 +13,17 @@ class Toymodel(Base):
         """Copy methods and variables from Base class."""
         Base.__init__(self, **kwargs)
 
-
-    def H(self, t):
+    def H(self, t, c1=None, c2=None):
         """Return parametrically dependent Hamiltonian at time t.
         
             Parameters:
             -----------
                 t: float
+                    Time.
+                c1: float
+                    Parameter 1.
+                c2: float
+                    Parameter 2.
                 
             Returns:
             --------
@@ -26,15 +32,18 @@ class Toymodel(Base):
         """
         
         # Pauli matrices sigma_x and sigma_z
-        sigma_x = np.array([[0,1], [1,0]], dtype=complex)
-        sigma_z = np.array([[1,0], [0,-1]], dtype=complex)
+        sigma_x = np.array([[0,1],
+                            [1,0]], dtype=complex)
+        sigma_z = np.array([[1,0], 
+                            [0,-1]], dtype=complex)
         # unperturbed Hamiltonian H_0
-        H_0 = np.array([[-1,1j], [1j,1]], dtype=complex)
+        H_0 = np.array([[-1,1j],
+                        [1j,1]], dtype=complex)
         
-        c1, c2 = self.get_cycle_parameters(t)
+        if c1 is None and c2 is None:
+            c1, c2 = self.get_cycle_parameters(t)
         
         return H_0 + c1*sigma_x + c2*sigma_z
-
 
     def get_cycle_parameters(self, t):
         """Return the loop parameters at time t.
@@ -96,7 +105,6 @@ class Toymodel(Base):
 
         return lambda1(t), lambda2(t)
     
-    
     def plot_data_thief(self, init_state=True):
         """Plot results from numerical integration and compare to corresponding
         data of Fig. 2 from paper.
@@ -131,7 +139,7 @@ class Toymodel(Base):
             plt.title(r"$\varphi_0$ = loss state")
             plt.semilogy(dtf_a2_x, dtf_a2_y, "k-o",  label=r"$a_2(t)$")
             plt.semilogy(dtf_b2_x, dtf_b2_y, "k-s", label=r"$b_2(t)$")
-            
+
 
 if __name__ == '__main__':
     pass
