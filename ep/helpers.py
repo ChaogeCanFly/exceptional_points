@@ -147,7 +147,7 @@ def map_trajectory(c1, c2, E1, E2):
         Parameters:
         -----------
             c1, c2: ndarray
-                Absolute values of amplitudes c1 and c2.
+                Amplitudes c1 and c2.
             E1, E2: ndarray
                 Real or imaginary parts of the energies E1 and E2.
                 
@@ -155,11 +155,9 @@ def map_trajectory(c1, c2, E1, E2):
         --------
             mapped trajectory: ndarray
     """
+    c1, c2 = [ np.abs(x)**2 for x in c1, c2 ]
     
-    c1, c2 = [ np.abs(x) for x in c1, c2 ]
-    
-    N = np.sqrt(c1**2 + c2**2)
-    return (E1*c1 + E2*c2)/N
+    return (E1*c1 + E2*c2)/(c1 + c2)
 
 
 def set_scientific_axes(ax, axis='x'):
