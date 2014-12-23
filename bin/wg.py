@@ -69,15 +69,13 @@ def circle_EP(filename=None, write_profile=False, **kwargs):
     ax1.set_xlabel("x [a.u.]")
     ax1.set_ylabel("Energy")
     ax1.yaxis.set_label_position('left')
-    ax1.plot(x, Ea.imag, "r-",label=r"$\mathrm{Im}(E_0$")
+    ax1.plot(x, Ea.imag, "r-",label=r"$\mathrm{Im}(E_0)$")
     ax1.plot(x, Eb.imag, "g-",label=r"$\mathrm{Im}(E_1)$")
     ax2.plot(x, Ea.real, "r--", label=r"$\mathrm{Re}(E_0)$")
     ax2.plot(x, Eb.real, "g--", label=r"$\mathrm{Re}(E_1)$")
 
-    t_imag = map_trajectory(abs(b0), abs(b1),
-                            Ea.imag, Eb.imag)
-    t_real = map_trajectory(abs(b0), abs(b1),
-                            Ea.real, Eb.real)
+    t_imag = map_trajectory(b0, b1, Ea.imag, Eb.imag)
+    t_real = map_trajectory(b0, b1, Ea.real, Eb.real)
     ax1.plot(x, t_imag, "k-")
     ax2.plot(x, t_real, "k--")
 
@@ -112,7 +110,7 @@ def circle_EP(filename=None, write_profile=False, **kwargs):
     ##
     # plot path around EP
     ##
-    ax4 = plt.subplot2grid((3,3), (2,2))
+    ax4 = plt.subplot2grid((3,3), (2,0))
     set_scientific_axes(ax4, axis='both')
     ax4.xaxis.set_label_position('top')
     ax4.yaxis.set_label_position('right')
@@ -153,11 +151,12 @@ def circle_EP(filename=None, write_profile=False, **kwargs):
 
     filename = "{0}_{1}".format(filename, kwargs.get('loop_direction'))
     f.write(filename + ".cfg")
-    plt.savefig(filename + ".pdf")
+    # plt.savefig(filename + ".pdf")
+    plt.savefig(filename + ".png")
     if write_profile:
         xi_lower, _ = WG.get_boundary()
-        np.savetxt(filename + ".profile", zip(WG.t, xi_lower))    
-    clf()
+        np.savetxt(filename + ".profile", zip(WG.t, xi_lower))
+    plt.clf()
 
 
 class Diodicity:
@@ -356,7 +355,7 @@ class ParseArguments:
         p_major = parser.add_argument_group('Major options')
         p_major.add_argument("-N", default=1.01, type=float,
                             help="Number of open modes")
-        p_major.add_argument("-l", "--length", default=100, type=int,
+        p_major.add_argument("-l", "--length", default=100.0, type=float,
                             help="System length")
         p_major.add_argument("-e", "--eta", default=0.03, type=float,
                             help="Dissipation coefficient value")
@@ -398,7 +397,7 @@ class ParseArguments:
         if not args.get('heatmap'):
             # add length and eta for --riemann and --loop
             filename = filename + ("_L_{length}_eta_{eta}").format(**args)
-        return filename.replace(".","")
+        return filename #.replace(".","")
 
 
     def print_values(self):
@@ -441,7 +440,7 @@ if __name__ == '__main__':
         'N': args.N,
         'eta': args.eta,
         'init_state': args.init_state,
-        'init_phase': args.init_phase*pi,
+        'init_phase': args.init_phase,
         'loop_type': args.cycletype,
         'loop_direction': args.direction,
         'theta': args.theta,
