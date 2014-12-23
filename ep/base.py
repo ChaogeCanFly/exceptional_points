@@ -5,7 +5,7 @@ import numpy as np
 from numpy import pi
 from scipy.integrate import complex_ode
 
-from ep.helpers import c_eig, c_trapz
+from ep.helpers import c_eig, c_trapz, map_trajectory
 
 
 class Base:
@@ -142,7 +142,7 @@ class Base:
         return X, Y, Z
 
     def plot_3D_spectrum(self, xmin=None, xmax=None, xN=None, ymin=None,
-                         ymax=None, yN=None):
+                         ymax=None, yN=None, trajectory=False, part='imag'):
         """Plot the Riemann sheet structure arount the EP.
 
             Parameters:
@@ -153,6 +153,11 @@ class Base:
                     Dimensions in y-direction.
                 xN, yN: int
                     Number of sampling points in x and y direction.
+                trajectory: bool
+                    Whether to include a projected trajectory of the eigenbasis
+                    coefficients.
+                part: str
+                    Which function to apply to the eigenvalues before plotting.
         """
         X, Y, Z = self._sample_H(xmin, xmax, xN, ymin, ymax, yN)
 
@@ -167,6 +172,21 @@ class Base:
         mlab.mesh(X, Y, Z0.imag)
         mlab.mesh(X, Y, Z1.imag)
         mlab.axes(zlabel="Im(E)")
+
+        if part == 'imag':
+            part = np.imag
+        elif part == 'real':
+            part = np.real
+        else:
+            part = np.abs
+
+        if trajectory:
+            x, y = self.get_cycle_parameters(self.t)
+            _, c1, c2 = self.solve_ODE()
+            e1, e2 = [ part(self.eVals[:,n]) for n in 0, 1 ]
+            z = map_trajectory(c1, c2, e1, e2)
+
+            mlab.plot3d(x, y, z, tube_radius=5e-6)
 
         mlab.show()
 
