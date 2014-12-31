@@ -1,6 +1,9 @@
 #!/usr/bin/env python2.7
 
-from mayavi import mlab
+try:
+    from mayavi import mlab
+except:
+    print "Warning: mayavi not found!"
 import numpy as np
 from numpy import pi
 from scipy.integrate import complex_ode
