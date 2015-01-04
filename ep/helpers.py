@@ -50,14 +50,14 @@ def c_eig(H, left=False, **kwargs):
                 Hamiltonian matrix
             left: bool (default: False)
                 Whether to calculate left eigenvectors as well
-    
+
         Returns:
         --------
           eigenvalues:  (2,)   ndarray
           left eigenvectors:  (2,2)  ndarray
           right eigenvectors: (2,2)  ndarray
     """
-    
+
     # get eigenvalues and eigenvalues of matrix H
     # multiple possibilities:
     # 1) from option left=True
@@ -66,35 +66,40 @@ def c_eig(H, left=False, **kwargs):
     #print np.einsum('ij,ij -> i', eVecs_r.conj(), eVecs_r)
     #print np.einsum('ij,ij -> i', eVecs_l.conj(), eVecs_l)
     #test_eigenvalues(eVals, eVecs_l, eVecs_r, H)
-    
+
     # 2) left eigenvalues are the (transposed) right eigenvectors of H.T
     # (results in extremely large eigenvectors)
     #eVals, eVecs_r = eig(H, **kwargs)
     #_, eVecs_l = eig(H.T, **kwargs)
     #test_eigenvalues(eVals, eVecs_l, eVecs_r, H)
-    
+
     # 3) X_L * X_R = 1, X_L = inv(X_R).T
     #eVals, eVecs_r = eig(H, **kwargs)
     #eVecs_l = inv(eVecs_r).T
     #test_eigenvalues(eVals, eVecs_l, eVecs_r, H)
-    
-    # normalize eigenvectors wrt biorthogonality
+
+    # normalize eigenvectors w.r.t. biorthogonality
+    # scipy.linalg.eig uses LAPACK's geev routine to compute the eigensystem,
+    # which returns eigenvectors that are "normalized to have Euclidian norm
+    # equal to 1 and largest component real" [1]
+    # [1] https://software.intel.com/en-us/node/521147 
     c_norm = lambda ev_l, ev_r: np.sqrt(ev_l.dot(ev_r))
-    
+
     for n in (0, 1):
-        # here one has freedom to have N = N_r * N_l, i.e.,
-        # rho = rho_r * rho_l and
-        # alpha = alpha_r + alpha_l
+        # here one has freedom to have N = N_r * N_l, i.e., with
+        # N_n = rho_n * exp(i*phi_n):
+        #   rho = rho_r * rho_l and
+        #   phi = phi_r + phi_l
+        # we choose to leave the Euclidian norm of the right eigenvectors
+        # intact, s.t. abs(eVecs_r)**2 = 1 
+        # and put the remaining normalization into the left eigenvectors
         N = c_norm(eVecs_l[:,n],eVecs_r[:,n])
-        #eVecs_l[:,n] /= N**1
         eVecs_l[:,n] /= N**2
-        # leave right eigenvectors normalized via abs(eVecs_r)**2 = 1 
-        #eVecs_r[:,n] /= N**1
         
     #print "after R:", np.einsum('ij,ij -> i', eVecs_r.conj(), eVecs_r)
     #print "after L:", np.einsum('ij,ij -> i', eVecs_l.conj(), eVecs_l)
         
-    if left is True:                              
+    if left:
         return eVals, eVecs_l, eVecs_r
     else:
         return eVals, eVecs_r
