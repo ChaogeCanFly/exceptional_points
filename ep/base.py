@@ -266,7 +266,7 @@ class Base:
         diff = np.diff(eVals[:,0])
 
         # 2) if difference exceeds epsilon, switch
-        epsilon = 1e-3
+        epsilon = 1e-2
         mask = abs(diff) > epsilon
 
         # 3) assemble the arrays in a piecewise fashion at points
