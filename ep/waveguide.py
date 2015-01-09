@@ -10,7 +10,7 @@ from numpy import pi
 class Waveguide(Base):
     """Waveguide class."""
 
-    def __init__(self, L=100, d=1.0, eta=0.05, N=1.5, theta=0.0, **kwargs):
+    def __init__(self, L=100, d=1.0, eta=0.05, N=1.5, theta=0.0, neumann=1, **kwargs):
         """Exceptional Point (EP) waveguide class.
 
         Copies methods and variables from Base class and adds new parameters.
@@ -34,7 +34,11 @@ class Waveguide(Base):
         self.eta = eta                              # dissipation coefficient
         #self.position_dependent_eta = False         # use pos. dep. loss
         self.N = N                                  # number of open modes
-        self.k0, self.k1 = self.k(0), self.k(1)     # longitudinal wavenumbers
+        if neumann:
+            self.k0, self.k1 = self.k(0), self.k(1)     # longitudinal wavenumbers
+        else:
+            self.k0, self.k1 = self.k(1), self.k(2)     # longitudinal wavenumbers
+
                                                     # for mode n=0 and n=1
         self.kr = self.k0 - self.k1                 # wavenumber difference
 

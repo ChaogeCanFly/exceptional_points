@@ -223,7 +223,7 @@ class Generate_Profiles(object):
                 'file"> file_lower': 'file"> {}'.format(file_lower),
                 'nx_part"> nx_part': 'nx_part"> $r_nx/{}'.format(self.nx_part),
                 'neumann"> neumann': 'neumann"> {}'.format(self.neumann),
-                'Gamma0"> Gamma0':   'Gamma0"> {}'.format(self.eta)
+                'Gamma0"> Gamma0':   'Gamma0"> {:f}'.format(self.eta)
                 }
 
         out_xml = os.path.abspath("input.xml")
