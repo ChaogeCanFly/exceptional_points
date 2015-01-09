@@ -25,6 +25,8 @@ class Waveguide(Base):
                     Number of open modes
                 theta: float
                     Phase difference between upper and lower boundary
+                neumann: bool
+                    Whether to use Neumann or Dirichlet boundary conditions.
         """
 
         Base.__init__(self, T=L, **kwargs)
@@ -53,11 +55,11 @@ class Waveguide(Base):
 
     def k(self, n):
         """Return longitudinal wavevector."""
-        return pi*np.sqrt(self.N**2 - n**2)
+        return np.pi*np.sqrt(self.N**2 - n**2)
 
     def eta_x(self, x):
         """Return position dependent dissipation coefficient."""
-        return self.eta * np.sin(pi/self.T * x)
+        return self.eta * np.sin(np.pi/self.T * x)
 
     def H(self, t, x=None, y=None):
         """Return parametrically dependent Hamiltonian at time t,
