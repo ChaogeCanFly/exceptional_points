@@ -41,11 +41,12 @@ class Waveguide(Base):
         if neumann:
             # longitudinal wavenumbers for mode n=0 and n=1
             k0, k1 = [ np.sqrt(N**2 - n**2)*np.pi for n in 0, 1 ]
+            kr = k0 - k1
             self.x_EP = eta / (2.*np.sqrt(k0*k1 * (1.+np.cos(theta))))
             self.y_EP = 0.0
         else:
             # longitudinal wavenumbers for mode n=1 and n=2
-            k0, k1 = [ np.sqrt(N**2 - n**2)*np.pi for n in 1, 2 ]
+            k0, k1 = [ np.sqrt(N**2 - n**2)*np.pi/d for n in 1, 2 ]
             kr = k0 - k1
             self.x_EP = eta*kF*kr*d**2/(4*np.pi**2 * np.sqrt(2*k0*k1*(1.+np.cos(theta))))
             self.y_EP = 0.0
@@ -97,7 +98,7 @@ class Waveguide(Base):
             H22 = -self.k0 - delta - 1j*self.eta*self.k0/(2.*self.k1)
         else:
             B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
-                    self.d**3 * np.sqrt(self.k0*self.k1))
+                    self.d**3 / np.sqrt(self.k0*self.k1))
 
             H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0
             H12 = B*eps
