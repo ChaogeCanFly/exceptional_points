@@ -85,6 +85,7 @@ class Generate_Profiles(object):
         self.waveguide_args = waveguide_args
         # make waveguide_args available in class namespace
         self.__dict__.update(waveguide_args)
+        self.waveguide_args['neumann'] = neumann
 
         self.eps = eps
         self.eps_factor = eps_factor
