@@ -36,26 +36,30 @@ class Waveguide(Base):
         self.eta = eta                              # dissipation coefficient
         #self.position_dependent_eta = False         # use pos. dep. loss
         self.N = N                                  # number of open modes
+        kF = N*np.pi/d
+
         if neumann:
-            self.k0, self.k1 = self.k(0), self.k(1)     # longitudinal wavenumbers
+            # longitudinal wavenumbers for mode n=0 and n=1
+            k0, k1 = [ np.sqrt(N**2 - n**2)*np.pi for n in 0, 1 ]
+            self.x_EP = eta / (2.*np.sqrt(k0*k1 * (1.+np.cos(theta))))
+            self.y_EP = 0.0
         else:
-            self.k0, self.k1 = self.k(1), self.k(2)     # longitudinal wavenumbers
+            # longitudinal wavenumbers for mode n=1 and n=2
+            k0, k1 = [ np.sqrt(N**2 - n**2)*np.pi for n in 1, 2 ]
+            kr = k0 - k1
+            self.x_EP = eta*kF*kr*d**2/(4*np.pi**2 * np.sqrt(2*k0*k1*(1.+np.cos(theta))))
+            self.y_EP = 0.0
 
-                                                    # for mode n=0 and n=1
-        self.kr = self.k0 - self.k1                 # wavenumber difference
+        self.k0, self.k1 = k0, k1
+        self.kr = kr
+        self.kF = kF
 
-        self.theta_boundary = theta                 # phase angle between upper
-                                                    # and lower boundary
-        self.x_EP = eta / (2.*np.sqrt(self.k0*self.k1 * (1. + np.cos(theta))))
-        self.y_EP = 0.0
-
+        self.neumann = neumann
+        self.theta_boundary = theta     # phase angle between upper
+                                        # and lower boundary
         # change initial conditions
         self.x_R0 = self.x_EP     # circling radius
         self.y_R0 = self.x_EP     # circling radius
-
-    def k(self, n):
-        """Return longitudinal wavevector."""
-        return np.pi*np.sqrt(self.N**2 - n**2)
 
     def eta_x(self, x):
         """Return position dependent dissipation coefficient."""
@@ -83,13 +87,22 @@ class Waveguide(Base):
         else:
             eps, delta = x, y
 
-        B = (-1j * (np.exp(1j*self.theta_boundary) + 1) *
-                      self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
+        if self.neumann:
+            B = (-1j * (np.exp(1j*self.theta_boundary) + 1) *
+                        self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
 
-        H11 = -self.k0 - 1j*self.eta/2.
-        H12 = B*eps
-        H21 = B.conj()*eps
-        H22 = -self.k0 - delta - 1j*self.eta*self.k0/(2.*self.k1)
+            H11 = -self.k0 - 1j*self.eta/2.
+            H12 = B*eps
+            H21 = B.conj()*eps
+            H22 = -self.k0 - delta - 1j*self.eta*self.k0/(2.*self.k1)
+        else:
+            B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
+                    self.d**3 * np.sqrt(self.k0*self.k1))
+
+            H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0
+            H12 = B*eps
+            H21 = B.conj()*eps
+            H22 = -self.k0 - delta - 1j*self.eta*self.kF/self.k1
 
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
