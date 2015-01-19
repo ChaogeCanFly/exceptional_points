@@ -159,10 +159,14 @@ class Waveguide(Base):
             raise Exception(("Error: loop_type {}"
                              "does not exist!").format(loop_type))
 
-    def draw_wavefunction(self):
+    def draw_wavefunction(self, instantaneous_eigenbasis=False, save_plot=None):
         """Plot wavefunction."""
 
-        x, b0, b1 = self.t, self.phi_a, self.phi_b
+        if instantaneous_eigenbasis:
+            x, b0, b1 = self.t, self.eVecs_r[:,0], self.eVecs_r[:,1]
+        else:
+            x, b0, b1 = self.t, self.phi_a, self.phi_b
+
         yN = len(x)/self.T
         y = np.linspace(-0.1,self.d+0.1,yN)
 
@@ -175,6 +179,9 @@ class Waveguide(Base):
         Z = abs(phi(X,Y))**2
 
         p = plt.pcolormesh(X,Y,Z)
+        if save_plot:
+            print save_plot
+            plt.savefig(save_plot)
         #cb = plt.colorbar(p)
         #cb.set_label("Wavefunction")
 
