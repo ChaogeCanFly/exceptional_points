@@ -74,10 +74,6 @@ class Waveguide(Base):
         self.x_R0 = self.x_EP     # circling radius
         self.y_R0 = self.x_EP     # circling radius
 
-    def Gamma_tilde(self, i, j, xn=0, yn=0, sigmax=0, sigmay=0):
-        """Return position dependent dissipation coefficient Gamma."""
-        return self.eta * np.sin(np.pi/self.T * x)
-
     def _get_nodes(self):
         """Return the nodes of the Bloch-eigenvector."""
 
@@ -133,10 +129,19 @@ class Waveguide(Base):
             B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
                     self.d**3 / np.sqrt(self.k0*self.k1))
 
-            H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0
-            H12 = B*eps
-            H21 = B.conj()*eps
-            H22 = -self.k0 - delta - 1j*self.eta*self.kF/self.k1
+            elif not position_dependent_eta:
+                H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0
+                H12 = B*eps
+                H21 = B.conj()*eps
+                H22 = -self.k0 - delta - 1j*self.eta/2.*self.kF/self.k1
+            else:
+                B += -1j*self.eta*self.Gamma_tilde[1,2]
+
+                H11 = -self.k0 - 1j*self.eta*self.Gamma_tilde[1,1]
+                H12 = B*eps
+                H21 = B.conj()*eps
+                H22 = -self.k0 - delta - 1j*self.eta*self.Gamma_tilde[2,2]
+
 
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
