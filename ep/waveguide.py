@@ -10,7 +10,8 @@ from numpy import pi
 class Waveguide(Base):
     """Waveguide class."""
 
-    def __init__(self, L=100, d=1.0, eta=0.05, N=1.5, theta=0.0, neumann=1, **kwargs):
+    def __init__(self, L=100, d=1.0, eta=0.05, N=1.5, theta=0.0, neumann=1,
+                 position_dependent_eta=False, **base_kwargs):
         """Exceptional Point (EP) waveguide class.
 
         Copies methods and variables from Base class and adds new parameters.
@@ -29,24 +30,26 @@ class Waveguide(Base):
                     Whether to use Neumann or Dirichlet boundary conditions.
         """
 
-        Base.__init__(self, T=L, **kwargs)
+        Base.__init__(self, T=L, **base_kwargs)
 
         self.d = d                                  # wire width
         self.L = L                                  # wire length
         self.eta = eta                              # dissipation coefficient
-        #self.position_dependent_eta = False         # use pos. dep. loss
+        self.position_dependent_eta = position_dependent_eta
+                                                    # use pos. dep. loss
         self.N = N                                  # number of open modes
+        self.k = lambda n: np.sqrt(N**2 - n**2)*np.pi
         kF = N*np.pi/d
 
         if neumann:
             # longitudinal wavenumbers for mode n=0 and n=1
-            k0, k1 = [ np.sqrt(N**2 - n**2)*np.pi for n in 0, 1 ]
+            k0, k1 = [ self.k(n) for n in 0, 1 ]
             kr = k0 - k1
             self.x_EP = eta / (2.*np.sqrt(k0*k1 * (1.+np.cos(theta))))
             self.y_EP = 0.0
         else:
             # longitudinal wavenumbers for mode n=1 and n=2
-            k0, k1 = [ np.sqrt(N**2 - n**2)*np.pi/d for n in 1, 2 ]
+            k0, k1 = [ self.k(n) for n in 1, 2 ]
             kr = k0 - k1
             self.x_EP = eta*kF*kr*d**2/(4*np.pi**2 * np.sqrt(2*k0*k1*(1.+np.cos(theta))))
             self.y_EP = 0.0
@@ -62,8 +65,8 @@ class Waveguide(Base):
         self.x_R0 = self.x_EP     # circling radius
         self.y_R0 = self.x_EP     # circling radius
 
-    def eta_x(self, x):
-        """Return position dependent dissipation coefficient."""
+    def Gamma_tilde(self, i, j, xn=0, yn=0, sigmax=0, sigmay=0):
+        """Return position dependent dissipation coefficient Gamma."""
         return self.eta * np.sin(np.pi/self.T * x)
 
     def H(self, t, x=None, y=None):
