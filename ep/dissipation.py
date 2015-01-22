@@ -2,7 +2,6 @@
 
 import numpy as np
 from numpy import pi
-import scipy.linalg
 from scipy.special import erf, erfc
 
 
@@ -13,35 +12,20 @@ class Loss(object):
     coordinates {x0,y0}.
     """
 
-    def __init__(self, x0=0, y0=0, sigmax=0, sigmay=0, WG=None):
-        self.x0 = x0
-        self.y0 = y0
+    def __init__(self, k=None, kF=None, kr=None, d=None, sigmax=0.1, sigmay=0.1):
+
         self.sigmax = sigmax
         self.sigmay = sigmay
-        if WG:
-            self.WG = WG
-        else:
-            raise Exception("Error: no ep.waveguide.Waveguide object found!")
 
-    def _get_nodes(self):
-        """Return the nodes of the Bloch-eigenvector."""
+        if None in (k, kF, kr, d):
+            raise Exception("Error: need wavenumber information!")
 
-        k = self.WG.k
-        kr = self.WG.kr
-        d = self.WG.d
+        self.k = k
+        self.kF = kF
+        self.kr = kr
+        self.d = d
 
-        if not self.WG.loop_type == 'Constant':
-            raise Exception("Error: loop_type not 'Constant'!")
-
-        _, b1, b2 = self.WG.solve_ODE()
-
-        x0 = lambda s: (2.*pi/kr * (1-s)/2 - 1j/kr *
-                         np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
-        y0 = lambda s: d/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1)*abs(b1/b2)))
-
-        return ((x0(1), y0(1)), (x0(-1), y0(-1)))
-
-    def _get_Gamma_integrals(self, n, m, x0=0, y0=0):
+    def Gamma(self, n, m, x0=0, y0=0):
         """Return the integrals needed for Gamma_tilde."""
         k = self.WG.k
         kF = self.WG.kF
@@ -90,14 +74,10 @@ class Loss(object):
 
         return Gamma
 
-    def _get_Gamma_tilde(self):
+    def get_Gamma_tilde(self, x0, y0):
         """Return the Gamma_tilde matrix."""
 
-        Gamma_tilde = [ Gamma(n, m, x0=x0, y0=y0) for n in 1, 2
-                                                    for m in 1, 2
-                                                      for (x0, y0) in 
-                                                        zip(self._get_nodes()) ]
+        Gamma_tilde = [ self.Gamma(n, m, x0=x0, y0=y0) for n in (1, 2)
+                                                        for m in (1, 2) ]
 
         return Gamma_tilde
-
-

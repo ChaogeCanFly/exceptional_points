@@ -7,6 +7,9 @@ import numpy as np
 from numpy import pi
 
 
+from ep.dissipation import Loss
+
+
 class Waveguide(Base):
     """Waveguide class."""
 
@@ -51,8 +54,14 @@ class Waveguide(Base):
             # longitudinal wavenumbers for mode n=1 and n=2
             k0, k1 = [ self.k(n) for n in 1, 2 ]
             kr = k0 - k1
-            self.x_EP = eta*kF*kr*d**2/(4*np.pi**2 * np.sqrt(2*k0*k1*(1.+np.cos(theta))))
-            self.y_EP = 0.0
+            elif not position_dependent_eta:
+                self.x_EP = eta*kF*kr*d**2/(4*np.pi**2 *
+                                             np.sqrt(2*k0*k1*(1.+np.cos(theta))))
+                self.y_EP = 0.0
+            else:
+                Gamma = Loss(k=self.k, kF=kF, kr=kr, d=self.d)
+                self.Gamma_tilde = [ Loss.get_Gamma_tilde(x0, y0) for (x0, y0)
+                                      in self._get_nodes() ]
 
         self.k0, self.k1 = k0, k1
         self.kr = kr
@@ -68,6 +77,27 @@ class Waveguide(Base):
     def Gamma_tilde(self, i, j, xn=0, yn=0, sigmax=0, sigmay=0):
         """Return position dependent dissipation coefficient Gamma."""
         return self.eta * np.sin(np.pi/self.T * x)
+
+    def _get_nodes(self):
+        """Return the nodes of the Bloch-eigenvector."""
+
+        k = self.k
+        kr = self.kr
+        d = self.d
+
+        if not self.loop_type == 'Constant':
+            raise Exception("Error: loop_type not 'Constant'!")
+
+        b1, b2 = self.phi_a, self.phi_b
+
+        x0 = lambda s: (2.*pi/kr * (1-s)/2 - 1j/kr *
+                         np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
+        y0 = lambda s: d/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1)*abs(b1/b2)))
+
+        xn = [ x0[n] for n in (1, -1) ]
+        yn = [ y0[n] for n in (1, -1) ]
+
+        return zip(xn, yn)
 
     def H(self, t, x=None, y=None):
         """Return parametrically dependent Hamiltonian at time t,
