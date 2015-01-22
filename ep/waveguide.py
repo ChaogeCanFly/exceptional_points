@@ -62,6 +62,8 @@ class Waveguide(Base):
                 Gamma = Loss(k=self.k, kF=kF, kr=kr, d=self.d)
                 self.Gamma_tilde = [ Loss.get_Gamma_tilde(x0, y0) for (x0, y0)
                                       in self._get_nodes() ]
+                self.x_EP = None
+                self.y_EP = None
 
         self.k0, self.k1 = k0, k1
         self.kr = kr
@@ -142,10 +144,8 @@ class Waveguide(Base):
                 H21 = B.conj()*eps
                 H22 = -self.k0 - delta - 1j*self.eta*self.Gamma_tilde[2,2]
 
-
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
-
         return H
 
     def get_cycle_parameters(self, t):
