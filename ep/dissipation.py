@@ -53,9 +53,9 @@ class Loss(object):
         sigmay = self.sigmay
 
         # x integration
-        expargx = 0.5*(k(n)-k(m))*(2j*x0 - (k(n)-k(m)) * sigmax**2)
-        argx1 = (T0 - x0 - 1j*(k(n)-k(m))*sigmax**2)
-        argx2 = (   - x0 - 1j*(k(n)-k(m))*sigmax**2)
+        expargx = -0.5*(k(n)-k(m))*(2j*x0 - (k(n)-k(m)) * sigmax**2)
+        argx1 = (T0 - x0 + 1j*(k(n)-k(m))*sigmax**2)
+        argx2 = (   - x0 + 1j*(k(n)-k(m))*sigmax**2)
 
         argx = [argx1, argx2]
         argx = [ a/(np.sqrt(2.)*sigmax) for a in argx ]
