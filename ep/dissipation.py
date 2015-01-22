@@ -63,10 +63,10 @@ class Loss(object):
         Ix = 0.5*np.exp(expargx) * (erf(argx1) - erf(argx2))
 
         # y integration
-        exparg0 = -(n+m)*pi*(2j*d*y0+(n+m)*pi*sigmay**2)/(2*d**2)
-        exparg1 =    2*m*pi*(1j*d*y0+n*pi*sigmay**2)/d**2
-        exparg2 =    2*n*pi*(1j*d*y0+m*pi*sigmay**2)/d**2
-        exparg3 = 2j*(n+m)*pi*y0/d
+        expargy0 = -(n+m)*pi*(2j*d*y0+(n+m)*pi*sigmay**2)/(2*d**2)
+        expargy1 =    2*m*pi*(1j*d*y0+n*pi*sigmay**2)/d**2
+        expargy2 =    2*n*pi*(1j*d*y0+m*pi*sigmay**2)/d**2
+        expargy3 = 2j*(n+m)*pi*y0/d
 
         argy1 = (d - y0 - 1j*(m-n)*pi*sigmay**2/d)
         argy2 = (    y0 + 1j*(m-n)*pi*sigmay**2/d)
@@ -80,10 +80,10 @@ class Loss(object):
         argy = [argy1, argy2, argy3, argy4, argy5, argy6, argy7, argy8]
         argy = [ a/(np.sqrt(2.)*sigmay) for a in argy ]
 
-        Iy = 0.125*np.exp(exparg0) * (-2. +
-                np.exp(exparg1) * (erf(argy1) + erf(argy2)) +
-                np.exp(exparg2) * (erf(argy3) + erf(argy4)) -
-                np.exp(exparg3) * (erf(argy5) + erf(argy6)) +
+        Iy = 0.125*np.exp(expargy0) * (-2. +
+                np.exp(expargy1) * (erf(argy1) + erf(argy2)) +
+                np.exp(expargy2) * (erf(argy3) + erf(argy4)) -
+                np.exp(expargy3) * (erf(argy5) + erf(argy6)) +
                 erfc(argy7) + erfc(argy8))
 
         Gamma = 0.5/(pi*d) * kF * kr / np.sqrt(k(n)*k(m)) * (Ix + Iy)
@@ -95,7 +95,8 @@ class Loss(object):
 
         Gamma_tilde = [ Gamma(n, m, x0=x0, y0=y0) for n in 1, 2
                                                     for m in 1, 2
-                                                      for (x0, y0) in zip(self._get_nodes()) ]
+                                                      for (x0, y0) in 
+                                                        zip(self._get_nodes()) ]
 
         return Gamma_tilde
 
