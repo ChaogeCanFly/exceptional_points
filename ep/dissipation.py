@@ -35,25 +35,28 @@ class Loss(object):
         sigmax = self.sigmax
         sigmay = self.sigmay
 
+        expargx = 0.5*(k(n)-k(m))*(2j*xn - (k(n)-k(m)) * sigmax**2)
         argx1 = (T0 - xn - 1j*(k(n)-k(m))*sigmax**2)/(np.sqrt(2)*sigmax)
         argx2 = (- xn - 1j*(k(n)-k(m))*sigmax**2)/(np.sqrt(2)*sigmax)
 
-        Ix = (0.5*np.exp(0.5*(k(n)-k(m))*(2j*xn - (k(n)-k(m)) * sigmax**2)) *
-                erf(argx1) - erf(argx2))
+        Ix = 0.5*np.exp(expargx) * (erf(argx1) - erf(argx2))
 
         exparg0 = -(n+m)*pi*(2j*d*yn+(n+m)*pi*sigmay**2)/(2*d**2)
-        exparg1 = 2*m*pi*(1j*d*yn+n*pi*sigmay**2)/d**2
-        exparg2 = 2*n*pi*(1j*d*yn+m*pi*sigmay**2)/d**2
+        exparg1 =    2*m*pi*(1j*d*yn+n*pi*sigmay**2)/d**2
+        exparg2 =    2*n*pi*(1j*d*yn+m*pi*sigmay**2)/d**2
         exparg3 = 2j*(n+m)*pi*yn/d
 
-        argy1 = (d - yn - 1j*(m-n)*pi*sigmay**2/d)/(np.sqrt(2)*sigmay)
-        argy2 = (yn + (1j*(m-n)*pi*sigmay**2/d))/(np.sqrt(2)*sigmay)
-        argy3 = (d - yn + 1j*(m-n)*pi*sigmay**2/d)/(np.sqrt(2)*sigmay)
-        argy4 = (yn - (1j*(m-n)*pi*sigmay**2/d))/(np.sqrt(2)*sigmay)
-        argy5 = (d - yn - 1j*(m+n)*pi*sigmay**2/d)/(np.sqrt(2)*sigmay)
-        argy6 = (yn + 1j*(m+n)*pi*sigmay**2/d)/(np.sqrt(2)*sigmay)
-        argy7 = (d - yn + 1j*(m+n)*pi*sigmay**2/d)/(np.sqrt(2)*sigmay)
-        argy8 = (yn - 1j*(m+n)*pi*sigmay**2/d)/(np.sqrt(2)*sigmay)
+        argy1 = (d - yn - 1j*(m-n)*pi*sigmay**2/d)
+        argy2 = (    yn + 1j*(m-n)*pi*sigmay**2/d)
+        argy3 = (d - yn + 1j*(m-n)*pi*sigmay**2/d)
+        argy4 = (    yn - 1j*(m-n)*pi*sigmay**2/d)
+        argy5 = (d - yn - 1j*(m+n)*pi*sigmay**2/d)
+        argy6 = (    yn + 1j*(m+n)*pi*sigmay**2/d)
+        argy7 = (d - yn + 1j*(m+n)*pi*sigmay**2/d)
+        argy8 = (    yn - 1j*(m+n)*pi*sigmay**2/d)
+
+        argy = [argy1, argy2, argy3, argy4, argy5, argy6, argy7, argy8]
+        argy = [ a/(np.sqrt(2.)*sigmay) for a in argy ]
 
         Iy = 0.125*np.exp(exparg0) * (-2. +
                 np.exp(exparg1) * (erf(argy1) + erf(argy2)) +
