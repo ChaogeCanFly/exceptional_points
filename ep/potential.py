@@ -59,11 +59,15 @@ class Potential(object):
         k0, k1 = [ np.sqrt(self.N**2 - (n/self.width)**2)*np.pi for n in 1, 2 ]
         self.kF = k0
         self.kr = k0 - k1
-        self.L = 3.*2*np.pi/self.kr
+        self.L = 4.*2*np.pi/self.kr
 
         print vars(self)
 
-        WG = Waveguide(N=self.N, L=self.L, loop_type='Constant')
+        wg_kwargs = {'N': self.N,
+                     'L': self.L,
+                     'loop_type': 'Constant',
+                     'neumann': 0}
+        WG = Waveguide(**wg_kwargs)
         WG.x_EP = 0.05
         self.eta_x = WG.eta_x
 
