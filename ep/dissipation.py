@@ -35,8 +35,8 @@ class Loss(object):
 
         _, b1, b2 = self.WG.solve_ODE()
 
-        x0 = lambda s: 2.*pi/kr * (1-s)/2 - 1j/kr * np.log(s*b1*b2.conj() /
-                                                            (abs(b1)*abs(b2)))
+        x0 = lambda s: (2.*pi/kr * (1-s)/2 - 1j/kr *
+                         np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
         y0 = lambda s: d/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1)*abs(b1/b2)))
 
         return ((x0(1), y0(1)), (x0(-1), y0(-1)))
@@ -53,7 +53,7 @@ class Loss(object):
         sigmay = self.sigmay
 
         # x integration
-        expargx = -0.5*(k(n)-k(m))*(2j*x0 - (k(n)-k(m)) * sigmax**2)
+        expargx = -0.5*(k(n)-k(m))*(2j*x0 + (k(n)-k(m)) * sigmax**2)
         argx1 = (T0 - x0 + 1j*(k(n)-k(m))*sigmax**2)
         argx2 = (   - x0 + 1j*(k(n)-k(m))*sigmax**2)
 
