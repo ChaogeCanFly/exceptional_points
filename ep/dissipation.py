@@ -18,12 +18,12 @@ class Loss(object):
         self.sigmay = sigmay
 
         if None in (k, kF, kr, d):
-            raise Exception("Error: need wavenumber information!")
-
-        self.k = k
-        self.kF = kF
-        self.kr = kr
-        self.d = d
+            raise Exception("Error: need wavenumber/width information!")
+        else:
+            self.k = k
+            self.kF = kF
+            self.kr = kr
+            self.d = d
 
     def Gamma(self, n, m, x0=0, y0=0):
         """Return the integrals needed for Gamma_tilde."""
@@ -80,4 +80,4 @@ class Loss(object):
         Gamma_tilde = [ self.Gamma(n, m, x0=x0, y0=y0) for n in (1, 2)
                                                         for m in (1, 2) ]
 
-        return Gamma_tilde
+        return np.asarray(Gamma_tilde)
