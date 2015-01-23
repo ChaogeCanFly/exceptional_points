@@ -51,7 +51,7 @@ class Waveguide(Base):
             self.y_R0 = self.x_EP
 
     def H(self, t, x=None, y=None):
-        """Inherited from child classes."""
+        """Hamiltonian H is overwritten by inheriting classes."""
         pass
 
     def get_cycle_parameters(self, t):
@@ -336,9 +336,9 @@ class Dirichlet(Waveguide):
             raise Exception("Error: loop_type not 'Constant'!")
 
         _, b1, b2 = self.solve_ODE()
+        # take here last element?
+        # take element corresponding to coordinate x: (eps(x), delta(x))
         b1, b2 = b1[-1], b1[-1]
-        print "b1", b1
-        print "b2", b2
 
         x0 = lambda s: (2.*pi/kr * (1-s)/2 - 1j/kr *
                          np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
@@ -347,16 +347,9 @@ class Dirichlet(Waveguide):
         xn = [ x0(n) for n in (1, -1) ]
         yn = [ y0(n) for n in (1, -1) ]
 
-        print "get_nodes"
-        print 50*'#'
-        print "xn", xn
-        print "yn", yn
-        print 50*'#'
-
         return zip(xn, yn)
 
 
-# class DirichletPositionDependentLoss(Waveguide):
 class DirichletPositionDependentLoss(Dirichlet):
     """Dirichlet class with position dependent loss."""
 
@@ -366,7 +359,6 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         Copies methods and variables from the Waveguide class.
         """
-        # Waveguide.__init__(self, **waveguide_kwargs)
         self.Dirichlet = Dirichlet(**waveguide_kwargs)
         self.Dirichlet.eta = 0.0
         Dirichlet.__init__(self, **waveguide_kwargs)
@@ -404,10 +396,10 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         self._get_EP_coordinates()
 
-        H11 = -self.k0 - 1j*self.eta*self.Gamma_tilde[1,1]
-        H12 = B*eps - 1j*self.eta*self.Gamma_tilde[1,2]
-        H21 = B.conj()*eps - 1j*self.eta*self.Gamma_tilde[2,1]
-        H22 = -self.k0 - delta - 1j*self.eta*self.Gamma_tilde[2,2]
+        H11 = -self.k0 - 1j*self.eta*self.Gamma_tilde[0,0]
+        H12 = B*eps - 1j*self.eta*self.Gamma_tilde[0,1]
+        H21 = B.conj()*eps - 1j*self.eta*self.Gamma_tilde[1,0]
+        H22 = -self.k0 - delta - 1j*self.eta*self.Gamma_tilde[1,1]
 
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
