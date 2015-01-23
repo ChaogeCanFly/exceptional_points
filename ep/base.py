@@ -6,6 +6,7 @@ except:
     print "Warning: mayavi not found!"
 import numpy as np
 from numpy import pi
+import matplotlib.pyplot as plt
 from scipy.integrate import complex_ode
 
 from ep.helpers import c_eig, c_trapz, map_trajectory
@@ -121,7 +122,7 @@ class Base:
         if xN is None:
             xN = 5*10**2
         if yN is None:
-            yN = xN
+            yN = 5*10**2
 
         if xmin is None or xmax is None:
             xmin = self.x_EP - 0.15*self.x_R0
@@ -139,6 +140,7 @@ class Base:
 
         for i, xi in enumerate(x):
             for j, yj in enumerate(y):
+                print "i,j", i, j
                 H = self.H(0,xi,yj)
                 Z[i,j,:] = c_eig(H)[0]
 
@@ -167,14 +169,22 @@ class Base:
         Z0, Z1 = [ Z[...,n] for n in 0, 1 ]
 
         mlab.figure(0)
-        mlab.surf(X, Y, Z[...,0].real)
-        mlab.surf(X, Y, Z[...,1].real)
+        mlab.surf(X.real, Y.real, Z0.real)
+        mlab.surf(X.real, Y.real, Z1.real)
         mlab.axes(zlabel="Re(E)")
 
         mlab.figure(1)
-        mlab.mesh(X, Y, Z0.imag)
-        mlab.mesh(X, Y, Z1.imag)
+        mlab.mesh(X.real, Y.real, Z0.imag)
+        mlab.mesh(X.real, Y.real, Z1.imag)
         mlab.axes(zlabel="Im(E)")
+
+        mlab.figure(2)
+        mlab.mesh(X.real, Y.real, abs(Z0-Z1))
+        mlab.axes(zlabel="abs(E0-E1)")
+
+        plt.figure()
+        plt.pcolormesh(X.real, Y.real, abs(Z0-Z1), cmap='Greys')
+        plt.show()
 
         if part == 'imag':
             part = np.imag
