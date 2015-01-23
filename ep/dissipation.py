@@ -12,8 +12,8 @@ class Loss(object):
     coordinates {x0,y0}.
     """
 
-    def __init__(self, k=None, kF=None, kr=None, d=None, sigmax=0.1, sigmay=0.1):
-
+    def __init__(self, k=None, kF=None, kr=None, d=None,
+                 sigmax=0.05, sigmay=0.05):
         self.sigmax = sigmax
         self.sigmay = sigmay
 
@@ -40,17 +40,6 @@ class Loss(object):
         expargx = -0.5*(k(n)-k(m))*(2j*x0 + (k(n)-k(m)) * sigmax**2)
         argx1 = (T0 - x0 + 1j*(k(n)-k(m))*sigmax**2)
         argx2 = (   - x0 + 1j*(k(n)-k(m))*sigmax**2)
-
-        # print "x0", x0
-        # print "y0", y0
-        # print "n", n
-        # print "m", m
-        # print "expargx", expargx
-        # print "e()", np.exp(expargx)
-        # print "argx1", argx1
-        # print "type argx1", type(argx1)
-        # print "cast argx1", complex(argx1)
-        # print "type cast argx1", type(complex(argx1))
 
         # TODO: why do we need a complex() cast here?
         argx = [argx1, argx2]
