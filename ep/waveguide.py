@@ -137,11 +137,9 @@ class Waveguide(Base):
                 H21 = B.conj()*eps
                 H22 = -self.k0 - delta - 1j*self.eta/2.*self.kF/self.k1
             else:
-                B += -1j*self.eta*self.Gamma_tilde[1,2]
-
                 H11 = -self.k0 - 1j*self.eta*self.Gamma_tilde[1,1]
-                H12 = B*eps
-                H21 = B.conj()*eps
+                H12 = B*eps - 1j*self.eta*self.Gamma_tilde[1,2]
+                H21 = B.conj()*eps - 1j*self.eta*self.Gamma_tilde[2,1]
                 H22 = -self.k0 - delta - 1j*self.eta*self.Gamma_tilde[2,2]
 
         H = np.array([[H11, H12],
