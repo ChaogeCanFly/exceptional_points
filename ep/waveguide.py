@@ -39,21 +39,31 @@ class Waveguide(Base):
         self.L = L                                  # wire length
         self.eta = eta                              # dissipation coefficient
         self.position_dependent_eta = position_dependent_eta
+
+        self.neumann = neumann
+        self.theta_boundary = theta     # phase angle between upper
+                                        # and lower boundary
                                                     # use pos. dep. loss
         self.N = N                                  # number of open modes
         self.k = lambda n: np.sqrt(N**2 - n**2)*np.pi
         kF = N*np.pi/d
+        self.kF = kF
 
         if neumann:
             # longitudinal wavenumbers for mode n=0 and n=1
             k0, k1 = [ self.k(n) for n in 0, 1 ]
+            self.k0, self.k1 = k0, k1
             kr = k0 - k1
+            self.kr = kr
             self.x_EP = eta / (2.*np.sqrt(k0*k1 * (1.+np.cos(theta))))
             self.y_EP = 0.0
         else:
             # longitudinal wavenumbers for mode n=1 and n=2
             k0, k1 = [ self.k(n) for n in 1, 2 ]
+            self.k0, self.k1 = k0, k1
             kr = k0 - k1
+            self.kr = kr
+
             if not position_dependent_eta:
                 self.x_EP = eta*kF*kr*d**2/(4*np.pi**2 *
                                              np.sqrt(2*k0*k1*(1.+np.cos(theta))))
@@ -67,25 +77,19 @@ class Waveguide(Base):
 
                 # here B without loss
                 B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
-                        self.d**3 / np.sqrt(self.k0*self.k1))
+                        self.d**3 / np.sqrt(k0*k1))
 
                 sq1 = (G[1,1] - kF*G[2,2])**2 + 4.*kF**2*G[1,2]*G[2,1]
                 sq2 = (abs(B)**2 + (kF**2*(B*G[2,1]+B.conj()*G[1,2])**2 / (G[1,1]-kF*G[2,2])**2))
                 self.x_EP = np.sqrt(sq1)/(2.*np.sqrt(sq2)) * self.eta
                 self.y_EP = -2.*kF*(B*G[2,1]+B.conj()*G[1,2])/(G[1,1]-kF*G[2,2]) * self.x_EP
 
-        self.k0, self.k1 = k0, k1
-        self.kr = kr
-        self.kF = kF
 
-        self.neumann = neumann
-        self.theta_boundary = theta     # phase angle between upper
-                                        # and lower boundary
         # change initial conditions
         self.x_R0 = self.x_EP     # circling radius
         self.y_R0 = self.x_EP     # circling radius
 
-    def _get_nodes(self):
+    def _get_nodes(self, H=None):
         """Return the nodes of the Bloch-eigenvector."""
 
         k = self.k
@@ -95,7 +99,7 @@ class Waveguide(Base):
         if not self.loop_type == 'Constant':
             raise Exception("Error: loop_type not 'Constant'!")
 
-        _, b1, b2 = self.solve_ODE()
+        _, b1, b2 = self.solve_ODE(H)
 
         x0 = lambda s: (2.*pi/kr * (1-s)/2 - 1j/kr *
                          np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
