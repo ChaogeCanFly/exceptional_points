@@ -27,11 +27,11 @@ class Loss(object):
 
     def Gamma(self, n, m, x0=0, y0=0):
         """Return the integrals needed for Gamma_tilde."""
-        k = self.WG.k
-        kF = self.WG.kF
-        kr = self.WG.kr
-        d = self.WG.d
-        T0 = 2.*pi/self.WG.kr
+        k = self.k
+        kF = self.kF
+        kr = self.kr
+        d = self.d
+        T0 = 2.*pi/self.kr
 
         sigmax = self.sigmax
         sigmay = self.sigmay
@@ -41,8 +41,20 @@ class Loss(object):
         argx1 = (T0 - x0 + 1j*(k(n)-k(m))*sigmax**2)
         argx2 = (   - x0 + 1j*(k(n)-k(m))*sigmax**2)
 
+        # print "x0", x0
+        # print "y0", y0
+        # print "n", n
+        # print "m", m
+        # print "expargx", expargx
+        # print "e()", np.exp(expargx)
+        # print "argx1", argx1
+        # print "type argx1", type(argx1)
+        # print "cast argx1", complex(argx1)
+        # print "type cast argx1", type(complex(argx1))
+
+        # TODO: why do we need a complex() cast here?
         argx = [argx1, argx2]
-        argx = [ a/(np.sqrt(2.)*sigmax) for a in argx ]
+        argx1, argx2 = [ complex(a)/(np.sqrt(2.)*sigmax) for a in argx ]
 
         Ix = 0.5*np.exp(expargx) * (erf(argx1) - erf(argx2))
 
@@ -62,7 +74,8 @@ class Loss(object):
         argy8 = (    y0 - 1j*(m+n)*pi*sigmay**2/d)
 
         argy = [argy1, argy2, argy3, argy4, argy5, argy6, argy7, argy8]
-        argy = [ a/(np.sqrt(2.)*sigmay) for a in argy ]
+        (argy1, argy2, argy3, argy4,
+         argy5, argy6, argy7, argy8) = [ complex(a)/(np.sqrt(2.)*sigmay) for a in argy ]
 
         Iy = 0.125*np.exp(expargy0) * (-2. +
                 np.exp(expargy1) * (erf(argy1) + erf(argy2)) +
@@ -80,4 +93,4 @@ class Loss(object):
         Gamma_tilde = [ self.Gamma(n, m, x0=x0, y0=y0) for n in (1, 2)
                                                         for m in (1, 2) ]
 
-        return np.asarray(Gamma_tilde)
+        return np.asarray(Gamma_tilde).reshape(2,-1)
