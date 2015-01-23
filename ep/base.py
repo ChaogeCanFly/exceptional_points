@@ -148,7 +148,7 @@ class Base:
 
     def plot_3D_spectrum(self, xmin=None, xmax=None, xN=None, ymin=None,
                          ymax=None, yN=None, trajectory=False, part='imag'):
-        """Plot the Riemann sheet structure arount the EP.
+        """Plot the Riemann sheet structure around the EP.
 
             Parameters:
             -----------
@@ -181,10 +181,6 @@ class Base:
         mlab.figure(2)
         mlab.mesh(X.real, Y.real, abs(Z0-Z1))
         mlab.axes(zlabel="abs(E0-E1)")
-
-        plt.figure()
-        plt.pcolormesh(X.real, Y.real, abs(Z0-Z1), cmap='Greys')
-        plt.show()
 
         if part == 'imag':
             part = np.imag
