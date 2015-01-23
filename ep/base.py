@@ -93,7 +93,7 @@ class Base:
         """get_cycle_parameters method is overwritten by inheriting classes."""
         pass
 
-    def H(self, t, x, y):
+    def H(self, t, x=None, y=None):
         """Hamiltonian H is overwritten by inheriting classes."""
         pass
 
