@@ -54,16 +54,25 @@ class Waveguide(Base):
             # longitudinal wavenumbers for mode n=1 and n=2
             k0, k1 = [ self.k(n) for n in 1, 2 ]
             kr = k0 - k1
-            elif not position_dependent_eta:
+            if not position_dependent_eta:
                 self.x_EP = eta*kF*kr*d**2/(4*np.pi**2 *
                                              np.sqrt(2*k0*k1*(1.+np.cos(theta))))
                 self.y_EP = 0.0
             else:
                 Gamma = Loss(k=self.k, kF=kF, kr=kr, d=self.d)
-                self.Gamma_tilde = [ Loss.get_Gamma_tilde(x0, y0) for (x0, y0)
-                                      in self._get_nodes() ]
-                self.x_EP = None
-                self.y_EP = None
+                G1, G2 = [ Gamma.get_Gamma_tilde(x0, y0)
+                                for (x0, y0) in self._get_nodes() ]
+                G = G1 + G2
+                self.Gamma_tilde = G
+
+                # here B without loss
+                B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
+                        self.d**3 / np.sqrt(self.k0*self.k1))
+
+                sq1 = (G[1,1] - kF*G[2,2])**2 + 4.*kF**2*G[1,2]*G[2,1]
+                sq2 = (abs(B)**2 + (kF**2*(B*G[2,1]+B.conj()*G[1,2])**2 / (G[1,1]-kF*G[2,2])**2))
+                self.x_EP = np.sqrt(sq1)/(2.*np.sqrt(sq2)) * self.eta
+                self.y_EP = -2.*kF*(B*G[2,1]+B.conj()*G[1,2])/(G[1,1]-kF*G[2,2]) * self.x_EP
 
         self.k0, self.k1 = k0, k1
         self.kr = kr
@@ -86,7 +95,7 @@ class Waveguide(Base):
         if not self.loop_type == 'Constant':
             raise Exception("Error: loop_type not 'Constant'!")
 
-        b1, b2 = self.phi_a, self.phi_b
+        _, b1, b2 = self.solve_ODE()
 
         x0 = lambda s: (2.*pi/kr * (1-s)/2 - 1j/kr *
                          np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
@@ -131,7 +140,7 @@ class Waveguide(Base):
             B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
                     self.d**3 / np.sqrt(self.k0*self.k1))
 
-            elif not position_dependent_eta:
+            if not self.position_dependent_eta:
                 H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0
                 H12 = B*eps
                 H21 = B.conj()*eps
@@ -329,7 +338,7 @@ class Waveguide(Base):
     def draw_boundary(self):
         """Draw the boundary profile."""
 
-        x = self.t #self.t[::2]
+        x = self.t  #self.t[::2]
         #eps, delta = self.get_cycle_parameters(x)
 
         yN = len(x)/self.T
