@@ -370,7 +370,7 @@ class Base:
 
         return eVec0_r
 
-    def solve_ODE(self):
+    def solve_ODE(self, H=None):
         """Iteratively solve the ODE dy/dt = f(t,y) on a discretized time-grid.
 
             Returns:
@@ -383,8 +383,12 @@ class Base:
                         Overlap <phi_b|psi>.
         """
 
+        if H is None:
+            H = self.H
+
+
         # r.h.s of ode d/dt y = f(t, y)
-        f = lambda t, phi: -1j*self.H(t).dot(phi)
+        f = lambda t, phi: -1j*H(t).dot(phi)
 
         # create ode object to solve Schroedinger equation (SE)
         SE = complex_ode(f).set_integrator('dopri5', rtol=1e-12, atol=1e-12)
