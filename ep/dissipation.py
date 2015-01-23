@@ -72,7 +72,7 @@ class Loss(object):
                 np.exp(expargy3) * (erf(argy5) + erf(argy6)) +
                 erfc(argy7) + erfc(argy8))
 
-        Gamma = 0.5/(pi*d) * kF * kr / np.sqrt(k(n)*k(m)) * (Ix + Iy)
+        Gamma = 0.5/(pi*d) * kF * kr / np.sqrt(k(n)*k(m)) * (Ix * Iy)
 
         return Gamma
 
