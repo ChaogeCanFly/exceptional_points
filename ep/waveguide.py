@@ -240,8 +240,21 @@ class Neumann(Waveguide):
         kr = k0 - k1
         self.kr = kr
 
-        self.x_EP = self.eta / (2.*np.sqrt(k0*k1 * (1.+np.cos(self.theta))))
-        self.y_EP = 0.0
+        self.x_EP, self.y_EP = self._get_EP_coordinates()
+
+    def _get_EP_coordinates(self):
+        eta = self.eta
+        kF = self.kF
+        kr = self.kr
+        k0 = self.k0
+        k1 = self.k1
+        d = self.d
+        theta_boundary = self.theta_boundary
+
+        x_EP = eta / (2.*np.sqrt(k0*k1 * (1.+np.cos(theta_boundary))))
+        y_EP = 0.0
+
+        return x_EP, y_EP
 
     def H(self, t, x=None, y=None):
         if x is None and y is None:
@@ -277,9 +290,25 @@ class Dirichlet(Waveguide):
         kr = k0 - k1
         self.kr = kr
 
-        self.x_EP = self.eta*self.kF*kr*self.d**2/(4*np.pi**2 *
-                                        np.sqrt(2*k0*k1*(1.+np.cos(self.theta))))
-        self.y_EP = 0.0
+        B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
+                self.d**3 / np.sqrt(self.k0*self.k1))
+        self.B = B
+
+        self.x_EP, self.y_EP = self._get_EP_coordinates()
+
+    def _get_EP_coordinates(self):
+        eta = self.eta
+        kF = self.kF
+        kr = self.kr
+        k0 = self.k0
+        k1 = self.k1
+        d = self.d
+        theta_boundary = self.theta_boundary
+
+        x_EP = eta*kF*kr*d**2/(4*np.pi**2 * np.sqrt(2*k0*k1*(1.+np.cos(theta_boundary))))
+        y_EP = 0.0
+
+        return x_EP, y_EP
 
     def H(self, t, x=None, y=None):
         if x is None and y is None:
@@ -287,13 +316,9 @@ class Dirichlet(Waveguide):
         else:
             eps, delta = x, y
 
-        B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
-                self.d**3 / np.sqrt(self.k0*self.k1))
-        self.B = B
-
         H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0
-        H12 = B*eps
-        H21 = B.conj()*eps
+        H12 = self.B*eps
+        H21 = self.B.conj()*eps
         H22 = -self.k0 - delta - 1j*self.eta/2.*self.kF/self.k1
 
         H = np.array([[H11, H12],
@@ -311,18 +336,28 @@ class Dirichlet(Waveguide):
             raise Exception("Error: loop_type not 'Constant'!")
 
         _, b1, b2 = self.solve_ODE()
+        b1, b2 = b1[-1], b1[-1]
+        print "b1", b1
+        print "b2", b2
 
         x0 = lambda s: (2.*pi/kr * (1-s)/2 - 1j/kr *
                          np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
-        y0 = lambda s: d/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1)*abs(b1/b2)))
+        y0 = lambda s: d/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1))*abs(b1/b2))
 
-        xn = [ x0[n] for n in (1, -1) ]
-        yn = [ y0[n] for n in (1, -1) ]
+        xn = [ x0(n) for n in (1, -1) ]
+        yn = [ y0(n) for n in (1, -1) ]
+
+        print "get_nodes"
+        print 50*'#'
+        print "xn", xn
+        print "yn", yn
+        print 50*'#'
 
         return zip(xn, yn)
 
 
-class DirichletPositionDependentLoss(Waveguide):
+# class DirichletPositionDependentLoss(Waveguide):
+class DirichletPositionDependentLoss(Dirichlet):
     """Dirichlet class with position dependent loss."""
 
     def __init__(self, **waveguide_kwargs):
@@ -331,8 +366,13 @@ class DirichletPositionDependentLoss(Waveguide):
 
         Copies methods and variables from the Waveguide class.
         """
-        Waveguide.__init__(self, **waveguide_kwargs)
+        # Waveguide.__init__(self, **waveguide_kwargs)
         self.Dirichlet = Dirichlet(**waveguide_kwargs)
+        self.Dirichlet.eta = 0.0
+        Dirichlet.__init__(self, **waveguide_kwargs)
+
+    def get_nodes(self):
+        return self.Dirichlet.get_nodes()
 
     def _get_EP_coordinates(self):
         Gamma = Loss(k=self.k, kF=self.kF, kr=self.kr, d=self.d)
@@ -346,10 +386,13 @@ class DirichletPositionDependentLoss(Waveguide):
         kr = self.kr
         B = self.Dirichlet.B
 
-        sq1 = (G[1,1] - kF*G[2,2])**2 + 4.*kF**2*G[1,2]*G[2,1]
-        sq2 = (abs(B)**2 + (kF**2*(B*G[2,1]+B.conj()*G[1,2])**2 / (G[1,1]-kF*G[2,2])**2))
-        self.x_EP = np.sqrt(sq1)/(2.*np.sqrt(sq2)) * self.eta
-        self.y_EP = -2.*kF*(B*G[2,1]+B.conj()*G[1,2])/(G[1,1]-kF*G[2,2]) * self.x_EP
+        sq1 = (G[0,0] - kF*G[1,1])**2 + 4.*kF**2*G[0,1]*G[1,0]
+        sq2 = (abs(B)**2 + (kF**2*(B*G[1,0]+B.conj()*G[0,1])**2 / (G[0,0]-kF*G[1,1])**2))
+
+        x_EP = np.sqrt(sq1)/(2.*np.sqrt(sq2)) * self.eta
+        y_EP = -2.*kF*(B*G[1,0]+B.conj()*G[0,1])/(G[0,0]-kF*G[1,1]) * x_EP
+
+        return x_EP, y_EP
 
     def H(self, t, x=None, y=None):
         if x is None and y is None:
@@ -358,6 +401,8 @@ class DirichletPositionDependentLoss(Waveguide):
             eps, delta = x, y
 
         B = self.Dirichlet.B
+
+        self._get_EP_coordinates()
 
         H11 = -self.k0 - 1j*self.eta*self.Gamma_tilde[1,1]
         H12 = B*eps - 1j*self.eta*self.Gamma_tilde[1,2]
