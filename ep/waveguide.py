@@ -1,12 +1,12 @@
 #!/usr/bin/env python2.7
 
-import brewer2mpl as brew
-from ep.base import Base
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import pi
 
+import brewer2mpl as brew
 
+from ep.base import Base
 from ep.dissipation import Loss
 
 
@@ -41,10 +41,11 @@ class Waveguide(Base):
                                         # and lower boundary
         self.N = N                      # number of open modes
         self.k = lambda n: np.sqrt(N**2 - n**2)*np.pi
-        kF = N*np.pi/d
+                                        # get wavevector in x-direction
+        kF = N*np.pi/d                  # Fermi wavevector
         self.kF = kF
 
-        # change initial conditions
+        # change trajectory positions
         if None in (x_R0, y_R0):
             self.x_R0 = self.x_EP
             self.y_R0 = self.x_EP
@@ -54,43 +55,31 @@ class Waveguide(Base):
         pass
 
     def get_cycle_parameters(self, t):
-        """Return the loop parameters at time t.
+        """Return the trajectory coordinates (x(t), y(t)) at time t."""
 
-            Parameters:
-            -----------
-                t: float
-                    Time t/spatial coordinate in propagation direction.
-
-            Returns:
-            --------
-                x, y: float
-                    Trajectory coordinates (x,y) at time t.
-        """
-        x_EP, x_R0 = self.x_EP, self.x_R0
-        y_EP, y_R0 = self.y_EP, self.y_R0
+        x_R0, y_R0 = self.x_R0, self.y_R0
         w, phi0 = self.w, self.init_phase
         loop_type = self.loop_type
 
-        if loop_type == "Circle":
+        if loop_type == "Constant":
+            return x_R0, y_R0
+
+        elif loop_type == "Constant_delta":
+            return x_R0 * (1.0 - np.cos(w*t)), y_R0
+
+        elif loop_type == "Circle":
             lambda1 = lambda t: x_R0 + x_R0*np.cos(w*t + phi0)
             lambda2 = lambda t: y_R0 + y_R0*np.sin(w*t + phi0)
             return lambda1(t), lambda2(t)
 
-        if loop_type == "Ellipse":
+        elif loop_type == "Ellipse":
             lambda1 = lambda t: x_R0 * (1. - np.cos(w*t))
-            lambda2 = lambda t: y_R0 - 8.*x_EP*np.sin(w*t) + phi0
+            lambda2 = lambda t: y_R0 - 8.*x_R0*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
 
         elif loop_type == "Varcircle":
             lambda1 = lambda t: x_R0 * (1. - np.cos(w*t))
-            lambda2 = lambda t: y_R0 - x_EP*np.sin(w*t) + phi0
-            return lambda1(t), lambda2(t)
-
-        elif loop_type == "Varcircle_phase":
-            R = x_EP
-            phase = np.arccos(1 - phi0/R)
-            lambda1 = lambda t: R*(1. - np.cos(w*t + phase)) - phi0
-            lambda2 = lambda t: y_EP - R*np.sin(w*t + phase)
+            lambda2 = lambda t: y_R0 - x_R0*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
 
         elif loop_type == "Bell":
@@ -99,19 +88,6 @@ class Waveguide(Base):
             # take also sign change in w=2pi/T into account
             lambda2 = lambda t: y_R0 * sign * (sign*w*t/pi - 1) + phi0
             return lambda1(t), lambda2(t)
-
-        elif loop_type == "Bell_small_width":
-            sign = -int(self.loop_direction + "1")
-            lambda1 = lambda t: x_EP * (1. - np.cos(w*t))
-            # take also sign change in w=2pi/T into account
-            lambda2 = lambda t: 0.2 * sign * (sign*w*t/pi - 1) + phi0
-            return lambda1(t), lambda2(t)
-
-        elif loop_type == "Constant":
-            return x_R0, y_R0_
-
-        elif loop_type == "Constant_delta":
-            return x_R0 * (1.0 - np.cos(w*t)), y_R0
 
         else:
             raise Exception(("Error: loop_type {}"
@@ -251,7 +227,7 @@ class Waveguide(Base):
 class Neumann(Waveguide):
     """Neumann class."""
 
-    def __init__(self):
+    def __init__(self, **waveguide_kwargs):
         """Exceptional Point (EP) waveguide class with Neumann boundary
         conditons.
 
@@ -264,7 +240,7 @@ class Neumann(Waveguide):
         kr = k0 - k1
         self.kr = kr
 
-        self.x_EP = eta / (2.*np.sqrt(k0*k1 * (1.+np.cos(theta))))
+        self.x_EP = self.eta / (2.*np.sqrt(k0*k1 * (1.+np.cos(self.theta))))
         self.y_EP = 0.0
 
     def H(self, t, x=None, y=None):
@@ -289,7 +265,7 @@ class Neumann(Waveguide):
 class Dirichlet(Waveguide):
     """Dirichlet class."""
 
-    def __init__(self):
+    def __init__(self, **waveguide_kwargs):
         """Exceptional Point (EP) waveguide class with Dirichlet boundary
         conditons.
 
@@ -301,8 +277,8 @@ class Dirichlet(Waveguide):
         kr = k0 - k1
         self.kr = kr
 
-        self.x_EP = eta*kF*kr*d**2/(4*np.pi**2 *
-                                        np.sqrt(2*k0*k1*(1.+np.cos(theta))))
+        self.x_EP = self.eta*self.kF*kr*self.d**2/(4*np.pi**2 *
+                                        np.sqrt(2*k0*k1*(1.+np.cos(self.theta))))
         self.y_EP = 0.0
 
     def H(self, t, x=None, y=None):
@@ -346,10 +322,10 @@ class Dirichlet(Waveguide):
         return zip(xn, yn)
 
 
-class DirichletPositionDependentLoss(Waveguide)
+class DirichletPositionDependentLoss(Waveguide):
     """Dirichlet class with position dependent loss."""
 
-    def __init__(self):
+    def __init__(self, **waveguide_kwargs):
         """Exceptional Point (EP) waveguide class with Dirichlet boundary
         conditons and position dependent losses.
 
@@ -359,13 +335,15 @@ class DirichletPositionDependentLoss(Waveguide)
         self.Dirichlet = Dirichlet(**waveguide_kwargs)
 
     def _get_EP_coordinates(self):
-        Gamma = Loss(k=self.k, kF=kF, kr=kr, d=self.d)
+        Gamma = Loss(k=self.k, kF=self.kF, kr=self.kr, d=self.d)
         G1, G2 = [ Gamma.get_Gamma_tilde(x0, y0)
                         for (x0, y0) in self.Dirichlet.get_nodes() ]
         G = G1 + G2
         self.Gamma_tilde = G
 
         # here B without loss
+        kF = self.kF
+        kr = self.kr
         B = self.Dirichlet.B
 
         sq1 = (G[1,1] - kF*G[2,2])**2 + 4.*kF**2*G[1,2]*G[2,1]
