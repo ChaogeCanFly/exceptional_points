@@ -45,10 +45,15 @@ class Waveguide(Base):
         kF = N*np.pi/d                  # Fermi wavevector
         self.kF = kF
 
-        # change trajectory positions
-        if None in (x_R0, y_R0):
-            self.x_R0 = self.x_EP
-            self.y_R0 = self.x_EP
+        #  trajectory positions
+        if x_R0 is None or y_R0 is None:
+            self.x_R0, self.y_R0 = self._get_EP_coordinates()
+        else:
+            self.x_R0, self.y_R0 = x_R0, y_R0
+
+    def _get_EP_coordinates(self):
+        """get_EP_coordinates method is overwritten by inheriting classes."""
+        pass
 
     def H(self, t, x=None, y=None):
         """Hamiltonian H is overwritten by inheriting classes."""
