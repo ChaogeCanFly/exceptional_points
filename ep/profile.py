@@ -140,9 +140,9 @@ class Generate_Profiles(object):
         self.WG = Waveguide(**self.waveguide_args)
 
         if self.eps:
-            self.WG.x_EP = self.eps
+            self.WG.x_R0 = self.eps
         else:
-            self.WG.x_EP *= self.eps_factor
+            self.WG.x_R0 *= self.eps_factor
         self.WG.y_EP += self.delta
 
         if self.use_variable_length:
