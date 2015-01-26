@@ -14,9 +14,10 @@ class Loss(object):
     """
 
     def __init__(self, k=None, kF=None, kr=None, d=None,
-                 sigmax=0.05, sigmay=0.05):
+                 sigmax=0.05, sigmay=0.05, test_integrals=False):
         self.sigmax = sigmax
         self.sigmay = sigmay
+        self.test_integrals = test_integrals
 
         if None in (k, kF, kr, d):
             raise Exception("Error: need wavenumber/width information!")
@@ -47,11 +48,13 @@ class Loss(object):
         argx1, argx2 = [ complex(a)/(np.sqrt(2.)*sigmax) for a in argx ]
 
         Ix = np.exp(expargx) * np.sqrt(np.pi/2.) * sigmax *  (erf(argx1) - erf(argx2))
-        # Ixalt = np.exp(1)**((1/2)*(k(m)+(-1)*k(n))*(((-1)*k(m)+k(n))*sigmax**2+( \
-        #         1j*2)*x0))*((1/2)*np.pi)**(1/2)*sigmax*((-1)*erf(2**(-1/2) \
-        #         *sigmax**(-1)*((1j*(-1))*(k(m)+(-1)*k(n))*sigmax**2+(-1)*x0))+erf( \
-        #         2**(-1/2)*sigmax**(-1)*(2*np.pi/kr+(1j*(-1))*(k(m)+(-1)*k(n)) \
-        #         *sigmax**2+(-1)*x0)))
+
+        if self.test_integrals:
+            Ixalt = np.exp(1)**((1/2)*(k(m)+(-1)*k(n))*(((-1)*k(m)+k(n))*sigmax**2+( \
+                    1j*2)*x0))*((1/2)*np.pi)**(1/2)*sigmax*((-1)*erf(2**(-1/2) \
+                    *sigmax**(-1)*((1j*(-1))*(k(m)+(-1)*k(n))*sigmax**2+(-1)*x0))+erf( \
+                    2**(-1/2)*sigmax**(-1)*(2*np.pi/kr+(1j*(-1))*(k(m)+(-1)*k(n)) \
+                    *sigmax**2+(-1)*x0)))
 
         # y integration
         expargy0 = -(n+m)*pi*(2j*d*y0+(n+m)*pi*sigmay**2)/(2*d**2)
@@ -78,32 +81,33 @@ class Loss(object):
                 np.exp(expargy3) * (erf(argy5) + erf(argy6)) +
                 erfc(argy7) + erfc(argy8))
 
-        # Iyalt = (1/4)*np.exp(1)**((-1)*d**(-2)*np.pi*((m**2+n**2)*np.pi*sigmay**2+ \
-        #         (1j*2)*d*m*y0))*((1/2)*np.pi)**(1/2)*sigmay*(np.exp(1)**((1/2) \
-        #         *d**(-2)*np.pi*((m+n)**2*np.pi*sigmay**2+(1j*2)*d*(3*m+(-1)*n)*y0) \
-        #         )*erf(2**(-1/2)*sigmay**(-1)*(d+(1j*(-1))*d**(-1)*(m+(-1)*n) \
-        #         *np.pi*sigmay**2+(-1)*y0))+np.exp(1)**((1/2)*d**(-2)*(m+n)*np.pi*( \
-        #         (m+n)*np.pi*sigmay**2+(1j*2)*d*y0))*erf(2**(-1/2)*sigmay**(-1)*(d+ \
-        #         1j*d**(-1)*(m+(-1)*n)*np.pi*sigmay**2+(-1)*y0))+(-1)*np.exp(1)**(( \
-        #         1/2)*d**(-2)*np.pi*((m+(-1)*n)**2*np.pi*sigmay**2+(1j*2)*d*(3*m+n) \
-        #         *y0))*erf(2**(-1/2)*sigmay**(-1)*(d+(1j*(-1))*d**(-1)*(m+n) \
-        #         *np.pi*sigmay**2+(-1)*y0))+(-1)*np.exp(1)**((1/2)*d**(-2)*(m+(-1) \
-        #         *n)*np.pi*((m+(-1)*n)*np.pi*sigmay**2+(1j*2)*d*y0))*erf(2**(-1/2) \
-        #         *sigmay**(-1)*(d+1j*d**(-1)*(m+n)*np.pi*sigmay**2+(-1)*y0))+ \
-        #         np.exp(1)**((1/2)*d**(-2)*(m+n)*np.pi*((m+n)*np.pi*sigmay**2+( \
-        #         1j*2)*d*y0))*erf(2**(-1/2)*sigmay**(-1)*((1j*(-1))*d**(-1)*(m+(-1) \
-        #         *n)*np.pi*sigmay**2+y0))+np.exp(1)**((1/2)*d**(-2)*np.pi*((m+n) \
-        #         **2*np.pi*sigmay**2+(1j*2)*d*(3*m+(-1)*n)*y0))*erf(2**(-1/2) \
-        #         *sigmay**(-1)*(1j*d**(-1)*(m+(-1)*n)*np.pi*sigmay**2+y0))+(-1) \
-        #         *np.exp(1)**((1/2)*d**(-2)*(m+(-1)*n)*np.pi*((m+(-1)*n) \
-        #         *np.pi*sigmay**2+(1j*2)*d*y0))*erf(2**(-1/2)*sigmay**(-1)*((1j*( \
-        #         -1))*d**(-1)*(m+n)*np.pi*sigmay**2+y0))+(-1)*np.exp(1)**((1/2) \
-        #         *d**(-2)*np.pi*((m+(-1)*n)**2*np.pi*sigmay**2+(1j*2)*d*(3*m+n)*y0) \
-        #         )*erf(2**(-1/2)*sigmay**(-1)*(1j*d**(-1)*(m+n)*np.pi*sigmay**2+y0) \
-        #         ))
+        if self.test_integrals:
+            Iyalt = (1/4)*np.exp(1)**((-1)*d**(-2)*np.pi*((m**2+n**2)*np.pi*sigmay**2+ \
+                    (1j*2)*d*m*y0))*((1/2)*np.pi)**(1/2)*sigmay*(np.exp(1)**((1/2) \
+                    *d**(-2)*np.pi*((m+n)**2*np.pi*sigmay**2+(1j*2)*d*(3*m+(-1)*n)*y0) \
+                    )*erf(2**(-1/2)*sigmay**(-1)*(d+(1j*(-1))*d**(-1)*(m+(-1)*n) \
+                    *np.pi*sigmay**2+(-1)*y0))+np.exp(1)**((1/2)*d**(-2)*(m+n)*np.pi*( \
+                    (m+n)*np.pi*sigmay**2+(1j*2)*d*y0))*erf(2**(-1/2)*sigmay**(-1)*(d+ \
+                    1j*d**(-1)*(m+(-1)*n)*np.pi*sigmay**2+(-1)*y0))+(-1)*np.exp(1)**(( \
+                    1/2)*d**(-2)*np.pi*((m+(-1)*n)**2*np.pi*sigmay**2+(1j*2)*d*(3*m+n) \
+                    *y0))*erf(2**(-1/2)*sigmay**(-1)*(d+(1j*(-1))*d**(-1)*(m+n) \
+                    *np.pi*sigmay**2+(-1)*y0))+(-1)*np.exp(1)**((1/2)*d**(-2)*(m+(-1) \
+                    *n)*np.pi*((m+(-1)*n)*np.pi*sigmay**2+(1j*2)*d*y0))*erf(2**(-1/2) \
+                    *sigmay**(-1)*(d+1j*d**(-1)*(m+n)*np.pi*sigmay**2+(-1)*y0))+ \
+                    np.exp(1)**((1/2)*d**(-2)*(m+n)*np.pi*((m+n)*np.pi*sigmay**2+( \
+                    1j*2)*d*y0))*erf(2**(-1/2)*sigmay**(-1)*((1j*(-1))*d**(-1)*(m+(-1) \
+                    *n)*np.pi*sigmay**2+y0))+np.exp(1)**((1/2)*d**(-2)*np.pi*((m+n) \
+                    **2*np.pi*sigmay**2+(1j*2)*d*(3*m+(-1)*n)*y0))*erf(2**(-1/2) \
+                    *sigmay**(-1)*(1j*d**(-1)*(m+(-1)*n)*np.pi*sigmay**2+y0))+(-1) \
+                    *np.exp(1)**((1/2)*d**(-2)*(m+(-1)*n)*np.pi*((m+(-1)*n) \
+                    *np.pi*sigmay**2+(1j*2)*d*y0))*erf(2**(-1/2)*sigmay**(-1)*((1j*( \
+                    -1))*d**(-1)*(m+n)*np.pi*sigmay**2+y0))+(-1)*np.exp(1)**((1/2) \
+                    *d**(-2)*np.pi*((m+(-1)*n)**2*np.pi*sigmay**2+(1j*2)*d*(3*m+n)*y0) \
+                    )*erf(2**(-1/2)*sigmay**(-1)*(1j*d**(-1)*(m+n)*np.pi*sigmay**2+y0) \
+                    ))
 
-        # print "Ix, Ixalt, |Ix-Ixalt|", Ix, Ixalt, abs(Ix-Ixalt)
-        # print "Iy, Iyalt, |Iy-Iyalt|", Iy, Iyalt, abs(Iy-Iyalt)
+            print "Ix, Ixalt, |Ix-Ixalt|", Ix, Ixalt, abs(Ix-Ixalt)
+            print "Iy, Iyalt, |Iy-Iyalt|", Iy, Iyalt, abs(Iy-Iyalt)
 
         Gamma = 0.5/(pi*d) * kF * kr / np.sqrt(k(n)*k(m)) * (Ix * Iy)
 
@@ -117,6 +121,7 @@ class Loss(object):
 
         return np.asarray(Gamma_tilde).reshape(2,-1)
 
+
 if __name__ == '__main__':
     N = 2.5
     d = 1
@@ -124,7 +129,7 @@ if __name__ == '__main__':
     k = lambda n: np.sqrt(kF**2 - (n*np.pi/d)**2)
     kr = k(1)-k(2)
 
-    L = Loss(k, kF, kr, d)
+    L = Loss(k=k, kF=kF, kr=kr, d=d, test_integrals=True)
     print L.Gamma(1,1)
     print L.Gamma(1,2, 0.0923, 0.1231)
     print L.Gamma(2,1, 0.23, 0.31)
