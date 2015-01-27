@@ -19,6 +19,7 @@ class Loss(object):
         self.sigmax = sigmax
         self.sigmay = sigmay
         self.test_integrals = test_integrals
+        self.integrate_R2 = integrate_R2
 
         if None in (k, kF, kr, d):
             raise Exception("Error: need wavenumber/width information!")
@@ -39,7 +40,7 @@ class Loss(object):
         sigmax = self.sigmax
         sigmay = self.sigmay
 
-        if integrate_R2:
+        if self.integrate_R2:
             Ix = np.exp(1)**((1/2)*(k(m)+(-1)*k(n))*((1j*2)*x0+sigmax**2*((-1)*k(m)+k(n))))
             Iy = (1/4)*np.exp(1)**((-1/2)*d**(-2)*(m+n)*np.pi*((m+n) \
                 *np.pi*sigmay**2+(1j*2)*d*y0))*((-1)+(-1)*np.exp(1)**((1j*2)*d**( \
@@ -118,7 +119,7 @@ class Loss(object):
                 print "Ix, Ixalt, |Ix-Ixalt|", Ix, Ixalt, abs(Ix-Ixalt)
                 print "Iy, Iyalt, |Iy-Iyalt|", Iy, Iyalt, abs(Iy-Iyalt)
 
-        Gamma = 0.5/(pi*d) * kF * kr / np.sqrt(k(n)*k(m)) * (Ix * Iy)
+        Gamma = 1./(2.*np.pi*d) * kF * kr / np.sqrt(k(n)*k(m)) * (Ix * Iy)
 
         return Gamma
 
