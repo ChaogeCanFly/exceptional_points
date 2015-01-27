@@ -374,8 +374,10 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         Copies methods and variables from the Dirichlet class.
         """
-        self.Dirichlet = Dirichlet(**waveguide_kwargs)
-        self.Dirichlet.eta = 0.0
+        dirichlet_kwargs = waveguide_kwargs.copy()
+        dirichlet_kwargs.update({'loop_type': 'Constant',
+                                 'eta': 0.0})
+        self.Dirichlet = Dirichlet(**dirichlet_kwargs)
         Dirichlet.__init__(self, **waveguide_kwargs)
 
     def get_nodes(self):
@@ -414,13 +416,14 @@ class DirichletPositionDependentLoss(Dirichlet):
             eps, delta = self.get_cycle_parameters(t)
         else:
             eps, delta = x, y
-            # force re-evaluation of Gamma_tilde
-            self._get_EP_coordinates()
+
+        # force re-evaluation of Gamma_tilde
+        self._get_EP_coordinates()
 
         B = self.Dirichlet.B
 
         # damping coefficient
-        eps0 = 0.1
+        eps0 = 0.01
         G = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2 * self.Gamma_tilde
         self.Gamma_tilde = G
 
