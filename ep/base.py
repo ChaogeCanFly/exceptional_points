@@ -62,7 +62,8 @@ class Base:
         self.loop_direction = loop_direction
 
         # number of timesteps in ODE-integration
-        self.tN = T * 5e2 * 1.
+        # self.tN = T * 5e2 * 1.
+        self.tN = T * 5e1 * 1.
 
         # time-array and step-size
         self.t, self.dt = np.linspace(0, T, self.tN, retstep=True)
