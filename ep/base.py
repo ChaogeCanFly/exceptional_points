@@ -17,7 +17,7 @@ class Base:
 
     def __init__(self, T=10, x_EP=0.0, y_EP=0.0, x_R0=0.8, y_R0=0.8,
                  loop_type="Circle", loop_direction='-', init_state='a',
-                 init_phase=0.0, calc_adiabatic_state=False):
+                 init_phase=0.0, calc_adiabatic_state=False, verbose=False):
         """Exceptional Point (EP) base class.
 
         The dynamics of a 2-level system are determined via an Runge-Kutta
@@ -51,6 +51,8 @@ class Base:
                     Whether adiabatic solutions should also be calculated (note
                     that setting this flag True can slow down the computation
                     considerably).
+                verbose: bool, optional
+                    Whether to return additional output.
         """
 
         self.T = T
@@ -89,6 +91,7 @@ class Base:
         self.theta = np.zeros((self.tN,2), dtype=np.complex256)
 
         self.calc_adiabatic_state = calc_adiabatic_state
+        self.verbose = verbose
 
     def get_cycle_parameters(self, t):
         """get_cycle_parameters method is overwritten by inheriting classes."""
