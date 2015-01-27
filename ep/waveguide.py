@@ -340,7 +340,7 @@ class Dirichlet(Waveguide):
         _, evec = c_eig(self.H(0))
 
         if t is not None and t > 50:
-            b1, b2 = evec[0,1,], evec[1,1]
+            b1, b2 = evec[0,1], evec[1,1]
         else:
             b1, b2 = evec[0,0], evec[1,0]
 
@@ -352,10 +352,10 @@ class Dirichlet(Waveguide):
         yn = [ y0(n) for n in (1, -1) ]
 
         if self.verbose:
-            print "b1 =", b1
-            print "b2 = ", b2
-            print "xn", xn
-            print "yn", yn
+            print "evec_x =", b1
+            print "evec_y = ", b2
+            print "node xn", xn
+            print "node yn", yn
 
         return zip(xn, yn)
 
