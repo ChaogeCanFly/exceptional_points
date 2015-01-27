@@ -8,6 +8,7 @@ import brewer2mpl as brew
 
 from ep.base import Base
 from ep.dissipation import Loss
+from ep.helpers import c_eig
 
 
 class Waveguide(Base):
@@ -324,7 +325,7 @@ class Dirichlet(Waveguide):
                       [H21, H22]], dtype=complex)
         return H
 
-    def get_nodes(self):
+    def get_nodes(self, t=None):
         """Return the nodes of the Bloch-eigenvector."""
 
         k = self.k
@@ -334,11 +335,14 @@ class Dirichlet(Waveguide):
         if not self.loop_type == 'Constant':
             raise Exception("Error: loop_type not 'Constant'!")
 
-        # take element corresponding to coordinate x: (eps(x), delta(x))
-        self.solve_ODE()
-        ev1, ev2 = self.eVecs_r[0,:,0], self.eVecs_r[0,:,1]
-        b1, b2 = ev1
+        # get eigenvectors of Hermitian system to find the nodes of the
+        # Bloch modes
+        _, evec = c_eig(self.H(0))
 
+        if t is not None and t > 50:
+            b1, b2 = evec[0,1,], evec[1,1]
+        else:
+            b1, b2 = evec[0,0], evec[1,0]
 
         x0 = lambda s: (2.*pi/kr * (1-s)/2 - 1j/kr *
                          np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
@@ -348,7 +352,6 @@ class Dirichlet(Waveguide):
         yn = [ y0(n) for n in (1, -1) ]
 
         if self.verbose:
-            print "arrcos(x) argument", 0.5*np.sqrt(k(2)/k(1))*abs(b1/b2)
             print "b1 =", b1
             print "b2 = ", b2
             print "xn", xn
@@ -372,18 +375,14 @@ class DirichletPositionDependentLoss(Dirichlet):
         self.Dirichlet = Dirichlet(**dirichlet_kwargs)
         Dirichlet.__init__(self, **waveguide_kwargs)
 
-    def get_nodes(self):
-        return self.Dirichlet.get_nodes()
-
-    def _get_EP_coordinates(self):
+    def _get_EP_coordinates(self, t=None):
         Gamma = Loss(k=self.k, kF=self.kF, kr=self.kr, d=self.d)
-        nodes = self.Dirichlet.get_nodes()
+        nodes = self.Dirichlet.get_nodes(t=t)
 
         if np.any(np.isnan(nodes)):
             G = np.zeros((2,2))
         else:
-            G1, G2 = [ Gamma.get_Gamma_tilde(x0, y0)
-                            for (x0, y0) in self.Dirichlet.get_nodes() ]
+            G1, G2 = [ Gamma.get_Gamma_tilde(x0, y0) for (x0, y0) in nodes ]
             G = G1 + G2
         self.Gamma_tilde = G
 
@@ -410,12 +409,14 @@ class DirichletPositionDependentLoss(Dirichlet):
             eps, delta = x, y
 
         # force re-evaluation of Gamma_tilde
-        self._get_EP_coordinates()
+        self.Dirichlet.x_R0 = eps
+        self.Dirichlet.y_R0 = delta
+        self._get_EP_coordinates(t=t)
 
         B = self.Dirichlet.B
 
         # damping coefficient
-        eps0 = 0.01
+        eps0 = 0.02
         G = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2 * self.Gamma_tilde
         self.Gamma_tilde = G
 
