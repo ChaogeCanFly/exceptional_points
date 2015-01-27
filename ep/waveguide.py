@@ -46,14 +46,12 @@ class Waveguide(Base):
         self.kF = kF
 
         #  trajectory positions
-        if x_R0 is None or y_R0 is None:
-            self.x_R0, self.y_R0 = self._get_EP_coordinates()
-        else:
-            self.x_R0, self.y_R0 = x_R0, y_R0
+        self.x_R0, self.y_R0 = x_R0, y_R0
 
-    def _get_EP_coordinates(self):
-        """get_EP_coordinates method is overwritten by inheriting classes."""
-        pass
+    # makes initialization of inheriting classes difficult
+    # def _get_EP_coordinates(self):
+    #     """get_EP_coordinates method is overwritten by inheriting classes."""
+    #     pass
 
     def H(self, t, x=None, y=None):
         """Hamiltonian H is overwritten by inheriting classes."""
@@ -245,7 +243,8 @@ class Neumann(Waveguide):
         kr = k0 - k1
         self.kr = kr
 
-        self.x_EP, self.y_EP = self._get_EP_coordinates()
+        if self.x_R0 is None or self.y_R0 is None:
+            self.x_R0, self.y_R0 = self._get_EP_coordinates()
 
     def _get_EP_coordinates(self):
         eta = self.eta
@@ -288,7 +287,7 @@ class Dirichlet(Waveguide):
         conditons.
 
         Copies methods and variables from the Waveguide class.
-       """
+        """
         Waveguide.__init__(self, **waveguide_kwargs)
         k0, k1 = [ self.k(n) for n in 1, 2 ]
         self.k0, self.k1 = k0, k1
@@ -299,7 +298,8 @@ class Dirichlet(Waveguide):
                 self.d**3 / np.sqrt(self.k0*self.k1))
         self.B = B
 
-        self.x_EP, self.y_EP = self._get_EP_coordinates()
+        if self.x_R0 is None or self.y_R0 is None:
+            self.x_R0, self.y_R0 = self._get_EP_coordinates()
 
     def _get_EP_coordinates(self):
         eta = self.eta
@@ -340,10 +340,11 @@ class Dirichlet(Waveguide):
         if not self.loop_type == 'Constant':
             raise Exception("Error: loop_type not 'Constant'!")
 
-        _, b1, b2 = self.solve_ODE()
-        # take here last element?
         # take element corresponding to coordinate x: (eps(x), delta(x))
-        b1, b2 = b1[-1], b1[-1]
+        self.solve_ODE()
+        ev1, ev2 = self.eVecs_r[0,:,0], self.eVecs_r[0,:,1]
+        b1, b2 = ev1
+
 
         x0 = lambda s: (2.*pi/kr * (1-s)/2 - 1j/kr *
                          np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
@@ -351,6 +352,13 @@ class Dirichlet(Waveguide):
 
         xn = [ x0(n) for n in (1, -1) ]
         yn = [ y0(n) for n in (1, -1) ]
+
+        if self.verbose:
+            print "arrcos(x) argument", 0.5*np.sqrt(k(2)/k(1))*abs(b1/b2)
+            print "b1 =", b1
+            print "b2 = ", b2
+            print "xn", xn
+            print "yn", yn
 
         return zip(xn, yn)
 
@@ -362,7 +370,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         """Exceptional Point (EP) waveguide class with Dirichlet boundary
         conditons and position dependent losses.
 
-        Copies methods and variables from the Waveguide class.
+        Copies methods and variables from the Dirichlet class.
         """
         self.Dirichlet = Dirichlet(**waveguide_kwargs)
         self.Dirichlet.eta = 0.0
@@ -373,10 +381,18 @@ class DirichletPositionDependentLoss(Dirichlet):
 
     def _get_EP_coordinates(self):
         Gamma = Loss(k=self.k, kF=self.kF, kr=self.kr, d=self.d)
-        G1, G2 = [ Gamma.get_Gamma_tilde(x0, y0)
-                        for (x0, y0) in self.Dirichlet.get_nodes() ]
-        G = G1 + G2
+        nodes = self.Dirichlet.get_nodes()
+
+        if np.any(np.isnan(nodes)):
+            G = np.zeros((2,2))
+        else:
+            G1, G2 = [ Gamma.get_Gamma_tilde(x0, y0)
+                            for (x0, y0) in self.Dirichlet.get_nodes() ]
+            G = G1 + G2
         self.Gamma_tilde = G
+
+        if self.verbose:
+            print "G\n", G
 
         # here B without loss
         kF = self.kF
@@ -397,9 +413,15 @@ class DirichletPositionDependentLoss(Dirichlet):
         else:
             eps, delta = x, y
 
+        # force re-evaluation of Gamma_tilde
+        self._get_EP_coordinates()
+
         B = self.Dirichlet.B
 
-        self._get_EP_coordinates()
+        # damping coefficient
+        eps0 = 0.1
+        G = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2 * self.Gamma_tilde
+        self.Gamma_tilde = G
 
         H11 = -self.k0 - 1j*self.eta*self.Gamma_tilde[0,0]
         H12 = B*eps - 1j*self.eta*self.Gamma_tilde[0,1]
@@ -408,6 +430,13 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
+
+        if self.verbose:
+            print "eps", eps
+            print "delta", delta
+            print "H\n", H
+            print "Gamma_tilde\n", self.Gamma_tilde
+
         return H
 
 
