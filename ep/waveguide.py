@@ -14,7 +14,7 @@ class Waveguide(Base):
     """Waveguide class."""
 
     def __init__(self, L=100, d=1.0, eta=0.05, N=1.5, theta=0.0,
-                 x_R0=None, y_R0=None, **base_kwargs):
+                 **base_kwargs):
         """Exceptional Point (EP) waveguide class.
 
         Copies methods and variables from the Base class and adds new
@@ -44,14 +44,6 @@ class Waveguide(Base):
                                         # get wavevector in x-direction
         kF = N*np.pi/d                  # Fermi wavevector
         self.kF = kF
-
-        #  trajectory positions
-        self.x_R0, self.y_R0 = x_R0, y_R0
-
-    # makes initialization of inheriting classes difficult
-    # def _get_EP_coordinates(self):
-    #     """get_EP_coordinates method is overwritten by inheriting classes."""
-    #     pass
 
     def H(self, t, x=None, y=None):
         """Hamiltonian H is overwritten by inheriting classes."""
