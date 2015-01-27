@@ -298,8 +298,10 @@ class Dirichlet(Waveguide):
                 self.d**3 / np.sqrt(self.k0*self.k1))
         self.B = B
 
+        self.x_EP, self.y_EP = self._get_EP_coordinates()
+
         if self.x_R0 is None or self.y_R0 is None:
-            self.x_R0, self.y_R0 = self._get_EP_coordinates()
+            self.x_R0, self.y_R0 = self.x_EP, self.y_EP
 
     def _get_EP_coordinates(self):
         eta = self.eta
@@ -412,9 +414,8 @@ class DirichletPositionDependentLoss(Dirichlet):
             eps, delta = self.get_cycle_parameters(t)
         else:
             eps, delta = x, y
-
-        # force re-evaluation of Gamma_tilde
-        self._get_EP_coordinates()
+            # force re-evaluation of Gamma_tilde
+            self._get_EP_coordinates()
 
         B = self.Dirichlet.B
 
