@@ -65,10 +65,11 @@ class Potential(object):
 
         wg_kwargs = {'N': self.N,
                      'L': self.L,
-                     'loop_type': 'Constant'}
+                     'loop_type': 'Constant',
+                     'x_R0': 0.05}
         WG = Dirichlet(**wg_kwargs)
         WG.x_R0 = 0.05
-        self.eta_x = WG.eta_x
+        #self.eta_x = WG.eta_x # TODO: implement eta_x
 
         x = WG.t
         y = np.linspace(0.0, self.width, ny)
