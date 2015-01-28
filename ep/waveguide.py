@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy import pi
 
-import brewer2mpl as brew
-
 from ep.base import Base
 from ep.dissipation import Loss
 from ep.helpers import c_eig
@@ -241,8 +239,6 @@ class Neumann(Waveguide):
 
     def _get_EP_coordinates(self):
         eta = self.eta
-        kF = self.kF
-        kr = self.kr
         k0 = self.k0
         k1 = self.k1
         d = self.d
@@ -268,7 +264,7 @@ class Neumann(Waveguide):
         H22 = -self.k0 - delta - 1j*self.eta*self.k0/(2.*self.k1)
 
         H = np.array([[H11, H12],
-                      [H21, H22]], dtype=np.complex256)
+                      [H21, H22]], dtype=complex)
         return H
 
 
@@ -282,6 +278,7 @@ class Dirichlet(Waveguide):
         Copies methods and variables from the Waveguide class.
         """
         Waveguide.__init__(self, **waveguide_kwargs)
+
         k0, k1 = [ self.k(n) for n in 1, 2 ]
         self.k0, self.k1 = k0, k1
         kr = k0 - k1
@@ -322,45 +319,43 @@ class Dirichlet(Waveguide):
         H22 = -self.k0 - delta - 1j*self.eta/2.*self.kF/self.k1
 
         H = np.array([[H11, H12],
-                      [H21, H22]], dtype=np.complex256)
+                      [H21, H22]], dtype=complex)
         return H
 
     def get_nodes(self, x=None, y=None):
         """Return the nodes of the Bloch-eigenvector."""
 
+        if not self.loop_type == 'Constant':
+            raise Exception("Error: loop_type not 'Constant'!")
+
         k = self.k
         kr = self.kr
         d = self.d
 
-        if not self.loop_type == 'Constant':
-            raise Exception("Error: loop_type not 'Constant'!")
-
-        # get eigenvectors of Hermitian system to find the nodes of the
-        # Bloch modes
-        _, evec = c_eig(self.H(x, y))
+        # get eigenvectors of Hermitian system to find the nodes of one
+        # Bloch mode
+        _, evec = c_eig(self.H(0, x, y))
 
         # sort eigenvectors: always take the first one returned by c_eig,
-        # change if the imaginary part changes
+        # change if the imaginary part switches sign
         b1, b2 = evec[0,0], evec[1,0]
         if b1.imag > 0 or b2.imag < 0:
             b1, b2 = evec[0,1], evec[1,1]
 
-        x0 = lambda s: (2.*pi/kr * (1+s)/2 
+        x0 = lambda s: (2.*pi/kr * (1+s)/2
                         - 1j/kr * np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
         y0 = lambda s: d/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1))*abs(b1/b2))
 
-        xn = np.array([ x0(n) for n in (1, -1) ])
-        yn = np.array([ y0(n) for n in (1, -1) ])
+        xn = np.asarray([ x0(n) for n in (1, -1) ])
+        yn = np.asarray([ y0(n) for n in (1, -1) ])
 
-        print "accros argument", 0.5*np.sqrt(k(2)/k(1))*abs(b1/b2)
-        print "xn before", xn
-        print "yn before", yn
-        print "2pi/kr", 2*pi/kr
-
-        if np.any(xn < 0.) or np.any(xn > 2.*pi/kr):
-            xn = np.array([-10, -10])
+        # mark invalid node coordinates with np.nan
+        # -> caught in DirichletPositionDependentLoss._get_EP_coordinates where
+        # G is set to zero for invalid points
+        if np.any(xn < 0.) or np.any(xn > 2.*pi/kr) :
+            xn *= np.nan
         if np.any(yn < 0.) or np.any(yn > d):
-            yn = np.array([-10, -10])
+            yn *= np.nan
 
         if self.verbose:
             print "evec_x =", b1
@@ -368,7 +363,7 @@ class Dirichlet(Waveguide):
             print "node xn", xn
             print "node yn", yn
 
-        return np.array(zip(xn, yn))
+        return np.asarray(zip(xn, yn))
 
 
 class DirichletPositionDependentLoss(Dirichlet):
@@ -386,16 +381,11 @@ class DirichletPositionDependentLoss(Dirichlet):
         self.Dirichlet = Dirichlet(**dirichlet_kwargs)
         Dirichlet.__init__(self, **waveguide_kwargs)
 
-    def _get_EP_coordinates(self, t=None):
+    def _get_EP_coordinates(self):
         Gamma = Loss(k=self.k, kF=self.kF, kr=self.kr, d=self.d)
         self.nodes = self.Dirichlet.get_nodes()
 
-        if self.verbose or (t > self.T/4. and t < self.T/4. + self.dt/10) or (t > self.T*3/4. and t < self.T*3/4. + self.dt/10):
-            print np.any(self.nodes < 0.)
-
         if np.any(np.isnan(self.nodes)):
-            G = np.zeros((2,2))
-        elif np.any(self.nodes < 0.):
             G = np.zeros((2,2))
         else:
             G1, G2 = [ Gamma.get_Gamma_tilde(x0, y0) for (x0, y0) in self.nodes ]
@@ -407,7 +397,6 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         # here B without loss
         kF = self.kF
-        kr = self.kr
         B = self.Dirichlet.B
 
         sq1 = (G[0,0] - kF*G[1,1])**2 + 4.*kF**2*G[0,1]*G[1,0]
@@ -427,7 +416,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         # force re-evaluation of Gamma_tilde
         self.Dirichlet.x_R0 = eps
         self.Dirichlet.y_R0 = delta
-        self._get_EP_coordinates(t=t)
+        self._get_EP_coordinates()
 
         B = self.Dirichlet.B
 
@@ -442,9 +431,9 @@ class DirichletPositionDependentLoss(Dirichlet):
         H22 = -self.k0 - delta - 1j*self.eta*self.Gamma_tilde[1,1]
 
         H = np.array([[H11, H12],
-                      [H21, H22]], dtype=np.complex256)
+                      [H21, H22]], dtype=complex)
 
-        if self.verbose: # or (t > self.T/4. and t < self.T/4. + self.dt/10) or (t > self.T*3/4. and t < self.T*3/4. + self.dt/10):
+        if self.verbose:
             print "t", t
             print "eps", eps
             print "delta", delta
