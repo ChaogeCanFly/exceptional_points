@@ -5,7 +5,7 @@ import numpy as np
 
 import argh
 
-from ep.waveguide import Waveguide
+from ep.waveguide import Dirichlet
 
 
 class Potential(object):
@@ -65,10 +65,9 @@ class Potential(object):
 
         wg_kwargs = {'N': self.N,
                      'L': self.L,
-                     'loop_type': 'Constant',
-                     'neumann': 0}
-        WG = Waveguide(**wg_kwargs)
-        WG.x_EP = 0.05
+                     'loop_type': 'Constant'}
+        WG = Dirichlet(**wg_kwargs)
+        WG.x_R0 = 0.05
         self.eta_x = WG.eta_x
 
         x = WG.t
