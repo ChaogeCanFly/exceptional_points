@@ -112,7 +112,7 @@ class Potential(object):
         amplitude = self.amplitude
 
         if self.shape == 'science':
-            real = np.sin(self.kr*(X - X0) - np.pi/2.)
+            real = np.sin(self.kr*(X - (X0 + np.pi/2./self.kr)))
             real[Y < Y.mean()] = 0.
             real[np.sin(self.kr*(X - X0)) < 0.] = 0.
             real *= self.kF/2. * amplitude

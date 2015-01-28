@@ -70,7 +70,7 @@ class Base:
             self.w = -self.w
 
         # loop cycle parameters
-        self.y_EP, self.y_R0 = y_EP, y_R0
+        self.x_R0, self.y_R0 = x_R0, y_R0
         self.init_phase = init_phase
 
         # wavefunction |Psi(t)>
@@ -198,7 +198,7 @@ class Base:
 
         mlab.show()
 
-    def iso_sample_H(self, part=np.real xmin=None, xmax=None, xN=None,
+    def iso_sample_H(self, part=np.real, xmin=None, xmax=None, xN=None,
                      ymin=None, ymax=None, yN=None, zN=None):
         """Sample local eigenvalue geometry of H implicitly.
 
