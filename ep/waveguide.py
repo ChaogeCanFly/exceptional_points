@@ -268,7 +268,7 @@ class Neumann(Waveguide):
         H22 = -self.k0 - delta - 1j*self.eta*self.k0/(2.*self.k1)
 
         H = np.array([[H11, H12],
-                      [H21, H22]], dtype=complex)
+                      [H21, H22]], dtype=np.complex256)
         return H
 
 
@@ -322,10 +322,10 @@ class Dirichlet(Waveguide):
         H22 = -self.k0 - delta - 1j*self.eta/2.*self.kF/self.k1
 
         H = np.array([[H11, H12],
-                      [H21, H22]], dtype=complex)
+                      [H21, H22]], dtype=np.complex256)
         return H
 
-    def get_nodes(self, t=None):
+    def get_nodes(self, x=None, y=None):
         """Return the nodes of the Bloch-eigenvector."""
 
         k = self.k
@@ -337,27 +337,38 @@ class Dirichlet(Waveguide):
 
         # get eigenvectors of Hermitian system to find the nodes of the
         # Bloch modes
-        _, evec = c_eig(self.H(0))
+        _, evec = c_eig(self.H(x, y))
 
-        if t is not None and t > 50:
+        # sort eigenvectors: always take the first one returned by c_eig,
+        # change if the imaginary part changes
+        b1, b2 = evec[0,0], evec[1,0]
+        if b1.imag > 0 or b2.imag < 0:
             b1, b2 = evec[0,1], evec[1,1]
-        else:
-            b1, b2 = evec[0,0], evec[1,0]
 
-        x0 = lambda s: (2.*pi/kr * (1-s)/2 - 1j/kr *
-                         np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
+        x0 = lambda s: (2.*pi/kr * (1+s)/2 
+                        - 1j/kr * np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
         y0 = lambda s: d/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1))*abs(b1/b2))
 
-        xn = [ x0(n) for n in (1, -1) ]
-        yn = [ y0(n) for n in (1, -1) ]
+        xn = np.array([ x0(n) for n in (1, -1) ])
+        yn = np.array([ y0(n) for n in (1, -1) ])
+
+        print "accros argument", 0.5*np.sqrt(k(2)/k(1))*abs(b1/b2)
+        print "xn before", xn
+        print "yn before", yn
+        print "2pi/kr", 2*pi/kr
+
+        if np.any(xn < 0.) or np.any(xn > 2.*pi/kr):
+            xn = np.array([-10, -10])
+        if np.any(yn < 0.) or np.any(yn > d):
+            yn = np.array([-10, -10])
 
         if self.verbose:
             print "evec_x =", b1
-            print "evec_y = ", b2
+            print "evec_y =", b2
             print "node xn", xn
             print "node yn", yn
 
-        return zip(xn, yn)
+        return np.array(zip(xn, yn))
 
 
 class DirichletPositionDependentLoss(Dirichlet):
@@ -377,12 +388,17 @@ class DirichletPositionDependentLoss(Dirichlet):
 
     def _get_EP_coordinates(self, t=None):
         Gamma = Loss(k=self.k, kF=self.kF, kr=self.kr, d=self.d)
-        nodes = self.Dirichlet.get_nodes(t=t)
+        self.nodes = self.Dirichlet.get_nodes()
 
-        if np.any(np.isnan(nodes)):
+        if self.verbose or (t > self.T/4. and t < self.T/4. + self.dt/10) or (t > self.T*3/4. and t < self.T*3/4. + self.dt/10):
+            print np.any(self.nodes < 0.)
+
+        if np.any(np.isnan(self.nodes)):
+            G = np.zeros((2,2))
+        elif np.any(self.nodes < 0.):
             G = np.zeros((2,2))
         else:
-            G1, G2 = [ Gamma.get_Gamma_tilde(x0, y0) for (x0, y0) in nodes ]
+            G1, G2 = [ Gamma.get_Gamma_tilde(x0, y0) for (x0, y0) in self.nodes ]
             G = G1 + G2
         self.Gamma_tilde = G
 
@@ -426,12 +442,14 @@ class DirichletPositionDependentLoss(Dirichlet):
         H22 = -self.k0 - delta - 1j*self.eta*self.Gamma_tilde[1,1]
 
         H = np.array([[H11, H12],
-                      [H21, H22]], dtype=complex)
+                      [H21, H22]], dtype=np.complex256)
 
-        if self.verbose:
+        if self.verbose: # or (t > self.T/4. and t < self.T/4. + self.dt/10) or (t > self.T*3/4. and t < self.T*3/4. + self.dt/10):
+            print "t", t
             print "eps", eps
             print "delta", delta
             print "H\n", H
+            print "nodes", self.nodes
             print "Gamma_tilde\n", self.Gamma_tilde
 
         return H

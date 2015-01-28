@@ -401,7 +401,7 @@ class Base:
         f = lambda t, phi: -1j*H(t).dot(phi)
 
         # create ode object to solve Schroedinger equation (SE)
-        SE = complex_ode(f).set_integrator('dopri5', rtol=1e-12, atol=1e-12)
+        SE = complex_ode(f).set_integrator('dopri5', rtol=1e-9, atol=1e-9)
 
         # set initial conditions
         self._get_c_eigensystem()    # calculate eigensystem for all times
