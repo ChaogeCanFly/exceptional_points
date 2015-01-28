@@ -49,8 +49,8 @@ class Potential(object):
 
         self._get_parameters()
         self.imag = self._get_imag_potential()
-        self.imag_vector = self._array_to_vector(self.imag)
         self.real = self._get_real_potential()
+        self.imag_vector = self._array_to_vector(self.imag)
         self.real_vector = self._array_to_vector(self.real)
 
     def _get_parameters(self):
@@ -77,6 +77,10 @@ class Potential(object):
         x = WG.t
         y = np.linspace(0.0, self.width, ny)
         self.X, self.Y = np.meshgrid(x, y)
+
+        if self.direction == 'left':
+            self.X = self.X[...,::-1]
+
         self.X0 = np.ones_like(self.X)*self.width/2.
 
         print "T:", WG.T
@@ -117,7 +121,7 @@ class Potential(object):
         if self.shape == 'science':
             real = np.sin(self.kr*(X - (X0 + np.pi/2./self.kr)))
             real[Y < Y.mean()] = 0.
-            real[np.sin(self.kr*(X - (X0 + np.pi/2./self.kr))) < 0.] = 0.
+            real[real < 0.] = 0.
             real *= self.kF/2. * amplitude
         else:
             real = np.zeros_like(X)
@@ -138,10 +142,6 @@ def write_potential(N=2.5, pphw=20, amplitude=0.1, sigma_y=1e-2,
     imag, imag_vector = p.imag, p.imag_vector
     real, real_vector = p.real, p.real_vector
     X, Y = p.X, p.Y
-
-    if direction == 'left':
-        imag, imag_vector = imag[::-1], imag_vector[::-1]
-        real, real_vector = real[::-1], real_vector[::-1]
 
     if plot:
         plt.pcolormesh(X, Y, imag, cmap='RdBu')
