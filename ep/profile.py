@@ -35,9 +35,9 @@ class Generate_Profiles(object):
                 Phase difference bewteen upper and lower boundary (in multiples
                 of pi).
             eps_factor: float
-                Constant to shift x_EP -> x_EP * eps_factor.
+                Constant to shift x_R0 -> x_EP * eps_factor.
             eps: float
-                Set value for x_EP to eps.
+                Set value for x_R0 to eps.
             delta: float
                 Constant to set y_EP (or, equivalently, y_EP -> y_EP + delta).
             full_evolution: bool
@@ -142,7 +142,7 @@ class Generate_Profiles(object):
         if self.eps:
             self.WG.x_R0 = self.eps
         else:
-            self.WG.x_R0 *= self.eps_factor
+            self.WG.x_R0 = self.WG.x_EP * self.eps_factor
         self.WG.y_EP += self.delta
 
         if self.use_variable_length:
@@ -269,9 +269,9 @@ def parse_arguments():
                         help=("Phase difference between upper and lower "
                               "boundary (in multiples of pi)"))
     parser.add_argument("--eps-factor", nargs="?", default=1.0, type=float,
-                        help="Constant to shift x_EP -> x_EP * eps_factor")
+                        help="Constant to shift x_R0 -> x_EP * eps_factor")
     parser.add_argument("--eps", nargs="?", default=None, type=float,
-                        help="Set value for x_EP to eps (only if not None)")
+                        help="Set value for x_R0 to eps (only if not None)")
     parser.add_argument("-d", "--delta", nargs="?", default=0.0, type=float,
                         help=("Constant to set y_EP (or, equivalently, "
                               "y_EP -> y_EP + delta)"))
