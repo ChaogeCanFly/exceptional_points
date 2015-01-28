@@ -128,7 +128,6 @@ class Loss(object):
 
         Gamma_tilde = [ self.Gamma(n, m, x0=x0, y0=y0) for n in (1, 2)
                                                         for m in (1, 2) ]
-
         return np.asarray(Gamma_tilde).reshape(2,-1)
 
 
