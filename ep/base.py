@@ -15,7 +15,7 @@ from ep.helpers import c_eig, c_trapz, map_trajectory
 class Base:
     """Base class."""
 
-    def __init__(self, T=10, x_EP=0.0, y_EP=0.0, x_R0=0.8, y_R0=0.8,
+    def __init__(self, T=10, x_R0=0.8, y_R0=0.8,
                  loop_type="Circle", loop_direction='-', init_state='a',
                  init_phase=0.0, calc_adiabatic_state=False, verbose=False):
         """Exceptional Point (EP) base class.
@@ -27,14 +27,10 @@ class Base:
             -----------
                 T : float, optional
                     Total duration of the loop in parameter space.
-                x_EP : float, optional
-                    x-coordinate of loop center.
-                y_EP : float, optional
-                    y-coordinate of loop center.
                 x_R0 : float, optional
-                    Maximum distance between trajectory and EP in x-direction.
+                    x-coordinate for the loop parametrization.
                 y_R0 : float, optional
-                    Maximum distance between trajectory and EP in y-direction.
+                    y-coordinate for the loop parametrization.
                 init_state : str, optional
                     Determines initial state for the system's evolution:
                        'a': populate gain state |a>
@@ -74,7 +70,6 @@ class Base:
             self.w = -self.w
 
         # loop cycle parameters
-        self.x_EP, self.x_R0 = x_EP, x_R0
         self.y_EP, self.y_R0 = y_EP, y_R0
         self.init_phase = init_phase
 
@@ -128,13 +123,13 @@ class Base:
         if yN is None:
             yN = 5*10**2
 
-        if xmin is None or xmax is None:
-            xmin = self.x_EP - 0.15*self.x_R0
-            xmax = self.x_EP + 0.15*self.x_R0
-
-        if ymin is None or ymax is None:
-            ymin = self.y_EP - 0.15*self.y_R0
-            ymax = self.y_EP + 0.15*self.y_R0
+        # if xmin is None or xmax is None:
+        #     xmin = self.x_EP - 0.15*self.x_R0
+        #     xmax = self.x_EP + 0.15*self.x_R0
+        #
+        # if ymin is None or ymax is None:
+        #     ymin = self.y_EP - 0.15*self.y_R0
+        #     ymax = self.y_EP + 0.15*self.y_R0
 
         x = np.linspace(xmin, xmax, xN)
         y = np.linspace(ymin, ymax, yN)
@@ -203,7 +198,8 @@ class Base:
 
         mlab.show()
 
-    def iso_sample_H(self, part=np.real, xN=None, yN=None, zN=None):
+    def iso_sample_H(self, part=np.real xmin=None, xmax=None, xN=None,
+                     ymin=None, ymax=None, yN=None, zN=None):
         """Sample local eigenvalue geometry of H implicitly.
 
             Parameters:
@@ -222,10 +218,13 @@ class Base:
         if zN is None:
             zN = xN
 
-        x = np.linspace(self.x_EP - 1.1*self.x_R0,
-                        self.x_EP + 1.1*self.x_R0, xN)
-        y = np.linspace(self.y_EP - 1.1*self.y_R0,
-                        self.y_EP + 1.1*self.y_R0, yN)
+        x = np.linspace(xmin, xmax, xN)
+        y = np.linspace(ymin, ymax, yN)
+
+        # x = np.linspace(self.x_EP - 1.1*self.x_R0,
+        #                 self.x_EP + 1.1*self.x_R0, xN)
+        # y = np.linspace(self.y_EP - 1.1*self.y_R0,
+        #                 self.y_EP + 1.1*self.y_R0, yN)
 
         z = np.linspace(-1,1,zN)
 
