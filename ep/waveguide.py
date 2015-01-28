@@ -150,6 +150,9 @@ class Waveguide(Base):
         else:
             return xi_lower, xi_upper
 
+    def wavefunction(self):
+        pass
+
     # def draw_wavefunction(self, instantaneous_eigenbasis=False, save_plot=None):
     #     """Plot wavefunction."""
     #
@@ -266,6 +269,16 @@ class Neumann(Waveguide):
                       [H21, H22]], dtype=complex)
         return H
 
+    def wavefunction(self):
+        x, b0, b1 = self.t, self.phi_a, self.phi_b
+        y = np.linspace(0, self.d, len(x)/self.L)
+
+        X, Y = np.meshgrid(x,y)
+
+        phi = b0 + b1 * (np.sqrt(2.*self.k0/self.k1) *
+                          np.cos(pi*Y)*np.exp(-1j*self.kr*X))
+        return phi
+
 
 class Dirichlet(Waveguide):
     """Dirichlet class."""
@@ -363,6 +376,17 @@ class Dirichlet(Waveguide):
             print "node yn", yn
 
         return np.asarray(zip(xn, yn))
+
+    def wavefunction(self):
+        x, b0, b1 = self.t, self.phi_a, self.phi_b
+        y = np.linspace(0, self.d, len(x)/self.L)
+
+        X, Y = np.meshgrid(x,y)
+
+        phi = (b0 * np.sin(pi/self.d*Y) +
+                b1 * 1/np.sqrt(self.k0*self.k1 *
+                  np.sin(2*np.pi/self.d*Y)*np.exp(-1j*self.kr*X)))
+        return phi
 
 
 class DirichletPositionDependentLoss(Dirichlet):
