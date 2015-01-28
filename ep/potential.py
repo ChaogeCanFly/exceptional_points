@@ -25,6 +25,8 @@ class Potential(object):
                 Waveguide width.
             shape: str
                 Potential type.
+            direction: str
+                Injection direction (left|right).
 
         Attributes:
         -----------
@@ -36,13 +38,14 @@ class Potential(object):
     """
 
     def __init__(self, N=2.5, pphw=20, amplitude=1.0, sigma_y=1e-2,
-                 width=1., shape='science'):
+                 width=1., shape='science', direction='right'):
         self.N = N
         self.pphw = pphw
         self.amplitude = amplitude
         self.sigma_y = sigma_y
         self.shape = shape
         self.width = width
+        self.direction = direction
 
         self._get_parameters()
         self.imag = self._get_imag_potential()
@@ -114,7 +117,7 @@ class Potential(object):
         if self.shape == 'science':
             real = np.sin(self.kr*(X - (X0 + np.pi/2./self.kr)))
             real[Y < Y.mean()] = 0.
-            real[np.sin(self.kr*(X - X0)) < 0.] = 0.
+            real[np.sin(self.kr*(X - (X0 + np.pi/2./self.kr))) < 0.] = 0.
             real *= self.kF/2. * amplitude
         else:
             real = np.zeros_like(X)
@@ -128,13 +131,17 @@ class Potential(object):
 
 
 def write_potential(N=2.5, pphw=20, amplitude=0.1, sigma_y=1e-2,
-                    width=1., shape='science', plot=True):
+                    width=1., shape='science', plot=True, direction='right'):
 
     p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigma_y=sigma_y,
-                  shape=shape)
+                  shape=shape, direction=direction)
     imag, imag_vector = p.imag, p.imag_vector
     real, real_vector = p.real, p.real_vector
     X, Y = p.X, p.Y
+
+    if direction == 'left':
+        imag, imag_vector = imag[::-1], imag_vector[::-1]
+        real, real_vector = real[::-1], real_vector[::-1]
 
     if plot:
         plt.pcolormesh(X, Y, imag, cmap='RdBu')
