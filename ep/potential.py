@@ -71,7 +71,6 @@ class Potential(object):
                      'loop_type': 'Constant',
                      'x_R0': 0.05}
         WG = Dirichlet(**wg_kwargs)
-        WG.x_R0 = 0.05
         #self.eta_x = WG.eta_x # TODO: implement eta_x
 
         x = WG.t
@@ -81,7 +80,7 @@ class Potential(object):
         if self.direction == 'left':
             self.X = self.X[...,::-1]
 
-        self.X0 = np.ones_like(self.X)*self.width/2.
+        self.X0 = np.ones_like(self.X)*np.pi/self.kr
 
         print "T:", WG.T
         print "eta:", WG.eta
