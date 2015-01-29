@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import sys
 
-from ep.waveguide import Waveguide
+from ep.waveguide import Neumann, Dirichlet, DirichletPositionDependentLoss
 import helper_functions
 
 
@@ -85,7 +85,6 @@ class Generate_Profiles(object):
         self.waveguide_args = waveguide_args
         # make waveguide_args available in class namespace
         self.__dict__.update(waveguide_args)
-        self.waveguide_args['neumann'] = neumann
 
         self.eps = eps
         self.eps_factor = eps_factor
@@ -137,7 +136,11 @@ class Generate_Profiles(object):
         """Generate length-dependent input-files for VSC runs."""
 
         # calculate the waveguide data
-        self.WG = Waveguide(**self.waveguide_args)
+        if self.neumann:
+            WG = Neumann(**self.waveguide_kwargs)
+        else:
+            WG = Dirichlet(**self.waveguide_kwargs)
+        self.WG = WG
 
         if self.eps:
             self.WG.x_R0 = self.eps
