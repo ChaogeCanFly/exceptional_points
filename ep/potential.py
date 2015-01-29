@@ -62,7 +62,7 @@ class Potential(object):
         k0, k1 = [ np.sqrt(self.N**2 - (n/self.width)**2)*np.pi for n in 1, 2 ]
         self.kF = k0
         self.kr = k0 - k1
-        self.L = 4.*2*np.pi/self.kr
+        self.L = 4.5*2*np.pi/self.kr
 
         print vars(self)
 
@@ -77,15 +77,13 @@ class Potential(object):
         y = np.linspace(0.0, self.width, ny)
         self.X, self.Y = np.meshgrid(x, y)
 
-        if self.direction == 'left':
-            self.X = self.X[...,::-1]
-
         self.X0 = np.ones_like(self.X)*np.pi/self.kr
 
         print "T:", WG.T
         print "eta:", WG.eta
         print "nx:", len(WG.t)
         print "ny:", len(y)
+        print "2pi/kr:", 2.*np.pi/self.kr
 
     def _get_imag_potential(self):
         """Return a complex potential."""
@@ -97,6 +95,12 @@ class Potential(object):
         if self.shape == 'science':
             imag = np.sin(self.kr*(X - X0))
             imag[Y > Y.mean()] = 0.
+            if self.direction == 'left':
+                imag[X < (self.L - 4*2*np.pi/self.kr)] = 0.
+                imag[X > (self.L - 2*np.pi/self.kr)] = 0.
+            else:
+                imag[X > 4*2*np.pi/self.kr] = 0.
+                imag[X < 2*np.pi/self.kr] = 0.
             imag[imag < 0.] = 0.
             imag *= -self.kF/2. * amplitude
         elif self.shape == 'smooth':
@@ -118,9 +122,17 @@ class Potential(object):
         amplitude = self.amplitude
 
         if self.shape == 'science':
-            real = np.sin(self.kr*(X - (X0 + np.pi/2./self.kr)))
+            real = np.sin(self.kr*(X - (X0 + np.pi/(2.*self.kr))))
             real[Y < Y.mean()] = 0.
             real[real < 0.] = 0.
+            if self.direction == 'left':
+                real[X < (self.L - 4*2*np.pi/self.kr - np.pi/(2*self.kr))] = 0.
+                real[X > (self.L - 2*np.pi/self.kr - np.pi/(2*self.kr))] = 0.
+            else:
+                real[X > 4*2*np.pi/self.kr + np.pi/(2*self.kr)] = 0.
+                real[X < 2*np.pi/self.kr + np.pi/(2*self.kr)] = 0.
+            # real[X > 4*2*np.pi/self.kr + np.pi/(2*self.kr)] = 0.
+            # real[X < 2*np.pi/self.kr + np.pi/(2*self.kr)] = 0.
             real *= self.kF/2. * amplitude
         else:
             real = np.zeros_like(X)
