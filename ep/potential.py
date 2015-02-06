@@ -21,8 +21,8 @@ class Potential(object):
                 Potential strength.
             sigma_y: float
                 Smoothing width of the potential in y-direction.
-            width: float
-                Waveguide width.
+            W: float
+                Waveguide W.
             shape: str
                 Potential type.
             direction: str
@@ -38,13 +38,13 @@ class Potential(object):
     """
 
     def __init__(self, N=2.5, pphw=20, amplitude=1.0, sigma_y=1e-2,
-                 width=1., shape='science', direction='right'):
+                 W=1., shape='science', direction='right'):
         self.N = N
         self.pphw = pphw
         self.amplitude = amplitude
         self.sigma_y = sigma_y
         self.shape = shape
-        self.width = width
+        self.W = W
         self.direction = direction
 
         self._get_parameters()
@@ -57,9 +57,9 @@ class Potential(object):
         """Return the waveguide parameters for a given number of open modes N."""
 
         nyout = self.pphw*self.N
-        ny = np.floor(self.width*(nyout+1))
+        ny = np.floor(self.W*(nyout+1))
 
-        k0, k1 = [ np.sqrt(self.N**2 - (n/self.width)**2)*np.pi for n in 1, 2 ]
+        k0, k1 = [ np.sqrt(self.N**2 - (n/self.W)**2)*np.pi for n in 1, 2 ]
         self.kF = k0
         self.kr = k0 - k1
         self.L = 4.5*2*np.pi/self.kr
@@ -74,7 +74,7 @@ class Potential(object):
         #self.eta_x = WG.eta_x # TODO: implement eta_x
 
         x = WG.t
-        y = np.linspace(0.0, self.width, ny)
+        y = np.linspace(0.0, self.W, ny)
         self.X, self.Y = np.meshgrid(x, y)
 
         self.X0 = np.ones_like(self.X)*np.pi/self.kr
@@ -146,7 +146,7 @@ class Potential(object):
 
 
 def write_potential(N=2.5, pphw=20, amplitude=0.1, sigma_y=1e-2,
-                    width=1., shape='science', plot=True, direction='right'):
+                    W=1., shape='science', plot=True, direction='right'):
 
     p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigma_y=sigma_y,
                   shape=shape, direction=direction)
