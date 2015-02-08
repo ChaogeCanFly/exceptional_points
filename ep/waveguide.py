@@ -356,7 +356,7 @@ class Dirichlet(Waveguide):
 
         x0 = lambda s: (2.*pi/kr * (1+s)/2
                         - 1j/kr * np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
-        y0 = lambda s: d/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1))*abs(b1/b2))
+        y0 = lambda s: W/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1))*abs(b1/b2))
 
         xn = np.asarray([ x0(n) for n in (1, -1) ])
         yn = np.asarray([ y0(n) for n in (1, -1) ])
