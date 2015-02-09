@@ -275,9 +275,9 @@ class Neumann(Waveguide):
 
         X, Y = np.meshgrid(x,y)
 
-        phi = b0 + b1 * (np.sqrt(2.*self.k0/self.k1) *
+        PHI = b0 + b1 * (np.sqrt(2.*self.k0/self.k1) *
                           np.cos(pi*Y)*np.exp(-1j*self.kr*X))
-        return phi
+        return X, Y, PHI
 
 
 class Dirichlet(Waveguide):
@@ -383,10 +383,10 @@ class Dirichlet(Waveguide):
 
         X, Y = np.meshgrid(x,y)
 
-        phi = (b0 * np.sin(pi/self.W*Y) +
+        PHI = (b0 * np.sin(pi/self.W*Y) +
                 b1 * 1/np.sqrt(self.k0*self.k1 *
                   np.sin(2*np.pi/self.W*Y)*np.exp(-1j*self.kr*X)))
-        return phi
+        return X, Y, PHI
 
 
 class DirichletPositionDependentLoss(Dirichlet):
