@@ -172,7 +172,7 @@ def write_potential(N=2.5, pphw=20, amplitude=0.1, sigmax=1e-2, sigmay=1e-1,
                     plot=True, plot_dimensions=False, direction='right'):
 
     p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigmax=sigmax,
-                  sigmay=sigmay, x_R0=x_R0, y_R0=y_R0, shape=shape,
+                  sigmay=sigmay, x_R0=x_R0, y_R0=y_R0, shape=shape, L=L, W=W,
                   direction=direction)
     imag, imag_vector = p.imag, p.imag_vector
     real, real_vector = p.real, p.real_vector
