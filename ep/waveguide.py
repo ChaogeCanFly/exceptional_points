@@ -124,8 +124,8 @@ class Waveguide(Base):
             eps, delta = self.get_cycle_parameters(x)
         if L is None:
             L = self.L
-        if d is None:
-            d = self.d
+        if W is None:
+            W = self.W
         if kr is None:
             kr = self.kr
         if theta_boundary is None:
