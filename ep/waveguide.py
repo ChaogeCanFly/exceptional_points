@@ -56,7 +56,8 @@ class Waveguide(Base):
         loop_type = self.loop_type
 
         if loop_type == "Constant":
-            return x_R0, y_R0
+            t0 = np.ones_like(t)
+            return x_R0*t0, y_R0*t0
 
         elif loop_type == "Constant_delta":
             return x_R0 * (1.0 - np.cos(w*t)), y_R0
