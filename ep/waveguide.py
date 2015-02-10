@@ -489,7 +489,7 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         eps, delta = self.get_cycle_parameters(x)
         L = 2.*np.pi/(self.kr + delta)
-        L_sum = np.cumsum(L)
+        L_sum = np.cumsum(L) - 2.*np.pi/self.kr
 
         xnodes, ynodes = [], []
         for epsn, deltan, Ln, Ln_sum in zip(eps, delta, L, L_sum):
