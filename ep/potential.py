@@ -125,14 +125,12 @@ class Potential(object):
             imag = np.zeros_like(X)
 
             for (xn, yn) in zip(xnodes, ynodes):
-                print xn, yn
                 if np.isnan(xn) or np.isnan(yn):
                     pass
                 else:
                     imag += gauss(X, xn, self.sigmax)*gauss(Y, yn, self.sigmay)
 
             imag *= -self.kF/2. * amplitude
-            print imag
         else:
             imag = np.ones_like(X)
             imag *= -self.kF/2. * amplitude
