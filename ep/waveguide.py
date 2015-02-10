@@ -12,7 +12,7 @@ from ep.helpers import c_eig
 class Waveguide(Base):
     """Waveguide class."""
 
-    def __init__(self, L=100, d=1.0, eta=0.05, N=1.5, theta=0.0,
+    def __init__(self, L=100, W=1.0, eta=0.05, N=1.5, theta=0.0,
                  **base_kwargs):
         """Exceptional Point (EP) waveguide class.
 
@@ -21,7 +21,7 @@ class Waveguide(Base):
 
             Additional parameters:
             ----------------------
-                d: float
+                W: float
                     Waveguide width
                 eta: float
                     Dissipation coefficient
@@ -32,16 +32,16 @@ class Waveguide(Base):
         """
         Base.__init__(self, T=L, **base_kwargs)
 
-        self.d = d                      # wire width
+        self.W = W                      # wire width
         self.L = L                      # wire length
         self.eta = eta                  # dissipation coefficient
 
         self.theta_boundary = theta     # phase angle between upper
                                         # and lower boundary
         self.N = N                      # number of open modes
-        self.k = lambda n: np.sqrt(N**2 - n**2)*np.pi
+        self.k = lambda n: np.sqrt(N**2 - n**2)*np.pi/W
                                         # get wavevector in x-direction
-        kF = N*np.pi/d                  # Fermi wavevector
+        kF = N*np.pi/W                  # Fermi wavevector
         self.kF = kF
 
     def H(self, t, x=None, y=None):
@@ -56,7 +56,8 @@ class Waveguide(Base):
         loop_type = self.loop_type
 
         if loop_type == "Constant":
-            return x_R0, y_R0
+            t0 = np.ones_like(t)
+            return x_R0*t0, y_R0*t0
 
         elif loop_type == "Constant_delta":
             return x_R0 * (1.0 - np.cos(w*t)), y_R0
@@ -88,7 +89,7 @@ class Waveguide(Base):
                              "does not exist!").format(loop_type))
 
     def get_boundary(self, x=None, eps=None, delta=None, L=None,
-                     d=None, kr=None, theta_boundary=None, smearing=False):
+                     W=None, kr=None, theta_boundary=None, smearing=False):
         """Get the boundary function xi as a function of the spatial coordinate x.
 
             Parameters:
@@ -99,7 +100,7 @@ class Waveguide(Base):
                     Boundary roughness strength.
                 delta: float
                     Boundary frequency detuning.
-                d: float
+                W: float
                     Waveguide width.
                 kr: float
                     Boundary modulation frequency.
@@ -123,8 +124,8 @@ class Waveguide(Base):
             eps, delta = self.get_cycle_parameters(x)
         if L is None:
             L = self.L
-        if d is None:
-            d = self.d
+        if W is None:
+            W = self.W
         if kr is None:
             kr = self.kr
         if theta_boundary is None:
@@ -139,14 +140,14 @@ class Waveguide(Base):
             return 1./(np.exp(-x/sigma) + 1.)
 
         xi_lower = eps*np.sin((kr + delta)*x)
-        xi_upper = d + eps*np.sin((kr + delta)*x + theta_boundary)
+        xi_upper = W + eps*np.sin((kr + delta)*x + theta_boundary)
 
         if smearing:
             kr = (self.N - np.sqrt(self.N**2 - 1))*pi
             lambda0 = abs(pi/(kr + delta))
             s = 1./(2*lambda0)
             pre = fermi(x - 3*lambda0, s)*fermi(L - x - 3*lambda0, s)
-            return pre*xi_lower, pre*(xi_upper - d) + d
+            return pre*xi_lower, pre*(xi_upper - W) + W
         else:
             return xi_lower, xi_upper
 
@@ -162,7 +163,7 @@ class Waveguide(Base):
     #         x, b0, b1 = self.t, self.phi_a, self.phi_b
     #
     #     yN = len(x)/self.T
-    #     y = np.linspace(-0.1,self.d+0.1,yN)
+    #     y = np.linspace(-0.1, self.W+0.1, yN)
     #
     #     def phi(x,y):
     #         phi = b0 + b1 * (np.sqrt(2.*self.k0/self.k1) *
@@ -183,7 +184,7 @@ class Waveguide(Base):
     #     """Plot position dependent dissipation coefficient."""
     #
     #     x, b0, b1 = self.t, self.phi_a, self.phi_b
-    #     y = np.linspace(-0.1,self.d+0.1,2)
+    #     y = np.linspace(-0.1, self.W+0.1, 2)
     #
     #     X, Y = np.meshgrid(x,y)
     #     Z = self.eta_x(X)
@@ -243,7 +244,7 @@ class Neumann(Waveguide):
         eta = self.eta
         k0 = self.k0
         k1 = self.k1
-        d = self.d
+        W = self.W
         theta_boundary = self.theta_boundary
 
         x_EP = eta / (2.*np.sqrt(k0*k1 * (1.+np.cos(theta_boundary))))
@@ -271,13 +272,13 @@ class Neumann(Waveguide):
 
     def wavefunction(self):
         x, b0, b1 = self.t, self.phi_a, self.phi_b
-        y = np.linspace(0, self.d, len(x)/self.L)
+        y = np.linspace(0, self.W, len(x)/self.L)
 
         X, Y = np.meshgrid(x,y)
 
-        phi = b0 + b1 * (np.sqrt(2.*self.k0/self.k1) *
+        PHI = b0 + b1 * (np.sqrt(2.*self.k0/self.k1) *
                           np.cos(pi*Y)*np.exp(-1j*self.kr*X))
-        return phi
+        return X, Y, PHI
 
 
 class Dirichlet(Waveguide):
@@ -297,7 +298,7 @@ class Dirichlet(Waveguide):
         self.kr = kr
 
         B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
-                self.d**3 / np.sqrt(self.k0*self.k1))
+                self.W**3 / np.sqrt(self.k0*self.k1))
         self.B = B
 
         self.x_EP, self.y_EP = self._get_EP_coordinates()
@@ -311,10 +312,10 @@ class Dirichlet(Waveguide):
         kr = self.kr
         k0 = self.k0
         k1 = self.k1
-        d = self.d
+        W = self.W
         theta_boundary = self.theta_boundary
 
-        x_EP = eta*kF*kr*d**2/(4*np.pi**2 * np.sqrt(2*k0*k1*(1.+np.cos(theta_boundary))))
+        x_EP = eta*kF*kr*W**2/(4*np.pi**2 * np.sqrt(2*k0*k1*(1.+np.cos(theta_boundary))))
         y_EP = 0.0
 
         return x_EP, y_EP
@@ -342,7 +343,7 @@ class Dirichlet(Waveguide):
 
         k = self.k
         kr = self.kr
-        d = self.d
+        W = self.W
 
         # get eigenvectors of Hermitian system to find the nodes of one
         # Bloch mode
@@ -356,7 +357,7 @@ class Dirichlet(Waveguide):
 
         x0 = lambda s: (2.*pi/kr * (1+s)/2
                         - 1j/kr * np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
-        y0 = lambda s: d/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1))*abs(b1/b2))
+        y0 = lambda s: W/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1))*abs(b1/b2))
 
         xn = np.asarray([ x0(n) for n in (1, -1) ])
         yn = np.asarray([ y0(n) for n in (1, -1) ])
@@ -366,7 +367,7 @@ class Dirichlet(Waveguide):
         # G is set to zero for invalid points
         if np.any(xn < 0.) or np.any(xn > 2.*pi/kr) :
             xn *= np.nan
-        if np.any(yn < 0.) or np.any(yn > d):
+        if np.any(yn < 0.) or np.any(yn > W):
             yn *= np.nan
 
         if self.verbose:
@@ -377,16 +378,29 @@ class Dirichlet(Waveguide):
 
         return np.asarray(zip(xn, yn))
 
-    def wavefunction(self):
-        x, b0, b1 = self.t, self.phi_a, self.phi_b
-        y = np.linspace(0, self.d, len(x)/self.L)
+    def wavefunction(self, evecs=False):
+        if evecs == 'a':
+            b0, b1 = [ self.eVecs_r[:,n,0] for n in 0, 1 ]
+        elif evecs == 'b':
+            b0, b1 = [ self.eVecs_r[:,n,1] for n in 0, 1 ]
+        elif evecs == 'c':
+            b0, b1 = [ self.eVecs_r[:,n,0] for n in 0, 1 ]
+            b2, b3 = [ self.eVecs_r[:,n,1] for n in 0, 1 ]
+
+            mask = np.logical_or(b0.imag > 0, b1.imag <= 0)
+            b0[mask], b1[mask] = b2[mask], b3[mask]
+        else:
+            b0, b1 = self.phi_a, self.phi_b
+
+        x = self.t
+        y = np.linspace(0, self.W, len(x)/self.L)
 
         X, Y = np.meshgrid(x,y)
 
-        phi = (b0 * np.sin(pi/self.d*Y) +
-                b1 * 1/np.sqrt(self.k0*self.k1 *
-                  np.sin(2*np.pi/self.d*Y)*np.exp(-1j*self.kr*X)))
-        return phi
+        PHI = (b0 * np.sin(pi/self.W*Y) +
+                b1 * np.sqrt(self.k0/self.k1) *
+                  np.sin(2*np.pi/self.W*Y)*np.exp(-1j*self.kr*X))
+        return X, Y, PHI
 
 
 class DirichletPositionDependentLoss(Dirichlet):
@@ -405,7 +419,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         Dirichlet.__init__(self, **waveguide_kwargs)
 
     def _get_EP_coordinates(self):
-        Gamma = Loss(k=self.k, kF=self.kF, kr=self.kr, d=self.d)
+        Gamma = Loss(k=self.k, kF=self.kF, kr=self.kr, W=self.W)
         self.nodes = self.Dirichlet.get_nodes()
 
         if np.any(np.isnan(self.nodes)):
@@ -465,6 +479,35 @@ class DirichletPositionDependentLoss(Dirichlet):
             print "Gamma_tilde\n", self.Gamma_tilde
 
         return H
+
+    def get_nodes_waveguide(self, nvalues=39):
+        """Return the nodes of the Bloch-eigenvector in the full waveguide."""
+
+        x = self.t
+        # pick nvalues elements of x
+        x = x[::len(x)/nvalues]
+
+        eps, delta = self.get_cycle_parameters(x)
+        L = 2.*np.pi/(self.kr + delta)
+        L_sum = np.cumsum(L) - 2.*np.pi/self.kr
+
+        xnodes, ynodes = [], []
+        for epsn, deltan, Ln, Ln_sum in zip(eps, delta, L, L_sum):
+            wgn_kwargs = {'N': self.N,
+                          'loop_direction': self.loop_direction,
+                          'loop_type': 'Constant',
+                          'eta': 0.0,
+                          'L': Ln,
+                          'x_R0': epsn,
+                          'y_R0': deltan}
+            WGn = Dirichlet(**wgn_kwargs)
+            nodes = WGn.get_nodes(x=epsn, y=deltan)
+            xnodes.append(nodes[:,0] + Ln_sum)
+            ynodes.append(nodes[:,1])
+
+        xnodes, ynodes = [ np.asarray(v).flatten() for v in xnodes, ynodes ]
+
+        return xnodes, ynodes
 
 
 def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1,

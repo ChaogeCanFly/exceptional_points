@@ -24,7 +24,7 @@ class Generate_Profiles(object):
             L:   float
                 Waveguide length.
             N:   float
-                Number of open modes int(k*d/pi).
+                Number of open modes int(k*W/pi).
             loop_type: str
                 Specifies path in (epsilon,delta) parameter space.
             loop_direction: str ("-"|"+")
@@ -76,10 +76,9 @@ class Generate_Profiles(object):
 
     """
     def __init__(self, eps_factor=1.0, eps=None, delta=0.0,
-                 full_evolution=False,
-                 input_xml="input.xml", pphw="200",
-                 nx_part="50", custom_directory=None,
-                 neumann=1, use_variable_length=False, smearing=False,
+                 full_evolution=False, input_xml="input.xml", pphw="200",
+                 nx_part="50", custom_directory=None, neumann=1,
+                 use_variable_length=False, smearing=False,
                  heatmap=False, **waveguide_args):
 
         self.waveguide_args = waveguide_args

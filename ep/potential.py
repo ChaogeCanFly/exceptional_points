@@ -5,7 +5,11 @@ import numpy as np
 
 import argh
 
-from ep.waveguide import Dirichlet
+from ep.waveguide import Dirichlet, DirichletPositionDependentLoss
+
+
+def gauss(z, mu, sigma):
+    return np.exp(-(z-mu)**2 / (2*sigma**2))/(np.sqrt(2.*np.pi)*sigma)
 
 
 class Potential(object):
@@ -19,10 +23,16 @@ class Potential(object):
                 Points per half wavelength.
             amplitude: float
                 Potential strength.
-            sigma_y: float
+            sigmax: float
+                Smoothing width of the potential in x-direction.
+            sigmay: float
                 Smoothing width of the potential in y-direction.
-            width: float
-                Waveguide width.
+            W: float
+                Waveguide W.
+            x_R0: float
+                Waveguide loop parameter.
+            y_R0: float
+                Waveguide loop parameter.
             shape: str
                 Potential type.
             direction: str
@@ -37,14 +47,21 @@ class Potential(object):
             X, Y: (Nx,Ny) ndarray
     """
 
-    def __init__(self, N=2.5, pphw=20, amplitude=1.0, sigma_y=1e-2,
-                 width=1., shape='science', direction='right'):
+    def __init__(self, N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
+                 L=100, W=1., x_R0=0.05, y_R0=0.4, shape='RAP',
+                 direction='right'):
         self.N = N
         self.pphw = pphw
+        self.nx = int(L*(pphw*N+1)/W)
+        self.ny = int(pphw*N+1)
         self.amplitude = amplitude
-        self.sigma_y = sigma_y
+        self.sigmax = sigmax
+        self.sigmay = sigmay
         self.shape = shape
-        self.width = width
+        self.L = L
+        self.W = W
+        self.x_R0 = x_R0
+        self.y_R0 = y_R0
         self.direction = direction
 
         self._get_parameters()
@@ -56,36 +73,37 @@ class Potential(object):
     def _get_parameters(self):
         """Return the waveguide parameters for a given number of open modes N."""
 
-        nyout = self.pphw*self.N
-        ny = np.floor(self.width*(nyout+1))
-
-        k0, k1 = [ np.sqrt(self.N**2 - (n/self.width)**2)*np.pi for n in 1, 2 ]
-        self.kF = self.N*np.pi/self.width
-        self.kr = k0 - k1
-        if self.direction == 'left':
-            self.sign = -1
-        else:
-            self.sign = 1
-        self.L = 4.5*2*np.pi/self.kr
-
         print vars(self)
 
         wg_kwargs = {'N': self.N,
                      'L': self.L,
-                     'loop_type': 'Constant',
-                     'x_R0': 0.05}
-        WG = Dirichlet(**wg_kwargs)
-        #self.eta_x = WG.eta_x # TODO: implement eta_x
+                     'tN': self.nx,
+                     'loop_type': 'Bell',
+                     'x_R0': self.x_R0,
+                     'y_R0': self.y_R0}
+        self.WG = DirichletPositionDependentLoss(**wg_kwargs)
 
-        x = WG.t
-        y = np.linspace(0.0, self.width, ny)
+        self.kF = self.WG.k0
+        self.kr = self.WG.kr
+
+        if self.direction == 'left':
+            self.sign = -1
+        else:
+            self.sign = 1
+
+        if self.shape == 'science':
+            print "Science system size fixed at 4.5*lambda."
+            self.L = 4.5*2*np.pi/self.kr
+
+        x = self.WG.t
+        y = np.linspace(0.0, self.W, self.ny)
         self.X, self.Y = np.meshgrid(x, y)
 
         self.X0 = np.ones_like(self.X)*np.pi/self.kr
 
-        print "T:", WG.T
-        print "eta:", WG.eta
-        print "nx:", len(WG.t)
+        print "L:", self.WG.L
+        print "eta:", self.WG.eta
+        print "nx:", len(self.WG.t)
         print "ny:", len(y)
         print "2pi/kr:", 2.*np.pi/self.kr
 
@@ -93,8 +111,10 @@ class Potential(object):
         """Return a complex potential."""
         X, Y = self.X, self.Y
         X0 = self.X0
-        sigma_y = self.sigma_y
+        sigmax = self.sigmax
+        sigmay = self.sigmay
         amplitude = self.amplitude
+        imag = np.zeros_like(X)
 
         if self.shape == 'science':
             imag = np.sin(self.sign*self.kr*(X - X0))
@@ -106,15 +126,17 @@ class Potential(object):
                 imag[X > 4*2*np.pi/self.kr] = 0.
                 imag[X < 2*np.pi/self.kr] = 0.
             imag[imag < 0.] = 0.
-            imag *= -self.kF/2. * amplitude
-        elif self.shape == 'smooth':
-            imag = self.eta_x(X) * (np.exp(-(Y-0.5)**2/(2*sigma_y**2)) /
-                                       np.sqrt(2*np.pi*sigma_y**2))
-            imag *= (1-np.cos(np.pi/self.L*X))
-            imag *= -self.kF/2. * amplitude
+        elif self.shape == 'RAP':
+            xnodes, ynodes = self.WG.get_nodes_waveguide()
+
+            for (xn, yn) in zip(xnodes, ynodes):
+                if np.isfinite(xn) and np.isfinite(yn):
+                    print xn, yn
+                    imag += gauss(X, xn, self.sigmax)*gauss(Y, yn, self.sigmay)
         else:
             imag = np.ones_like(X)
-            imag *= -self.kF/2. * amplitude
+
+        imag *= -self.kF/2. * amplitude
 
         return imag
 
@@ -122,7 +144,8 @@ class Potential(object):
         """Return a real potential."""
         X, Y = self.X, self.Y
         X0 = self.X0
-        sigma_y = self.sigma_y
+        sigmax = self.sigmax
+        sigmay = self.sigmay
         amplitude = self.amplitude
 
         if self.shape == 'science':
@@ -135,8 +158,6 @@ class Potential(object):
             else:
                 real[X > 4*2*np.pi/self.kr + np.pi/(2*self.kr)] = 0.
                 real[X < 2*np.pi/self.kr + np.pi/(2*self.kr)] = 0.
-            # real[X > 4*2*np.pi/self.kr + np.pi/(2*self.kr)] = 0.
-            # real[X < 2*np.pi/self.kr + np.pi/(2*self.kr)] = 0.
             real *= self.kF/2. * amplitude
         else:
             real = np.zeros_like(X)
@@ -149,25 +170,36 @@ class Potential(object):
         return Z.flatten(order='F')
 
 
-def write_potential(N=2.5, pphw=20, amplitude=0.1, sigma_y=1e-2,
-                    width=1., shape='science', plot=True, direction='right'):
+def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
+                    L=100., W=1.0, x_R0=0.05, y_R0=0.4, shape='RAP',
+                    plot=True, plot_dimensions=False, direction='right'):
 
-    p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigma_y=sigma_y,
-                  shape=shape, direction=direction)
+    p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigmax=sigmax,
+                  sigmay=sigmay, x_R0=x_R0, y_R0=y_R0, shape=shape, L=L, W=W,
+                  direction=direction)
     imag, imag_vector = p.imag, p.imag_vector
     real, real_vector = p.real, p.real_vector
     X, Y = p.X, p.Y
 
     if plot:
-        plt.pcolormesh(X, Y, imag, cmap='RdBu')
+        if plot_dimensions:
+            plt.figure(figsize=(L, W))
+        plt.pcolormesh(X, Y, imag, cmap='RdBu_r')
         plt.savefig("imag.png")
-        plt.pcolormesh(X, Y, real, cmap='RdBu')
+        plt.pcolormesh(X, Y, real, cmap='RdBu_r')
         plt.savefig("real.png")
 
     np.savetxt("potential_imag.dat", zip(range(len(imag_vector)), imag_vector),
                fmt=["%i", "%.12f"])
     np.savetxt("potential_real.dat", zip(range(len(real_vector)), real_vector),
                fmt=["%i", "%.12f"])
+
+    if shape == 'RAP':
+        x = p.WG.t
+        nx = p.nx
+        xi_lower, xi_upper = p.WG.get_boundary()
+        np.savetxt("upper.boundary", zip(range(nx), xi_upper))
+        np.savetxt("lower.boundary", zip(range(nx), xi_lower))
 
 
 if __name__ == '__main__':
