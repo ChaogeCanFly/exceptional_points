@@ -1,12 +1,12 @@
 #!/usr/bin/env python2.7
 
+import numpy as np
+from numpy import pi
+import matplotlib.pyplot as plt
 try:
     from mayavi import mlab
 except:
     print "Warning: mayavi not found!"
-import numpy as np
-from numpy import pi
-import matplotlib.pyplot as plt
 from scipy.integrate import complex_ode
 
 from ep.helpers import c_eig, c_trapz, map_trajectory
@@ -15,9 +15,9 @@ from ep.helpers import c_eig, c_trapz, map_trajectory
 class Base:
     """Base class."""
 
-    def __init__(self, T=10, x_R0=0.8, y_R0=0.8,
-                 loop_type="Circle", loop_direction='-', init_state='a',
-                 init_phase=0.0, calc_adiabatic_state=False, verbose=False):
+    def __init__(self, T=100, tN=None, x_R0=0.05, y_R0=0.4, loop_type="Circle",
+                 loop_direction='-', init_state='a', init_phase=0.0,
+                 calc_adiabatic_state=False, verbose=False):
         """Exceptional Point (EP) base class.
 
         The dynamics of a 2-level system are determined via an Runge-Kutta
@@ -27,10 +27,12 @@ class Base:
             -----------
                 T : float, optional
                     Total duration of the loop in parameter space.
+                tN: int, optional
+                    Number if timesteps in the ODE-integration.
                 x_R0 : float, optional
-                    x-coordinate for the loop parametrization.
+                    x-coordinate of the loop parametrization.
                 y_R0 : float, optional
-                    y-coordinate for the loop parametrization.
+                    y-coordinate of the loop parametrization.
                 init_state : str, optional
                     Determines initial state for the system's evolution:
                        'a': populate gain state |a>
@@ -50,7 +52,6 @@ class Base:
                 verbose: bool, optional
                     Whether to return additional output.
         """
-
         self.T = T
 
         self.init_state = init_state
@@ -58,8 +59,9 @@ class Base:
         self.loop_direction = loop_direction
 
         # number of timesteps in ODE-integration
-        # self.tN = T * 5e2 * 1.
-        self.tN = T * 5e1 * 1.
+        if tN is None:
+            tN = 5e1 * T
+        self.tN = tN
 
         # time-array and step-size
         self.t, self.dt = np.linspace(0, T, self.tN, retstep=True)
