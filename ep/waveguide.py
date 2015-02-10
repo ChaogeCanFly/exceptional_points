@@ -504,7 +504,7 @@ class DirichletPositionDependentLoss(Dirichlet):
             xnodes.append(nodes[:,0] + Ln_sum)
             ynodes.append(nodes[:,1])
 
-        xnodes, ynodes = [ np.asarray(v) for v in xnodes, ynodes ]
+        xnodes, ynodes = [ np.asarray(v).flatten() for v in xnodes, ynodes ]
 
         return xnodes, ynodes
 
