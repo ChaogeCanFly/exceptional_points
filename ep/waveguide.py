@@ -377,15 +377,28 @@ class Dirichlet(Waveguide):
 
         return np.asarray(zip(xn, yn))
 
-    def wavefunction(self):
-        x, b0, b1 = self.t, self.phi_a, self.phi_b
+    def wavefunction(self, evecs=False):
+        if evecs == 'a':
+            b0, b1 = [ self.eVecs_r[:,n,0] for n in 0, 1 ]
+        elif evecs == 'b':
+            b0, b1 = [ self.eVecs_r[:,n,1] for n in 0, 1 ]
+        elif evecs == 'c':
+            b0, b1 = [ self.eVecs_r[:,n,0] for n in 0, 1 ]
+            b2, b3 = [ self.eVecs_r[:,n,1] for n in 0, 1 ]
+
+            mask = np.logical_or(b0.imag > 0, b1.imag <= 0)
+            b0[mask], b1[mask] = b2[mask], b3[mask]
+        else:
+            b0, b1 = self.phi_a, self.phi_b
+
+        x = self.t
         y = np.linspace(0, self.W, len(x)/self.L)
 
         X, Y = np.meshgrid(x,y)
 
         PHI = (b0 * np.sin(pi/self.W*Y) +
-                b1 * 1/np.sqrt(self.k0*self.k1 *
-                  np.sin(2*np.pi/self.W*Y)*np.exp(-1j*self.kr*X)))
+                b1 * np.sqrt(self.k0/self.k1) *
+                  np.sin(2*np.pi/self.W*Y)*np.exp(-1j*self.kr*X))
         return X, Y, PHI
 
 
@@ -465,6 +478,35 @@ class DirichletPositionDependentLoss(Dirichlet):
             print "Gamma_tilde\n", self.Gamma_tilde
 
         return H
+
+    def get_nodes_waveguide(self, nvalues=39):
+        """Return the nodes of the Bloch-eigenvector in the full waveguide."""
+
+        x = self.t
+        # pick nvalues elements of x
+        x = x[::len(x)/nvalues]
+
+        eps, delta = self.get_cycle_parameters(x)
+        L = 2.*np.pi/(self.kr + delta)
+        L_sum = np.cumsum(L)
+
+        xnodes, ynodes = [], []
+        for epsn, deltan, Ln, Ln_sum in zip(eps, delta, L, L_sum):
+            wgn_kwargs = {'N': self.N,
+                          'loop_direction': self.loop_direction,
+                          'loop_type': 'Constant',
+                          'eta': 0.0,
+                          'L': Ln,
+                          'x_R0': epsn,
+                          'y_R0': deltan}
+            WGn = Dirichlet(**wgn_kwargs)
+            nodes = WGn.get_nodes(x=epsn, y=deltan)
+            xnodes.append(nodes[:,0] + Ln_sum)
+            ynodes.append(nodes[:,1])
+
+        xnodes, ynodes = [ np.asarray(v) for v in xnodes, ynodes ]
+
+        return xnodes, ynodes
 
 
 def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1,
