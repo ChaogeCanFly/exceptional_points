@@ -60,8 +60,12 @@ class Potential(object):
         ny = np.floor(self.width*(nyout+1))
 
         k0, k1 = [ np.sqrt(self.N**2 - (n/self.width)**2)*np.pi for n in 1, 2 ]
-        self.kF = k0
+        self.kF = self.N*np.pi/self.width
         self.kr = k0 - k1
+        if self.direction == 'left':
+            self.sign = -1
+        else:
+            self.sign = 1
         self.L = 4.5*2*np.pi/self.kr
 
         print vars(self)
@@ -93,7 +97,7 @@ class Potential(object):
         amplitude = self.amplitude
 
         if self.shape == 'science':
-            imag = np.sin(self.kr*(X - X0))
+            imag = np.sin(self.sign*self.kr*(X - X0))
             imag[Y > Y.mean()] = 0.
             if self.direction == 'left':
                 imag[X < (self.L - 4*2*np.pi/self.kr)] = 0.
@@ -122,7 +126,7 @@ class Potential(object):
         amplitude = self.amplitude
 
         if self.shape == 'science':
-            real = np.sin(self.kr*(X - (X0 + np.pi/(2.*self.kr))))
+            real = np.sin(self.sign*self.kr*(X - (X0 + np.pi/(2.*self.kr))))
             real[Y < Y.mean()] = 0.
             real[real < 0.] = 0.
             if self.direction == 'left':
