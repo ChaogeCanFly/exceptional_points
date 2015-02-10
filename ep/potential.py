@@ -191,6 +191,12 @@ def write_potential(N=2.5, pphw=20, amplitude=0.1, sigmax=1e-2, sigmay=1e-1,
     np.savetxt("potential_real.dat", zip(range(len(real_vector)), real_vector),
                fmt=["%i", "%.12f"])
 
+    if shape == 'RAP':
+        x = p.WG.t
+        xi_lower, xi_upper = p.WG.get_boundary()
+        np.savetxt("upper.boundary", zip(range(len(x)), xi_upper))
+        np.savetxt("lower.boundary", zip(range(len(x)), xi_lower))
+
 
 if __name__ == '__main__':
     argh.dispatch_command(write_potential)
