@@ -48,7 +48,7 @@ class Potential(object):
     """
 
     def __init__(self, N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
-                 L=100, W=1., x_R0=0.05, y_R0=0.0, shape='RAP',
+                 L=100, W=1., x_R0=0.05, y_R0=0.4, shape='RAP',
                  direction='right'):
         self.N = N
         self.pphw = pphw
@@ -109,7 +109,7 @@ class Potential(object):
         sigmax = self.sigmax
         sigmay = self.sigmay
         amplitude = self.amplitude
-
+        imag = np.zeros_like(X)
 
         if self.shape == 'science':
             imag = np.sin(self.kr*(X - X0))
@@ -121,19 +121,17 @@ class Potential(object):
                 imag[X > 4*2*np.pi/self.kr] = 0.
                 imag[X < 2*np.pi/self.kr] = 0.
             imag[imag < 0.] = 0.
-            imag *= -self.kF/2. * amplitude
         elif self.shape == 'RAP':
             xnodes, ynodes = self.WG.get_nodes_waveguide()
-            imag = np.zeros_like(X)
 
             for (xn, yn) in zip(xnodes, ynodes):
-                if ~np.isnan(xn) or ~np.isnan(yn):
+                if np.isfinite(xn) and np.isfinite(yn):
+                    print xn, yn
                     imag += gauss(X, xn, self.sigmax)*gauss(Y, yn, self.sigmay)
-
-            imag *= -self.kF/2. * amplitude
         else:
             imag = np.ones_like(X)
-            imag *= -self.kF/2. * amplitude
+
+        imag *= -self.kF/2. * amplitude
 
         return imag
 
@@ -167,8 +165,8 @@ class Potential(object):
         return Z.flatten(order='F')
 
 
-def write_potential(N=2.5, pphw=20, amplitude=0.1, sigmax=1e-2, sigmay=1e-1,
-                    L=100., W=1., x_R0=0.05, y_R0=0.0, shape='science',
+def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
+                    L=100., W=1.0, x_R0=0.05, y_R0=0.4, shape='RAP',
                     plot=True, plot_dimensions=False, direction='right'):
 
     p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigmax=sigmax,
@@ -181,9 +179,9 @@ def write_potential(N=2.5, pphw=20, amplitude=0.1, sigmax=1e-2, sigmay=1e-1,
     if plot:
         if plot_dimensions:
             plt.figure(figsize=(L, W))
-        plt.pcolormesh(X, Y, imag, cmap='RdBu')
+        plt.pcolormesh(X, Y, imag, cmap='RdBu_r')
         plt.savefig("imag.png")
-        plt.pcolormesh(X, Y, real, cmap='RdBu')
+        plt.pcolormesh(X, Y, real, cmap='RdBu_r')
         plt.savefig("real.png")
 
     np.savetxt("potential_imag.dat", zip(range(len(imag_vector)), imag_vector),
@@ -193,9 +191,10 @@ def write_potential(N=2.5, pphw=20, amplitude=0.1, sigmax=1e-2, sigmay=1e-1,
 
     if shape == 'RAP':
         x = p.WG.t
+        nx = p.nx
         xi_lower, xi_upper = p.WG.get_boundary()
-        np.savetxt("upper.boundary", zip(range(len(x)), xi_upper))
-        np.savetxt("lower.boundary", zip(range(len(x)), xi_lower))
+        np.savetxt("upper.boundary", zip(range(nx), xi_upper))
+        np.savetxt("lower.boundary", zip(range(nx), xi_lower))
 
 
 if __name__ == '__main__':
