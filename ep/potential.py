@@ -8,6 +8,10 @@ import argh
 from ep.waveguide import Dirichlet, DirichletPositionDependentLoss
 
 
+def gauss(z, mu, sigma):
+    return np.exp(-(z-mu)**2 / (2*sigma**2))/(np.sqrt(2.*np.pi)*sigma)
+
+
 class Potential(object):
     """Basic class to return a spatially dependent potential.
 
@@ -48,6 +52,8 @@ class Potential(object):
                  direction='right'):
         self.N = N
         self.pphw = pphw
+        self.nx = int(L*(pphw*N+1)/W)
+        self.ny = int(pphw*N+1)
         self.amplitude = amplitude
         self.sigmax = sigmax
         self.sigmay = sigmay
@@ -67,11 +73,11 @@ class Potential(object):
     def _get_parameters(self):
         """Return the waveguide parameters for a given number of open modes N."""
 
-        nyout = self.pphw*self.N
-        ny = np.floor(self.W*(nyout+1))
+        print vars(self)
 
         wg_kwargs = {'N': self.N,
                      'L': self.L,
+                     'tN': self.nx,
                      'loop_type': 'Bell',
                      'x_R0': self.x_R0,
                      'y_R0': self.y_R0}
@@ -84,15 +90,13 @@ class Potential(object):
             print "Science system size fixed at 4.5*lambda."
             self.L = 4.5*2*np.pi/self.kr
 
-        print vars(self)
-
         x = self.WG.t
-        y = np.linspace(0.0, self.W, ny)
+        y = np.linspace(0.0, self.W, self.ny)
         self.X, self.Y = np.meshgrid(x, y)
 
         self.X0 = np.ones_like(self.X)*np.pi/self.kr
 
-        print "T:", self.WG.T
+        print "L:", self.WG.L
         print "eta:", self.WG.eta
         print "nx:", len(self.WG.t)
         print "ny:", len(y)
@@ -106,8 +110,6 @@ class Potential(object):
         sigmay = self.sigmay
         amplitude = self.amplitude
 
-        def gauss(z, mu, sigma):
-            return np.exp(-(z-mu)**2 / (2*sigma**2))/(np.sqrt(2.*np.pi)*sigma)
 
         if self.shape == 'science':
             imag = np.sin(self.kr*(X - X0))
@@ -125,9 +127,7 @@ class Potential(object):
             imag = np.zeros_like(X)
 
             for (xn, yn) in zip(xnodes, ynodes):
-                if np.isnan(xn) or np.isnan(yn):
-                    pass
-                else:
+                if ~np.isnan(xn) or ~np.isnan(yn):
                     imag += gauss(X, xn, self.sigmax)*gauss(Y, yn, self.sigmay)
 
             imag *= -self.kF/2. * amplitude
