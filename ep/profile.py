@@ -79,11 +79,11 @@ class Generate_Profiles(object):
                  full_evolution=False, input_xml="input.xml", pphw="200",
                  nx_part="50", custom_directory=None, neumann=1,
                  use_variable_length=False, smearing=False,
-                 heatmap=False, **waveguide_args):
+                 heatmap=False, **waveguide_kwargs):
 
-        self.waveguide_args = waveguide_args
-        # make waveguide_args available in class namespace
-        self.__dict__.update(waveguide_args)
+        self.waveguide_kwargs = waveguide_kwargs
+        # make waveguide_kwargs available in class namespace
+        self.__dict__.update(waveguide_kwargs)
 
         self.eps = eps
         self.eps_factor = eps_factor
@@ -128,7 +128,7 @@ class Generate_Profiles(object):
                 print "Warning: check length values in the .xml and .profile files!"
                 self.L = Ln
                 self.eta = eta_n
-                self.waveguide_args.update(**params)
+                self.waveguide_kwargs.update(**params)
                 self._length()
 
     def _length(self):
@@ -160,7 +160,7 @@ class Generate_Profiles(object):
             self.Ln = Ln
 
             ID_params = {'Ln': Ln}
-            ID_params.update(**self.waveguide_args)
+            ID_params.update(**self.waveguide_kwargs)
             ID = ("N_{N}_t_{loop_type}_phase_{init_phase:.3f}_L_{L}_Ln_{Ln:.3f}"
                   "_eta_{eta}_direction_{loop_direction}").format(**ID_params)
             self.filename = ID
@@ -178,7 +178,9 @@ class Generate_Profiles(object):
             # print profile properties to file
             with open("EP_SETTINGS.cfg", "w") as f:
                 d = {key: value for key, value in vars(self.WG).items()
-                        if not isinstance(value, np.ndarray)}
+                        if not (isinstance(value, np.ndarray) or
+                                isinstance(value, complex) or
+                                isinstance(value, type(lambda x: 1)))}
                 data = json.dumps(d, sort_keys=True, indent=4)
                 f.write(data)
 
