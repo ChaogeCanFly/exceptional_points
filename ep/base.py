@@ -256,7 +256,7 @@ class Base:
                                           zk + 1j*np.sign(zk)*np.imag(E[i,j,0]))
         return X, Y, Z, F
 
-    def _get_c_eigensystem(self):
+    def get_c_eigensystem(self):
         """Calculate the instantaneous eigenvalues and eigenvectors for
         all times t=0,...,T and remove any discontinuities."""
 
@@ -397,7 +397,6 @@ class Base:
         if H is None:
             H = self.H
 
-
         # r.h.s of ode d/dt y = f(t, y)
         f = lambda t, phi: -1j*H(t).dot(phi)
 
@@ -405,7 +404,7 @@ class Base:
         SE = complex_ode(f).set_integrator('dopri5', rtol=1e-9, atol=1e-9)
 
         # set initial conditions
-        self._get_c_eigensystem()    # calculate eigensystem for all times
+        self.get_c_eigensystem()    # calculate eigensystem for all times
         self._get_gain_state()       # find state with total (relative) gain
         self.eVec0 = self._get_init_state()         # define initial state
         SE.set_initial_value(self.eVec0, t=0.0)     # y0, t0
