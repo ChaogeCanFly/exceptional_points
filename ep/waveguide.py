@@ -480,7 +480,7 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         return H
 
-    def get_nodes_waveguide(self, nvalues=39):
+    def get_nodes_waveguide(self, nvalues=39, return_all=False):
         """Return the nodes of the Bloch-eigenvector in the full waveguide."""
 
         x = self.t
@@ -488,11 +488,12 @@ class DirichletPositionDependentLoss(Dirichlet):
         x = x[::len(x)/nvalues]
 
         eps, delta = self.get_cycle_parameters(x)
-        L = 2.*np.pi/(self.kr + delta)
-        L_sum = np.cumsum(L) - 2.*np.pi/self.kr
+        L = 2.*np.pi/(self.kr + 0*delta)
+        L_sum = np.cumsum(L)
+        L_sum -= L_sum[0]
 
         xnodes, ynodes = [], []
-        for epsn, deltan, Ln, Ln_sum in zip(eps, delta, L, L_sum):
+        for epsn, deltan, xn, Ln, Ln_sum in zip(eps, delta, x, L, L_sum):
             wgn_kwargs = {'N': self.N,
                           'loop_direction': self.loop_direction,
                           'loop_type': 'Constant',
@@ -507,7 +508,10 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         xnodes, ynodes = [ np.asarray(v).flatten() for v in xnodes, ynodes ]
 
-        return xnodes, ynodes
+        if return_all:
+            return xnodes, ynodes, x, L_sum, eps, delta
+        else:
+            return xnodes, ynodes
 
 
 def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1,
