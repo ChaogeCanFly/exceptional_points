@@ -131,7 +131,7 @@ class Potential(object):
 
             for (xn, yn) in zip(xnodes, ynodes):
                 if np.isfinite(xn) and np.isfinite(yn):
-                    print xn, yn
+                    # print xn, yn
                     imag += gauss(X, xn, self.sigmax)*gauss(Y, yn, self.sigmay)
         else:
             imag = np.ones_like(X)
