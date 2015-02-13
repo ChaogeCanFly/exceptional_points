@@ -131,7 +131,8 @@ class Potential(object):
 
             for (xn, yn) in zip(xnodes, ynodes):
                 if np.isfinite(xn) and np.isfinite(yn):
-                    imag += gauss(X, xn, self.sigmax)*gauss(Y, yn, self.sigmay)
+                    # greens_code counts from top to bottom: yn -> W - yn
+                    imag += gauss(X, xn, self.sigmax)*gauss(Y, self.WG.W - yn, self.sigmay)
         else:
             imag = np.ones_like(X)
 
