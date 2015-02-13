@@ -147,12 +147,23 @@ class Waveguide(Base):
             lambda0 = abs(pi/(kr + delta))
             s = 1./(2*lambda0)
             pre = fermi(x - 3*lambda0, s)*fermi(L - x - 3*lambda0, s)
-            return pre*xi_lower, pre*(xi_upper - W) + W
-        else:
-            return xi_lower, xi_upper
+            xi_lower *= pre
+            xi_upper = pre*(xi_upper - W) + W
+
+        return xi_lower, xi_upper
 
     def wavefunction(self):
         pass
+
+    def get_boundary_contour(self, X, Y):
+        """Get the boundary contour."""
+
+        lower, upper = self.get_boundary(X)
+        mask_upper = Y > upper
+        mask_lower = Y < lower
+        Z = mask_upper + mask_lower
+
+        return X, Y, Z
 
     # def draw_wavefunction(self, instantaneous_eigenbasis=False, save_plot=None):
     #     """Plot wavefunction."""
@@ -196,16 +207,6 @@ class Waveguide(Base):
     #     cb = plt.colorbar(p, ax=cax)
     #     cb.set_label("Loss")
     #
-    # def get_boundary_contour(self, X, Y):
-    #     """Get the boundary contour."""
-    #
-    #     lower, upper = self.get_boundary(X)
-    #     mask_upper = Y > upper
-    #     mask_lower = Y < lower
-    #     Z = mask_upper + mask_lower
-    #
-    #     return X, Y, Z
-    #
     # def draw_boundary(self):
     #     """Draw the boundary profile."""
     #
@@ -247,7 +248,7 @@ class Neumann(Waveguide):
         W = self.W
         theta_boundary = self.theta_boundary
 
-        x_EP = eta / (2.*np.sqrt(k0*k1 * (1.+np.cos(theta_boundary))))
+        x_EP = eta / (2.*np.sqrt(k0*k1 * (1. + np.cos(theta_boundary))))
         y_EP = 0.0
 
         return x_EP, y_EP
@@ -259,7 +260,7 @@ class Neumann(Waveguide):
             eps, delta = x, y
 
         B = (-1j * (np.exp(1j*self.theta_boundary) + 1) *
-                    self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
+                     self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
 
         H11 = -self.k0 - 1j*self.eta/2.
         H12 = B*eps
