@@ -1,5 +1,5 @@
 from __future__ import division
-from matplotlib.pyplot import *
+import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 from numpy import pi
@@ -10,7 +10,7 @@ from scipy.integrate import trapz
 class FileOperations():
     """Simple  class to handle the output of class parameters to stdout and
     a .cfg file.
-    
+
         ### possibly outdated -> json.dumps ###
     """
 
@@ -30,20 +30,20 @@ class FileOperations():
 def c_eig(H, left=False, **kwargs):
     """Wrapper for scipy.linalg.eig(H) that returns modified eigenvalues
     and eigenvectors.
-    
+
     The returned vectors are normalized according to the biorthogonal product,
-        
+
         <psi_l|phi_r> = delta_{psi,phi}
-    
+
     with
-    
+
         H|psi_r> = E|psi_r>, <psi_l|H = <psi_l|E ,
-    
+
     instead of the standard (hermitian) inner product
-    
+
         (|psi>.dagger) * |psi> = 1
-    
-        
+
+
         Parameters:
         -----------
             H:  (2,2) ndarray
@@ -82,7 +82,7 @@ def c_eig(H, left=False, **kwargs):
     # scipy.linalg.eig uses LAPACK's geev routine to compute the eigensystem,
     # which returns eigenvectors that are "normalized to have Euclidian norm
     # equal to 1 and largest component real" [1]
-    # [1] https://software.intel.com/en-us/node/521147 
+    # [1] https://software.intel.com/en-us/node/521147
     c_norm = lambda ev_l, ev_r: np.sqrt(ev_l.dot(ev_r))
 
     for n in (0, 1):
@@ -91,14 +91,14 @@ def c_eig(H, left=False, **kwargs):
         #   rho = rho_r * rho_l and
         #   phi = phi_r + phi_l
         # we choose to leave the Euclidian norm of the right eigenvectors
-        # intact, s.t. abs(eVecs_r)**2 = 1 
+        # intact, s.t. abs(eVecs_r)**2 = 1
         # and put the remaining normalization into the left eigenvectors
         N = c_norm(eVecs_l[:,n],eVecs_r[:,n])
         eVecs_l[:,n] /= N**2
-        
+
     #print "after R:", np.einsum('ij,ij -> i', eVecs_r.conj(), eVecs_r)
     #print "after L:", np.einsum('ij,ij -> i', eVecs_l.conj(), eVecs_l)
-        
+
     if left:
         return eVals, eVecs_l, eVecs_r
     else:
@@ -108,135 +108,135 @@ def c_eig(H, left=False, **kwargs):
 def c_trapz(f, dx, **kwargs):
     """Wrapper for scipy.integrate.trapz that allows to integrate complex-valued
     arrays.
-    
+
         Parameters:
         -----------
             f:  (N,) ndarray
            dx:  float
-           
+
         Returns:
         --------
             c_trapz: (N,) ndarray
     """
-    
+
     real_int = trapz(f.real, dx=dx, **kwargs)
     imag_int = trapz(f.imag, dx=dx, **kwargs)
-    
+
     return real_int + 1j*imag_int
 
 
 def c_gradient(f, dx):
     """Wrapper for numpy.gradient that allows to calculate gradients for complex-
     valued arrrays.
-    
+
         Parameters:
         -----------
             f: (N,) ndarray
             dx: float
-            
+
         Returns:
         --------
             c_gradient: (N,) ndarray
     """
-    
+
     real_grad = np.gradient(f.real, dx)
     imag_grad = np.gradient(f.imag, dx)
-    
+
     return real_grad + 1j*imag_grad
 
 
 def map_trajectory(c1, c2, E1, E2):
     """Function to determine the trajectory's character based on the amplitudes
     c1 and c2.
-    
+
         Parameters:
         -----------
             c1, c2: ndarray
                 Amplitudes c1 and c2.
             E1, E2: ndarray
                 Real or imaginary parts of the energies E1 and E2.
-                
+
         Returns:
         --------
             mapped trajectory: ndarray
     """
     c1, c2 = [ np.abs(x)**2 for x in c1, c2 ]
-    
+
     return (E1*c1 + E2*c2)/(c1 + c2)
 
 
 def set_scientific_axes(ax, axis='x'):
     """Set axes to scientific notation."""
-    
+
     #xticks(rotation=30)
     #ax.ticklabel_format(style='sci', axis=axis, scilimits=(0,0), useOffset=False)
     ax.ticklabel_format(style='plain', axis=axis, useOffset=False)
-    ax.xaxis.set_major_locator(MaxNLocator(4))
-    ax.yaxis.set_major_locator(MaxNLocator(4))
+    ax.xaxis.set_major_locator(plt.MaxNLocator(4))
+    ax.yaxis.set_major_locator(plt.MaxNLocator(4))
 
 
 def cmap_discretize(cmap, indices):
     """Discretize colormap according to indices list.
-    
+
         Parameters:
         -----------
             cmap: str or Colormap instance
             indices: list
-        
+
         Returns:
         --------
             segmented colormap
     """
-    
+
     if type(cmap) == str:
-        cmap = get_cmap(cmap)
-        
+        cmap = plt.get_cmap(cmap)
+
     indices = np.ma.concatenate([[0],indices,[1]])
     N = len(indices)
-    
+
     colors_i = np.concatenate((np.linspace(0,1.,N),
                                (0.,0.,0.,0.)))
     colors_rgba = cmap(colors_i)
-    
+
     cdict = {}
     for ki, key in enumerate(('red','green','blue')):
         cdict[key] = [ (indices[i], colors_rgba[i-1,ki],
                         colors_rgba[i,ki]) for i in xrange(N) ]
-        
-    return LinearSegmentedColormap(cmap.name + "_%d"%N, cdict, 1024)
+
+    return LinearSegmentedColormap(cmap.name + "_%d" % N, cdict, 1024)
 
 
 def test_eigenvalues(eVals, eVecs_l, eVecs_r, H):
     """Test eigenvalue problem.
-    
+
     The output contains both the eigenvalues and eigenvectors (left and right),
     as well as the left and right hand sides of the eigenvalue equations
-    
+
         H v_i = E_i v_i
     or
         v_i H = E_i v_i
-    
+
     respectively.
-    
+
         Parameters:
         -----------
             eVals: (2,) ndarray
             eVecs_l: (2,2) ndarray
             eVecs_r: (2,2) ndarray
             H: (2,2) ndarray
-        
+
         Returns:
         --------
             None
     """
-    
+
     print 50*"#"
     print
     print "eVals\n ", eVals
     print "eVecs_r\n", eVecs_r
     print "eVecs_l\n", eVecs_l
     print
-    
+
     for n in (0,1):
         print "ev_l*H\n  ", eVecs_l[:,n].dot(H)
         print "e1*ev_l\n  ", eVals[n]*eVecs_l[:,n]
@@ -244,20 +244,20 @@ def test_eigenvalues(eVals, eVecs_l, eVecs_r, H):
         print "H*ev_r\n  ", H.dot(eVecs_r[:,n])
         print "e1*ev_r\n  ", eVals[n]*eVecs_r[:,n]
         print
-        
+
     print 50*"#"
 
 
 def get_height_profile(X, Y, sigma_x=1e-4, rho_y=1e-2):
         """Return customized height profile.
-            
+
             Parameters:
             -----------
                 X, Y: (Nx,Ny) ndarray
                     Geometry meshgrid.
                 sigma_x, rho_y: float
                     Standard deviation in x-, and smearing in y direction.
-            
+
             Returns:
             --------
                 W_Gauss_Fermi: (Nx,Ny) ndarray
@@ -267,22 +267,30 @@ def get_height_profile(X, Y, sigma_x=1e-4, rho_y=1e-2):
                 wmax, wmin: float
                     Maximum and minimum of the height profile.
         """
-        
+
         W_Gauss_Fermi, W_Fermi = 0.*X, 0.*X
-        
+
         W_Gauss_Fermi = np.exp(-(X-X.mean())**2/(2*sigma_x))
         W_Gauss_Fermi /= np.sqrt(2*pi*sigma_x**2)
         W_Gauss_Fermi *= 1./(np.exp(-(Y-Y.mean())/rho_y) + 1)
-        
+
         W_Fermi = 1./(np.exp(-(X-X.mean())/rho_y) + 1)
         W_Fermi = W_Fermi*W_Gauss_Fermi.max()/W_Fermi.max()
-        
+
         wmax = W_Fermi.max()
         wmin = W_Fermi.min()
-        
+
         return W_Gauss_Fermi, W_Fermi, wmax, wmin
+
+
+def get_local_maxima(v):
+    """Find the local maxima of a multidimensional array v.
+    Returns a boolean mask."""
+    return ((v >= np.roll(v, 1, 0)) &
+            (v >= np.roll(v,-1, 0)) &
+            (v >= np.roll(v, 1, 1)) &
+            (v >= np.roll(v,-1, 1)))
 
 
 if __name__ == '__main__':
     pass
-
