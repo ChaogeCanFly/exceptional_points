@@ -492,38 +492,36 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         return H
 
-    def get_nodes_waveguide(self, nvalues=39, return_all=False):
+    def get_nodes_waveguide(self, x=None):
         """Return the nodes of the Bloch-eigenvector in the full waveguide."""
 
-        x = self.t
-        # pick nvalues elements of x
-        x = x[::len(x)/nvalues]
+        if x is None:
+            x = np.arange(0, self.L, 2.*np.pi/self.kr)
 
         eps, delta = self.get_cycle_parameters(x)
-        L = 2.*np.pi/(self.kr + 0*delta)
-        L_sum = np.cumsum(L)
-        L_sum -= L_sum[0]
+        # L = 2.*np.pi/(self.kr + np.zeros_like(delta))
+        # L_sum = np.cumsum(L)
+        # L_sum -= L_sum[0]
 
         xnodes, ynodes = [], []
-        for epsn, deltan, xn, Ln, Ln_sum in zip(eps, delta, x, L, L_sum):
+        for epsn, deltan, xn in zip(eps, delta, x):
+            Ln = 2.*np.pi/(self.kr + deltan)
             wgn_kwargs = {'N': self.N,
                           'loop_direction': self.loop_direction,
                           'loop_type': 'Constant',
+                          'init_state': self.init_state,
                           'eta': 0.0,
                           'L': Ln,
                           'x_R0': epsn,
                           'y_R0': deltan}
             WGn = Dirichlet(**wgn_kwargs)
             nodes = WGn.get_nodes(x=epsn, y=deltan)
-            xnodes.append(nodes[:,0] + Ln_sum)
+            xnodes.append(nodes[:,0] + xn)
             ynodes.append(nodes[:,1])
 
         xnodes, ynodes = [ np.asarray(v).flatten() for v in xnodes, ynodes ]
 
-        if return_all:
-            return xnodes, ynodes, x, L_sum, eps, delta
-        else:
-            return xnodes, ynodes
+        return xnodes, ynodes
 
 
 def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1,
