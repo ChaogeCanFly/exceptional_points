@@ -127,7 +127,7 @@ class Potential(object):
                 imag[X < 2*np.pi/self.kr] = 0.
             imag[imag < 0.] = 0.
         elif self.shape == 'RAP':
-            xnodes, ynodes = self.WG.get_nodes_waveguide(nvalues=39)
+            xnodes, ynodes = self.WG.get_nodes_waveguide()
 
             for (xn, yn) in zip(xnodes, ynodes):
                 if np.isfinite(xn) and np.isfinite(yn):
