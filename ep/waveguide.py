@@ -380,7 +380,7 @@ class Dirichlet(Waveguide):
 
         return np.asarray(zip(xn, yn))
 
-    def wavefunction(self, evecs=False):
+    def wavefunction(self, evecs=False, with_boundary=False):
         if evecs == 'a':
             b0, b1 = [ self.eVecs_r[:,n,0] for n in 0, 1 ]
         elif evecs == 'b':
@@ -395,13 +395,23 @@ class Dirichlet(Waveguide):
             b0, b1 = self.phi_a, self.phi_b
 
         x = self.t
-        y = np.linspace(0, self.W, len(x)/self.L)
+        y = np.linspace(-2.*self.x_R0, self.W + 2*self.x_R0, len(x)/self.L)
 
         X, Y = np.meshgrid(x,y)
 
+        xi_lower, xi_upper = self.get_boundary(x=X)
+        xi_lower *= -1  # greens_code counts from top
+        xi_upper = self.W + xi_lower  # greens_code counts from top
+        if with_boundary:
+            Y -= xi_lower
         PHI = (b0 * np.sin(pi/self.W*Y) +
                 b1 * np.sqrt(self.k0/self.k1) *
                   np.sin(2*np.pi/self.W*Y)*np.exp(-1j*self.kr*X))
+        if with_boundary:
+            Y += xi_lower
+            PHI[np.logical_or(Y > xi_upper, Y < xi_lower)] = np.nan
+        else:
+            PHI[np.logical_or(Y > self.W, Y < 0)] = np.nan
         return X, Y, PHI
 
 
