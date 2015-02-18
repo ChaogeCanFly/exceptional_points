@@ -356,8 +356,9 @@ class Dirichlet(Waveguide):
         if b1.imag > 0 or b2.imag < 0:
             b1, b2 = evec[0,1], evec[1,1]
 
-        x0 = lambda s: (2.*pi/kr * (1+s)/2
-                        - 1j/kr * np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
+        # x0 = lambda s: (2.*pi/kr * (1+s)/2
+        #                 - 1j/kr * np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
+        x0 = lambda s: s*np.pi/(2.*kr)
         y0 = lambda s: W/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1))*abs(b1/b2))
 
         xn = np.asarray([ x0(n) for n in (1, -1) ])
