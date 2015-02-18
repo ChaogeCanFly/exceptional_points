@@ -361,16 +361,16 @@ class Dirichlet(Waveguide):
         x0 = lambda s: s*np.pi/(2.*kr)
         y0 = lambda s: W/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1))*abs(b1/b2))
 
-        xn = np.asarray([ x0(n) for n in (1, -1) ])
-        yn = np.asarray([ y0(n) for n in (1, -1) ])
+        xn = np.asarray([ x0(n) for n in (+1,-1) ])
+        yn = np.asarray([ y0(n) for n in (-1,+1) ])
 
         # mark invalid node coordinates with np.nan
         # -> caught in DirichletPositionDependentLoss._get_EP_coordinates where
         # G is set to zero for invalid points
-        if np.any(xn < 0.) or np.any(xn > 2.*pi/kr) :
-            xn *= np.nan
-        if np.any(yn < 0.) or np.any(yn > W):
-            yn *= np.nan
+        # if np.any(xn < 0.) or np.any(xn > 2.*pi/kr) :
+        #     xn *= np.nan
+        # if np.any(yn < 0.) or np.any(yn > W):
+        #     yn *= np.nan
 
         if self.verbose:
             print "evec_x =", b1
