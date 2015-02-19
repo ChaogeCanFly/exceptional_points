@@ -286,7 +286,7 @@ def get_height_profile(X, Y, sigma_x=1e-4, rho_y=1e-2):
 def get_local_maxima(v):
     """Find the local maxima of a multidimensional array v.
     Returns a boolean mask."""
-    # taken from stackoverflow.com/questions/3684484/peak-detection-in-a-2d-array/3689710#3689710
+    # taken from stackoverflow.com/questions/3684484
     from scipy.ndimage.filters import maximum_filter
     from scipy.ndimage.morphology import generate_binary_structure, binary_erosion
 
@@ -299,6 +299,15 @@ def get_local_maxima(v):
     detected_peaks = local_max - eroded_background
 
     return detected_peaks
+
+def get_local_minima(v):
+    """Find the local maxima of a multidimensional array v.
+    Returns a boolean mask."""
+    # taken from stackoverflow.com/questions/3986345
+    return ((v <= np.roll(v,  1, 0)) &
+            (v <= np.roll(v, -1, 0)) &
+            (v <= np.roll(v,  1, 1)) &
+            (v <= np.roll(v, -1, 1)))
 
 
 if __name__ == '__main__':
