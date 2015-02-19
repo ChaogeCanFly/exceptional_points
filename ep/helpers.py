@@ -306,6 +306,7 @@ def get_local_peaks(v, peak_type='minimum'):
 
     return detected_peaks
 
+
 def get_local_minima(v):
     """Find the local maxima of a multidimensional array v.
     Returns a boolean mask."""
