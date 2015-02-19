@@ -287,6 +287,7 @@ def get_local_peaks(v, peak_type='minimum'):
     """Find the local maxima of a multidimensional array v.
     Returns a boolean mask."""
     # taken from stackoverflow.com/questions/3684484
+
     from scipy.ndimage.filters import minimum_filter, maximum_filter
     from scipy.ndimage.morphology import generate_binary_structure, binary_erosion
 
@@ -296,7 +297,7 @@ def get_local_peaks(v, peak_type='minimum'):
         peak_filter = maximum_filter
 
     neighborhood = generate_binary_structure(2,2)
-    local_peak = maximum_filter(v, footprint=neighborhood) == v
+    local_peak = peak_filter(v, footprint=neighborhood) == v
     background = (v == 0)
     eroded_background = binary_erosion(background,
                                        structure=neighborhood,
