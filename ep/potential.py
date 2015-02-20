@@ -128,11 +128,13 @@ class Potential(object):
             imag[imag < 0.] = 0.
         elif self.shape == 'RAP':
             xnodes, ynodes = self.WG.get_nodes_waveguide()
+            ynodes += -self.WG.get_boundary(xnodes)[0]
 
             for (xn, yn) in zip(xnodes, ynodes):
                 if np.isfinite(xn) and np.isfinite(yn):
                     # greens_code counts from top to bottom: yn -> W - yn
-                    imag += gauss(X, xn, self.sigmax)*gauss(Y, self.WG.W - yn, self.sigmay)
+                    # imag += gauss(X, xn, self.sigmax)*gauss(Y, self.WG.W - yn, self.sigmay)
+                    imag += gauss(X, xn, self.sigmax)*gauss(Y, yn, self.sigmay)
         else:
             imag = np.ones_like(X)
 
