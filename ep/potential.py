@@ -49,7 +49,7 @@ class Potential(object):
 
     def __init__(self, N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                  L=100, W=1., x_R0=0.05, y_R0=0.4, shape='RAP',
-                 direction='right'):
+                 direction='right', boundary_only=False):
         self.N = N
         self.pphw = pphw
         self.nx = int(L*(pphw*N+1)/W)
@@ -65,10 +65,11 @@ class Potential(object):
         self.direction = direction
 
         self._get_parameters()
-        self.imag = self._get_imag_potential()
-        self.real = self._get_real_potential()
-        self.imag_vector = self._array_to_vector(self.imag)
-        self.real_vector = self._array_to_vector(self.real)
+        if not boundary_only:
+            self.imag = self._get_imag_potential()
+            self.real = self._get_real_potential()
+            self.imag_vector = self._array_to_vector(self.imag)
+            self.real_vector = self._array_to_vector(self.real)
 
     def _get_parameters(self):
         """Return the waveguide parameters for a given number of open modes N."""
@@ -174,27 +175,30 @@ class Potential(object):
 
 def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                     L=100., W=1.0, x_R0=0.05, y_R0=0.4, shape='RAP',
-                    plot=True, plot_dimensions=False, direction='right'):
+                    plot=True, plot_dimensions=False, direction='right',
+                    boundary_only=False):
 
     p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigmax=sigmax,
                   sigmay=sigmay, x_R0=x_R0, y_R0=y_R0, shape=shape, L=L, W=W,
-                  direction=direction)
-    imag, imag_vector = p.imag, p.imag_vector
-    real, real_vector = p.real, p.real_vector
+                  direction=direction, boundary_only=boundary_only)
+    if not boundary_only:
+        imag, imag_vector = p.imag, p.imag_vector
+        real, real_vector = p.real, p.real_vector
     X, Y = p.X, p.Y
 
-    if plot:
-        if plot_dimensions:
-            plt.figure(figsize=(L, W))
-        plt.pcolormesh(X, Y, imag, cmap='RdBu_r')
-        plt.savefig("imag.png")
-        plt.pcolormesh(X, Y, real, cmap='RdBu_r')
-        plt.savefig("real.png")
+    if not boundary_only:
+        if plot:
+            if plot_dimensions:
+                plt.figure(figsize=(L, W))
+            plt.pcolormesh(X, Y, imag, cmap='RdBu_r')
+            plt.savefig("imag.png")
+            plt.pcolormesh(X, Y, real, cmap='RdBu_r')
+            plt.savefig("real.png")
 
-    np.savetxt("potential_imag.dat", zip(range(len(imag_vector)), imag_vector),
-               fmt=["%i", "%.12f"])
-    np.savetxt("potential_real.dat", zip(range(len(real_vector)), real_vector),
-               fmt=["%i", "%.12f"])
+        np.savetxt("potential_imag.dat", zip(range(len(imag_vector)), imag_vector),
+                fmt=["%i", "%.12f"])
+        np.savetxt("potential_real.dat", zip(range(len(real_vector)), real_vector),
+                fmt=["%i", "%.12f"])
 
     if shape == 'RAP':
         x = p.WG.t
