@@ -207,6 +207,8 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                    fmt=["%i", "%.12f"])
         np.savetxt("potential_real.dat", zip(range(len(real_vector)), real_vector),
                    fmt=["%i", "%.12f"])
+        np.savetxt("potential_imag_xy.dat",
+                   zip(X.flatten('F'), Y.flatten('F'), imag_vector))
 
     if shape == 'RAP':
         x = p.WG.t
