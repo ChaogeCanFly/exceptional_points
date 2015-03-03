@@ -52,7 +52,8 @@ class Potential(object):
 
     def __init__(self, N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                  L=100, W=1., x_R0=0.05, y_R0=0.4, shape='RAP',
-                 direction='right', boundary_only=False, shift_with_boundary=False):
+                 direction='right', boundary_only=False,
+                 shift_with_boundary=False):
         self.N = N
         self.pphw = pphw
         self.nx = int(L*(pphw*N+1)/W)
@@ -203,9 +204,9 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
             plt.savefig("real.png")
 
         np.savetxt("potential_imag.dat", zip(range(len(imag_vector)), imag_vector),
-                fmt=["%i", "%.12f"])
+                   fmt=["%i", "%.12f"])
         np.savetxt("potential_real.dat", zip(range(len(real_vector)), real_vector),
-                fmt=["%i", "%.12f"])
+                   fmt=["%i", "%.12f"])
 
     if shape == 'RAP':
         x = p.WG.t
