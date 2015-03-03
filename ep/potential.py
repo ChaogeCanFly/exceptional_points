@@ -181,6 +181,7 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
     p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigmax=sigmax,
                   sigmay=sigmay, x_R0=x_R0, y_R0=y_R0, shape=shape, L=L, W=W,
                   direction=direction, boundary_only=boundary_only)
+
     if not boundary_only:
         imag, imag_vector = p.imag, p.imag_vector
         real, real_vector = p.real, p.real_vector
