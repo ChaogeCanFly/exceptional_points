@@ -37,6 +37,9 @@ class Potential(object):
                 Potential type.
             direction: str
                 Injection direction (left|right).
+            shift_with_boundary: bool
+                Whether to shift the potential positions with the profile
+                boundary.
 
         Attributes:
         -----------
@@ -49,7 +52,7 @@ class Potential(object):
 
     def __init__(self, N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                  L=100, W=1., x_R0=0.05, y_R0=0.4, shape='RAP',
-                 direction='right', boundary_only=False):
+                 direction='right', boundary_only=False, shift_with_boundary=False):
         self.N = N
         self.pphw = pphw
         self.nx = int(L*(pphw*N+1)/W)
@@ -63,6 +66,7 @@ class Potential(object):
         self.x_R0 = x_R0
         self.y_R0 = y_R0
         self.direction = direction
+        self.shift_with_boundary = shift_with_boundary
 
         self._get_parameters()
         if not boundary_only:
@@ -129,7 +133,8 @@ class Potential(object):
             imag[imag < 0.] = 0.
         elif self.shape == 'RAP':
             xnodes, ynodes = self.WG.get_nodes_waveguide()
-            ynodes += -self.WG.get_boundary(xnodes)[0]
+            if self.shift_with_boundary:
+                ynodes += -self.WG.get_boundary(xnodes)[0]
 
             for (xn, yn) in zip(xnodes, ynodes):
                 if np.isfinite(xn) and np.isfinite(yn):
@@ -176,11 +181,12 @@ class Potential(object):
 def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                     L=100., W=1.0, x_R0=0.05, y_R0=0.4, shape='RAP',
                     plot=True, plot_dimensions=False, direction='right',
-                    boundary_only=False):
+                    boundary_only=False, shift_with_boundary=False):
 
     p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigmax=sigmax,
                   sigmay=sigmay, x_R0=x_R0, y_R0=y_R0, shape=shape, L=L, W=W,
-                  direction=direction, boundary_only=boundary_only)
+                  direction=direction, boundary_only=boundary_only,
+                  shift_with_boundary=shift_with_boundary)
 
     if not boundary_only:
         imag, imag_vector = p.imag, p.imag_vector
