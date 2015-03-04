@@ -51,8 +51,8 @@ class Potential(object):
     """
 
     def __init__(self, N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
-                 L=100, W=1., x_R0=0.05, y_R0=0.4, shape='RAP',
-                 direction='right', boundary_only=False,
+                 L=100, W=1., x_R0=0.05, y_R0=0.4, init_phase=0.0,
+                 shape='RAP', direction='right', boundary_only=False,
                  with_boundary=False):
         self.N = N
         self.pphw = pphw
@@ -66,6 +66,7 @@ class Potential(object):
         self.W = W
         self.x_R0 = x_R0
         self.y_R0 = y_R0
+        self.init_phase = init_phase
         self.direction = direction
         self.with_boundary = with_boundary
 
@@ -86,7 +87,8 @@ class Potential(object):
                      'tN': self.nx,
                      'loop_type': 'Bell',
                      'x_R0': self.x_R0,
-                     'y_R0': self.y_R0}
+                     'y_R0': self.y_R0,
+                     'init_phase': init_phase}
         self.WG = DirichletPositionDependentLoss(**wg_kwargs)
 
         self.kF = self.WG.k0
@@ -180,12 +182,14 @@ class Potential(object):
 
 
 def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
-                    L=100., W=1.0, x_R0=0.05, y_R0=0.4, shape='RAP',
-                    plot=True, plot_dimensions=False, direction='right',
-                    boundary_only=False, with_boundary=False):
+                    L=100., W=1.0, x_R0=0.05, y_R0=0.4, init_phase=init_phase,
+                    shape='RAP', plot=True, plot_dimensions=False,
+                    direction='right', boundary_only=False,
+                    with_boundary=False):
 
     p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigmax=sigmax,
-                  sigmay=sigmay, x_R0=x_R0, y_R0=y_R0, shape=shape, L=L, W=W,
+                  sigmay=sigmay, x_R0=x_R0, y_R0=y_R0, init_phase=init_phase,
+                  shape=shape, L=L, W=W,
                   direction=direction, boundary_only=boundary_only,
                   with_boundary=with_boundary)
 
