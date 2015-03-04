@@ -182,7 +182,7 @@ class Potential(object):
 
 
 def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
-                    L=100., W=1.0, x_R0=0.05, y_R0=0.4, init_phase=init_phase,
+                    L=100., W=1.0, x_R0=0.05, y_R0=0.4, init_phase=0.0,
                     shape='RAP', plot=True, plot_dimensions=False,
                     direction='right', boundary_only=False,
                     with_boundary=False):
