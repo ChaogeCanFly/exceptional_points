@@ -88,7 +88,7 @@ class Potential(object):
                      'loop_type': 'Bell',
                      'x_R0': self.x_R0,
                      'y_R0': self.y_R0,
-                     'init_phase': init_phase}
+                     'init_phase': self.init_phase}
         self.WG = DirichletPositionDependentLoss(**wg_kwargs)
 
         self.kF = self.WG.k0
