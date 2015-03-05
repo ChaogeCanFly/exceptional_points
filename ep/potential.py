@@ -33,6 +33,10 @@ class Potential(object):
                 Waveguide loop parameter.
             y_R0: float
                 Waveguide loop parameter.
+            init_phase: float
+                Initial phase/position in frequency space.
+            loop_type: str
+                Loop parametrization identifier.
             shape: str
                 Potential type.
             direction: str
@@ -51,7 +55,7 @@ class Potential(object):
     """
 
     def __init__(self, N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
-                 L=100, W=1., x_R0=0.05, y_R0=0.4, init_phase=0.0,
+                 L=100, W=1., x_R0=0.05, y_R0=0.4, init_phase=0.0, loop_type='Bell',
                  shape='RAP', direction='right', boundary_only=False,
                  with_boundary=False):
         self.N = N
@@ -67,6 +71,7 @@ class Potential(object):
         self.x_R0 = x_R0
         self.y_R0 = y_R0
         self.init_phase = init_phase
+        self.loop_type = loop_type
         self.direction = direction
         self.with_boundary = with_boundary
 
@@ -85,7 +90,7 @@ class Potential(object):
         wg_kwargs = {'N': self.N,
                      'L': self.L,
                      'tN': self.nx,
-                     'loop_type': 'Bell',
+                     'loop_type': self.loop_type,
                      'x_R0': self.x_R0,
                      'y_R0': self.y_R0,
                      'init_phase': self.init_phase}
@@ -182,14 +187,14 @@ class Potential(object):
 
 
 def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
-                    L=100., W=1.0, x_R0=0.05, y_R0=0.4, init_phase=0.0,
-                    shape='RAP', plot=True, plot_dimensions=False,
-                    direction='right', boundary_only=False,
-                    with_boundary=False):
+                    L=100., W=1.0, x_R0=0.05, y_R0=0.4, loop_type='Bell',
+                    init_phase=0.0, shape='RAP', plot=True,
+                    plot_dimensions=False, direction='right',
+                    boundary_only=False, with_boundary=False):
 
     p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigmax=sigmax,
                   sigmay=sigmay, x_R0=x_R0, y_R0=y_R0, init_phase=init_phase,
-                  shape=shape, L=L, W=W,
+                  shape=shape, L=L, W=W, loop_type=loop_type,
                   direction=direction, boundary_only=boundary_only,
                   with_boundary=with_boundary)
 
