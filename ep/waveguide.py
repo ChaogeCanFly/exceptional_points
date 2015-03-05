@@ -84,6 +84,14 @@ class Waveguide(Base):
             lambda2 = lambda t: y_R0 * sign * (sign*w*t/pi - 1) + phi0
             return lambda1(t), lambda2(t)
 
+        elif loop_type == "Bell_smooth":
+            sign = -int(self.loop_direction + "1")
+            lambda1 = lambda t: x_R0 * (1. - np.cos(w*t))
+            # take also sign change in w=2pi/T into account
+            lambda2 = lambda t: y_R0 * sign * (sign*w*t/pi - 1) + phi0
+            smooth = lambda t: self.L/2*(1+np.tanh(2*t/(1-t**2)))
+            return lambda1(smooth(2/self.L*t - 1)), lambda2(smooth(2/self.L*t - 1))
+
         elif loop_type == "Allen-Eberly":
             sign = -int(self.loop_direction + "1")
             lambda1 = lambda t: x_R0 / np.cosh(2.*w*t - 2.*np.pi)
