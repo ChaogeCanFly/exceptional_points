@@ -149,6 +149,8 @@ class Potential(object):
                     # greens_code counts from top to bottom: yn -> W - yn
                     # imag += gauss(X, xn, self.sigmax)*gauss(Y, self.WG.W - yn, self.sigmay)
                     imag += gauss(X, xn, self.sigmax)*gauss(Y, yn, self.sigmay)
+            self.xnodes = xnodes
+            self.ynodes = ynodes
         else:
             imag = np.ones_like(X)
 
@@ -216,7 +218,8 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                    fmt=["%i", "%.12f"])
         np.savetxt("potential_real.dat", zip(range(len(real_vector)), real_vector),
                    fmt=["%i", "%.12f"])
-        np.savez("potential_imag_xy.npz", X=X, Y=Y, P=imag_vector)
+        np.savez("potential_imag_xy.npz", X=X, Y=Y, P=imag_vector,
+                 X_nodes=p.xnodes, Y_nodes=p.ynodes)
 
     if shape == 'RAP':
         x = p.WG.t
