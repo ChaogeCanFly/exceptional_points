@@ -180,63 +180,6 @@ class Waveguide(Base):
 
         return X, Y, Z
 
-    # def draw_wavefunction(self, instantaneous_eigenbasis=False, save_plot=None):
-    #     """Plot wavefunction."""
-    #
-    #     if instantaneous_eigenbasis:
-    #         x, b0, b1 = self.t, self.eVecs_r[:,0], self.eVecs_r[:,1]
-    #     else:
-    #         x, b0, b1 = self.t, self.phi_a, self.phi_b
-    #
-    #     yN = len(x)/self.T
-    #     y = np.linspace(-0.1, self.W+0.1, yN)
-    #
-    #     def phi(x,y):
-    #         phi = b0 + b1 * (np.sqrt(2.*self.k0/self.k1) *
-    #                           np.cos(pi*y)*np.exp(-1j*self.kr*x))
-    #         return phi
-    #
-    #     X, Y = np.meshgrid(x,y)
-    #     Z = abs(phi(X,Y))**2
-    #
-    #     p = plt.pcolormesh(X,Y,Z)
-    #     if save_plot:
-    #         print save_plot
-    #         plt.savefig(save_plot)
-    #     #cb = plt.colorbar(p)
-    #     #cb.set_label("Wavefunction")
-    #
-    # def draw_dissipation_coefficient(self, cax=None):
-    #     """Plot position dependent dissipation coefficient."""
-    #
-    #     x, b0, b1 = self.t, self.phi_a, self.phi_b
-    #     y = np.linspace(-0.1, self.W+0.1, 2)
-    #
-    #     X, Y = np.meshgrid(x,y)
-    #     Z = self.eta_x(X)
-    #
-    #     bmap = brew.get_map('YlOrRd',
-    #                         'sequential', 9).mpl_colormap
-    #     p = plt.pcolormesh(X,Y,Z)
-    #     p.cmap = bmap
-    #     cb = plt.colorbar(p, ax=cax)
-    #     cb.set_label("Loss")
-    #
-    # def draw_boundary(self):
-    #     """Draw the boundary profile."""
-    #
-    #     x = self.t  #self.t[::2]
-    #     #eps, delta = self.get_cycle_parameters(x)
-    #
-    #     yN = len(x)/self.T
-    #     y = np.linspace(-0.1, self.d+0.1, yN)
-    #
-    #     X, Y = np.meshgrid(x, y)
-    #     X, Y, Z = self.get_boundary_contour(X, Y)
-    #
-    #     plt.contourf(X, Y, Z, [0.9,1], colors="k")
-    #     return X, Y, Z
-
 
 class Neumann(Waveguide):
     """Neumann class."""
@@ -304,8 +247,7 @@ class Dirichlet(Waveguide):
         """Exceptional Point (EP) waveguide class with Dirichlet boundary
         conditons.
 
-        Copies methods and variables from the Waveguide class.
-        """
+        Copies methods and variables from the Waveguide class."""
         Waveguide.__init__(self, **waveguide_kwargs)
 
         k0, k1 = [ self.k(n) for n in 1, 2 ]
