@@ -48,8 +48,11 @@ class Waveguide(Base):
         """Hamiltonian H is overwritten by inheriting classes."""
         pass
 
-    def get_cycle_parameters(self, t):
+    def get_cycle_parameters(self, t=None):
         """Return the trajectory coordinates (x(t), y(t)) at time t."""
+
+        if t is None:
+            t = self.t
 
         x_R0, y_R0 = self.x_R0, self.y_R0
         w, phi0 = self.w, self.init_phase
