@@ -118,6 +118,8 @@ class Waveguide(Base):
                     Boundary roughness strength.
                 delta: float
                     Boundary frequency detuning.
+                L: float
+                    Waveguide length.
                 W: float
                     Waveguide width.
                 kr: float
@@ -153,18 +155,14 @@ class Waveguide(Base):
         if self.loop_direction == '+':
             x = x[::-1]
 
-        def fermi(x, sigma=1):
-            """Return the Fermi-Dirac distribution."""
-            return 1./(np.exp(-x/sigma) + 1.)
-
         xi_lower = eps*np.sin((kr + delta)*x)
         xi_upper = W + eps*np.sin((kr + delta)*x + theta_boundary)
 
         if smearing:
-            kr = (self.N - np.sqrt(self.N**2 - 1))*pi
+            fermi = lambda x, sigma: 1./(np.exp(-x/sigma))
             lambda0 = abs(pi/(kr + delta))
             s = 1./(2*lambda0)
-            pre = fermi(x - 3*lambda0, s)*fermi(L - x - 3*lambda0, s)
+            pre = fermi(x-3*lambda0, s)*fermi(L-x-3*lambda0, s)
             xi_lower *= pre
             xi_upper = pre*(xi_upper - W) + W
 
@@ -191,8 +189,7 @@ class Neumann(Waveguide):
         """Exceptional Point (EP) waveguide class with Neumann boundary
         conditons.
 
-        Copies methods and variables from the Waveguide class.
-        """
+        Copies methods and variables from the Waveguide class."""
         Waveguide.__init__(self, **waveguide_kwargs)
 
         k0, k1 = [ self.k(n) for n in 0, 1 ]
@@ -382,8 +379,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         """Exceptional Point (EP) waveguide class with Dirichlet boundary
         conditons and position dependent losses.
 
-        Copies methods and variables from the Dirichlet class.
-        """
+        Copies methods and variables from the Dirichlet class."""
         dirichlet_kwargs = waveguide_kwargs.copy()
         dirichlet_kwargs.update({'loop_type': 'Constant',
                                  'eta': 0.0})
@@ -501,7 +497,7 @@ def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1,
                "loop_direction": direction,
                "init_state": "c",
                "calc_adiabatic_state": True,
-               "loop_type": "Bell_small_width"}
+               "loop_type": "Bell"}
 
     WG = Waveguide(**params)
     WG.x_EP = x_EP
