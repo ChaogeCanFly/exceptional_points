@@ -460,11 +460,12 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         eps, delta = self.get_cycle_parameters(x)
         # L = 2.*np.pi/(self.kr + np.zeros_like(delta))
-        # L_sum = np.cumsum(L)
-        # L_sum -= L_sum[0]
+        L = 2.*np.pi/(self.kr + delta)
+        L_sum = np.cumsum(L)
+        L_sum -= L_sum[0]
 
         xnodes, ynodes = [], []
-        for epsn, deltan, xn in zip(eps, delta, x):
+        for epsn, deltan, xn, Ln_sum in zip(eps, delta, x, L_sum):
             Ln = 2.*np.pi/(self.kr + deltan)
             wgn_kwargs = {'N': self.N,
                           'loop_direction': self.loop_direction,
@@ -476,7 +477,9 @@ class DirichletPositionDependentLoss(Dirichlet):
                           'y_R0': deltan}
             WGn = Dirichlet(**wgn_kwargs)
             nodes = WGn.get_nodes(x=epsn, y=deltan)
-            xnodes.append(nodes[:,0] + xn)
+            # xnodes.append(nodes[:,0] + xn)
+            # xnodes.append(nodes[:,0]/(1+deltan/self.kr) + xn)
+            xnodes.append(nodes[:,0]/(1+deltan/self.kr) + Ln_sum)
             ynodes.append(nodes[:,1])
 
         xnodes, ynodes = [ np.asarray(v).flatten() for v in xnodes, ynodes ]
