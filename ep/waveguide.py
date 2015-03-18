@@ -48,7 +48,7 @@ class Waveguide(Base):
         """Hamiltonian H is overwritten by inheriting classes."""
         pass
 
-    def get_cycle_parameters(self, t=None):
+    def get_cycle_parameters(self, t=None, a=2.):
         """Return the trajectory coordinates (x(t), y(t)) at time t."""
 
         if t is None:
@@ -57,6 +57,7 @@ class Waveguide(Base):
         x_R0, y_R0 = self.x_R0, self.y_R0
         w, phi0 = self.w, self.init_phase
         loop_type = self.loop_type
+        sign = -int(self.loop_direction + "1")
 
         if loop_type == "Constant":
             t0 = np.ones_like(t)
@@ -76,38 +77,61 @@ class Waveguide(Base):
             return lambda1(t), lambda2(t)
 
         elif loop_type == "Varcircle":
-            lambda1 = lambda t: x_R0 * (1. - np.cos(w*t))
+            lambda1 = lambda t: x_R0*(1. - np.cos(w*t))
             lambda2 = lambda t: y_R0 - x_R0*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
 
         elif loop_type == "Bell":
-            sign = -int(self.loop_direction + "1")
-            lambda1 = lambda t: x_R0 * (1. - np.cos(w*t))
-            # take also sign change in w=2pi/T into account
-            lambda2 = lambda t: y_R0 * sign * (sign*w*t/pi - 1) + phi0
+            # take also sign change in w=2pi/T into account (in lambda2)
+            lambda1 = lambda t: x_R0*(1. - np.cos(w*t))
+            lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1) + phi0
             return lambda1(t), lambda2(t)
 
         elif loop_type == "Bell_smooth":
-            sign = -int(self.loop_direction + "1")
-            lambda1 = lambda t: x_R0 * (1. - np.cos(w*t))
-            # take also sign change in w=2pi/T into account
-            lambda2 = lambda t: y_R0 * sign * (sign*w*t/pi - 1) + phi0
-            smooth = lambda t: self.L/2*(1+np.tanh(2*t/(1-t**2)))
-            return lambda1(smooth(2/self.L*t - 1)), lambda2(smooth(2/self.L*t - 1))
+            lambda1 = lambda t: x_R0*(1. - np.cos(w*t))
+            lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1.) + phi0
+            smooth = lambda t: self.L/2.*(1. + np.tanh(2.*t/(1. - t**2)))
+            tp = 2./self.L*t - 1. + 1e-15
+            self.smooth = smooth
+            return lambda1(smooth(tp)), lambda2(smooth(tp))
+
+        elif loop_type == "Bell_smooth_constant":
+            lambda1 = lambda t: x_R0*(1. - np.cos(w*t))
+            lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1.) + phi0
+            x0 = self.L/2.*(1.-1./a)
+            xL = self.L/2.*(1.+1./a)
+            smooth = lambda t: np.where(np.logical_and(t >= x0, t <= xL),
+                                        (1.-a)/2.*self.L + a*t,
+                                        np.where(t >= xL, self.L, 0))
+            self.smooth = smooth
+            return lambda1(smooth(t)), lambda2(smooth(t))
 
         elif loop_type == "Allen-Eberly":
-            sign = -int(self.loop_direction + "1")
             lambda1 = lambda t: x_R0 / np.cosh(2.*w*t - 2.*np.pi)
-            # take also sign change in w=2pi/T into account
-            lambda2 = lambda t: y_R0 * np.tanh(sign*2.*w*t - 2.*np.pi) + phi0
+            lambda2 = lambda t: sign*y_R0*np.tanh(2.*sign*w*t - 2.*np.pi) + phi0
+            return lambda1(t), lambda2(t)
+
+        elif loop_type == "Allen-Eberly_2":
+            lambda1 = lambda t: x_R0 / np.cosh(2.*w*t - 2.*np.pi)
+            lambda2 = lambda t: sign*y_R0*np.tanh(sign*w*t - np.pi) + phi0
+            return lambda1(t), lambda2(t)
+
+        elif loop_type == "Allen-Eberly-Bell":
+            lambda1 = lambda t: x_R0 / np.cosh(2.*w*t - 2.*np.pi)
+            lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1) + phi0
+            return lambda1(t), lambda2(t)
+
+        elif loop_type == "Allen-Eberly-Bell_2":
+            lambda1 = lambda t: x_R0 * (1. - np.cos(w*t))
+            lambda2 = lambda t: sign*y_R0*np.tanh(2.*sign*w*t - 2.*np.pi) + phi0
             return lambda1(t), lambda2(t)
 
         else:
-            raise Exception(("Error: loop_type {}"
+            raise Exception(("Error: loop_type {0}"
                              "does not exist!").format(loop_type))
 
     def get_boundary(self, x=None, eps=None, delta=None, L=None,
-                     W=None, kr=None, theta_boundary=None, smearing=False):
+                     W=None, kr=None, theta_boundary=None, smearing=False, a=2):
         """Get the boundary function xi as a function of the spatial coordinate x.
 
             Parameters:
@@ -128,6 +152,8 @@ class Waveguide(Base):
                     Phase difference between lower and upper boundary.
                 smearing: bool
                     Return a profile which is smeared out at the edges.
+                a: float (1 <= a <= 2)
+                    Parameter for Bell_smooth_constant loop parametrization.
 
             Returns:
             --------
@@ -141,7 +167,7 @@ class Waveguide(Base):
         if x is None:
             x = self.t
         if eps is None and delta is None:
-            eps, delta = self.get_cycle_parameters(x)
+            eps, delta = self.get_cycle_parameters(x, a=a)
         if L is None:
             L = self.L
         if W is None:
