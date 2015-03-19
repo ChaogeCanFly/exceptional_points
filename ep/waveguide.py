@@ -56,6 +56,7 @@ class Waveguide(Base):
 
         x_R0, y_R0 = self.x_R0, self.y_R0
         w, phi0 = self.w, self.init_phase
+        L = self.L
         loop_type = self.loop_type
         sign = -int(self.loop_direction + "1")
 
@@ -90,40 +91,38 @@ class Waveguide(Base):
         elif loop_type == "Bell_smooth":
             lambda1 = lambda t: x_R0*(1. - np.cos(w*t))
             lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1.) + phi0
-            smooth = lambda t: self.L/2.*(1. + np.tanh(2.*t/(1. - t**2)))
-            tp = 2./self.L*t - 1. + 1e-15
+            smooth = lambda t: L/2.*(1. + np.tanh(2.*t/(1. - t**2)))
+            tp = 2./L*t - 1. + 1e-15
+            # important: return smoothing function for get_boundary routine
+            # # HACK to incorporate correct x -> f(x) in smoothing procedure
+            # try:
+            #     x = self.smooth(x)
+            # except AttributeError:
+            #     print "Warning: self.smooth method not set!"
             self.smooth = smooth
+            self.t = smooth(tp)
             return lambda1(smooth(tp)), lambda2(smooth(tp))
 
         elif loop_type == "Bell_smooth_constant":
             lambda1 = lambda t: x_R0*(1. - np.cos(w*t))
             lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1.) + phi0
-            x0 = self.L/2.*(1.-1./a)
-            xL = self.L/2.*(1.+1./a)
+            x0 = L/2.*(1.-1./a)
+            xL = L/2.*(1.+1./a)
             smooth = lambda t: np.where(np.logical_and(t >= x0, t <= xL),
-                                        (1.-a)/2.*self.L + a*t,
-                                        np.where(t >= xL, self.L, 0))
+                                        (1.-a)/2.*L + a*t,
+                                        np.where(t >= xL, L, 0))
             self.smooth = smooth
+            self.t = smooth(t)
             return lambda1(smooth(t)), lambda2(smooth(t))
 
         elif loop_type == "Allen-Eberly":
-            lambda1 = lambda t: x_R0 / np.cosh(2.*w*t - 2.*np.pi)
-            lambda2 = lambda t: sign*y_R0*np.tanh(2.*sign*w*t - 2.*np.pi) + phi0
+            lambda1 = lambda t: 2.*x_R0 / np.cosh(4.*w*t - 2.*np.pi)
+            lambda2 = lambda t: sign*y_R0*np.tanh(2.*sign*w*t - np.pi) + phi0
             return lambda1(t), lambda2(t)
 
-        elif loop_type == "Allen-Eberly_2":
-            lambda1 = lambda t: x_R0 / np.cosh(2.*w*t - 2.*np.pi)
-            lambda2 = lambda t: sign*y_R0*np.tanh(sign*w*t - np.pi) + phi0
-            return lambda1(t), lambda2(t)
-
-        elif loop_type == "Allen-Eberly-Bell":
-            lambda1 = lambda t: x_R0 / np.cosh(2.*w*t - 2.*np.pi)
-            lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1) + phi0
-            return lambda1(t), lambda2(t)
-
-        elif loop_type == "Allen-Eberly-Bell_2":
+        elif loop_type == "Bell-Rubbmark":
             lambda1 = lambda t: x_R0 * (1. - np.cos(w*t))
-            lambda2 = lambda t: sign*y_R0*np.tanh(2.*sign*w*t - 2.*np.pi) + phi0
+            lambda2 = lambda t: sign*2.*y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5)
             return lambda1(t), lambda2(t)
 
         else:
