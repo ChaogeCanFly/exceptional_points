@@ -222,8 +222,7 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                  X_nodes=p.xnodes, Y_nodes=p.ynodes)
 
     if shape == 'RAP':
-        x = p.WG.t
-        xi_lower, xi_upper = p.WG.get_boundary(x=x)
+        xi_lower, xi_upper = p.WG.get_boundary()
         np.savetxt("upper.boundary", zip(range(p.nx), xi_upper))
         np.savetxt("lower.boundary", zip(range(p.nx), xi_lower))
 
