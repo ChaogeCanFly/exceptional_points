@@ -71,24 +71,19 @@ class Waveguide(Base):
             lambda2 = lambda t: y_R0 + y_R0*np.sin(w*t + phi0)
             return lambda1(t), lambda2(t)
 
-        elif loop_type == "Ellipse":
-            lambda1 = lambda t: x_R0 * (1. - np.cos(w*t))
-            lambda2 = lambda t: y_R0 - 8.*x_R0*np.sin(w*t) + phi0
-            return lambda1(t), lambda2(t)
-
         elif loop_type == "Varcircle":
-            lambda1 = lambda t: x_R0*(1. - np.cos(w*t))
+            lambda1 = lambda t: x_R0/2.*(1.-np.cos(w*t))
             lambda2 = lambda t: y_R0 - x_R0*np.sin(w*t) + phi0
             return lambda1(t), lambda2(t)
 
         elif loop_type == "Bell":
             # take also sign change in w=2pi/T into account (in lambda2)
-            lambda1 = lambda t: x_R0*(1. - np.cos(w*t))
+            lambda1 = lambda t: x_R0/2.*(1.-np.cos(w*t))
             lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1) + phi0
             return lambda1(t), lambda2(t)
 
         elif loop_type == "Bell_smooth":
-            lambda1 = lambda t: x_R0*(1. - np.cos(w*t))
+            lambda1 = lambda t: x_R0/2.*(1.-np.cos(w*t))
             lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1.) + phi0
             smooth = lambda t: L/2.*(1. + np.tanh(2.*t/(1. - t**2)))
             tp = 2./L*t - 1. + 1e-15
@@ -97,7 +92,7 @@ class Waveguide(Base):
             return lambda1(smooth(tp)), lambda2(smooth(tp))
 
         elif loop_type == "Bell_smooth_constant":
-            lambda1 = lambda t: x_R0*(1. - np.cos(w*t))
+            lambda1 = lambda t: x_R0/2.*(1.-np.cos(w*t))
             lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1.) + phi0
             a = 2.
             x0 = L/2.*(1.-1./a)
@@ -109,12 +104,12 @@ class Waveguide(Base):
             return lambda1(smooth(t)), lambda2(smooth(t))
 
         elif loop_type == "Allen-Eberly":
-            lambda1 = lambda t: 2.*x_R0 / np.cosh(4.*w*t - 2.*np.pi)
+            lambda1 = lambda t: x_R0 / np.cosh(4.*w*t - 2.*np.pi)
             lambda2 = lambda t: sign*y_R0*np.tanh(2.*sign*w*t - np.pi) + phi0
             return lambda1(t), lambda2(t)
 
         elif loop_type == "Bell-Rubbmark":
-            lambda1 = lambda t: x_R0 * (1. - np.cos(w*t))
+            lambda1 = lambda t: x_R0/2. * (1. - np.cos(w*t))
             lambda2 = lambda t: sign*2.*y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5)
             return lambda1(t), lambda2(t)
 
