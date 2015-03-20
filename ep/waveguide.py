@@ -12,8 +12,7 @@ from ep.helpers import c_eig
 class Waveguide(Base):
     """Waveguide class."""
 
-    def __init__(self, L=100, W=1.0, eta=0.05, N=1.5, theta=0.0,
-                 **base_kwargs):
+    def __init__(self, L=100, W=1, eta=0.0, N=2.5, theta=0.0, **base_kwargs):
         """Exceptional Point (EP) waveguide class.
 
         Copies methods and variables from the Base class and adds new
@@ -48,7 +47,7 @@ class Waveguide(Base):
         """Hamiltonian H is overwritten by inheriting classes."""
         pass
 
-    def get_cycle_parameters(self, t=None, a=2.):
+    def get_cycle_parameters(self, t=None):
         """Return the trajectory coordinates (x(t), y(t)) at time t."""
 
         if t is None:
@@ -94,25 +93,19 @@ class Waveguide(Base):
             smooth = lambda t: L/2.*(1. + np.tanh(2.*t/(1. - t**2)))
             tp = 2./L*t - 1. + 1e-15
             # important: return smoothing function for get_boundary routine
-            # # HACK to incorporate correct x -> f(x) in smoothing procedure
-            # try:
-            #     x = self.smooth(x)
-            # except AttributeError:
-            #     print "Warning: self.smooth method not set!"
             self.smooth = smooth
-            self.t = smooth(tp)
             return lambda1(smooth(tp)), lambda2(smooth(tp))
 
         elif loop_type == "Bell_smooth_constant":
             lambda1 = lambda t: x_R0*(1. - np.cos(w*t))
             lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1.) + phi0
+            a = 2.
             x0 = L/2.*(1.-1./a)
             xL = L/2.*(1.+1./a)
             smooth = lambda t: np.where(np.logical_and(t >= x0, t <= xL),
                                         (1.-a)/2.*L + a*t,
                                         np.where(t >= xL, L, 0))
             self.smooth = smooth
-            self.t = smooth(t)
             return lambda1(smooth(t)), lambda2(smooth(t))
 
         elif loop_type == "Allen-Eberly":
@@ -130,7 +123,7 @@ class Waveguide(Base):
                              "does not exist!").format(loop_type))
 
     def get_boundary(self, x=None, eps=None, delta=None, L=None,
-                     W=None, kr=None, theta_boundary=None, smearing=False, a=2):
+                     W=None, kr=None, theta_boundary=None, smearing=False):
         """Get the boundary function xi as a function of the spatial coordinate x.
 
             Parameters:
@@ -166,7 +159,7 @@ class Waveguide(Base):
         if x is None:
             x = self.t
         if eps is None and delta is None:
-            eps, delta = self.get_cycle_parameters(x, a=a)
+            eps, delta = self.get_cycle_parameters(x)
         if L is None:
             L = self.L
         if W is None:
@@ -175,6 +168,12 @@ class Waveguide(Base):
             kr = self.kr
         if theta_boundary is None:
             theta_boundary = self.theta_boundary
+
+        # HACK to incorporate correct x -> f(x) in smoothing procedure
+        try:
+            x = self.smooth(x)/2.
+        except AttributeError:
+            print "Warning: self.smooth method not set (using {})!".format(self.loop_type)
 
         # reverse x-coordinate for backward propagation
         if self.loop_direction == '+':
