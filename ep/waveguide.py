@@ -110,7 +110,7 @@ class Waveguide(Base):
 
         elif loop_type == "Bell-Rubbmark":
             lambda1 = lambda t: x_R0/2. * (1. - np.cos(w*t))
-            lambda2 = lambda t: sign*2.*y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5)
+            lambda2 = lambda t: sign*2.*y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + phi0
             return lambda1(t), lambda2(t)
 
         else:
