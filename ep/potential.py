@@ -225,6 +225,8 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
         xi_lower, xi_upper = p.WG.get_boundary()
         np.savetxt("upper.boundary", zip(range(p.nx), xi_upper))
         np.savetxt("lower.boundary", zip(range(p.nx), xi_lower))
+        eps, delta = p.WG.get_cycle_parameters()
+        np.savetxt("boundary.eps_delta", zip(eps, delta))
 
 
 if __name__ == '__main__':
