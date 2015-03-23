@@ -161,7 +161,7 @@ class Waveguide(Base):
             W = self.W
         if kr is None:
             kr = self.kr
-        if theta_boundary is None:
+        if theta_boundary is None or theta_boundary == 0.0:
             theta_boundary = self.theta_boundary
         else:
             eps_dot = np.gradient(eps, self.dt)
@@ -170,8 +170,10 @@ class Waveguide(Base):
 
             theta_dot = 2.*np.abs(self.B)*(eps_dot*delta - delta_dot*eps)/Delta**2
 
-            theta_boundary = np.pi + np.arctan2(theta_dot/(2.*eps*np.abs(self.B)))
-            eps = np.sqrt(eps**2 + (theta_dot/(2*np.abs(self.B)))**2)
+            alpha = theta_dot/(2*np.abs(self.B))
+            theta_boundary = np.arctan2(np.cos(2.*np.arctan(alpha)),
+                                        -2.*alpha/(1.+alpha**2))
+            eps = np.sqrt(eps**2 + (alpha)**2)
 
         # HACK to incorporate correct x -> f(x) in smoothing procedure
         try:
