@@ -95,7 +95,7 @@ class Potential(object):
                      'x_R0': self.x_R0,
                      'y_R0': self.y_R0,
                      'init_phase': self.init_phase,
-                     'theta_boundary': self.theta_boundary}
+                     'theta': self.theta_boundary}
         self.WG = DirichletPositionDependentLoss(**wg_kwargs)
 
         self.kF = self.WG.k0
@@ -195,7 +195,7 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                     init_phase=0.0, shape='RAP', plot=True,
                     plot_dimensions=False, direction='right',
                     boundary_only=False, with_boundary=False,
-                    theta_boundary=None):
+                    theta_boundary=0.0):
 
     p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigmax=sigmax,
                   sigmay=sigmay, x_R0=x_R0, y_R0=y_R0, init_phase=init_phase,
@@ -225,7 +225,7 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                  X_nodes=p.xnodes, Y_nodes=p.ynodes)
 
     if shape == 'RAP':
-        xi_lower, xi_upper = p.WG.get_boundary()
+        xi_lower, xi_upper = p.WG.get_boundary(theta_boundary=theta_boundary)
         np.savetxt("upper.boundary", zip(range(p.nx), xi_upper))
         np.savetxt("lower.boundary", zip(range(p.nx), xi_lower))
         eps, delta = p.WG.get_cycle_parameters()

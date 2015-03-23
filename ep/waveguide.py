@@ -164,6 +164,7 @@ class Waveguide(Base):
         if theta_boundary is None or theta_boundary == 0.0:
             theta_boundary = self.theta_boundary
         else:
+            print "custom theta!"
             eps_dot = np.gradient(eps, self.dt)
             delta_dot = np.gradient(delta, self.dt)
             Delta = np.sqrt(delta**2 + 4*np.abs(self.B)**2 * eps**2)
