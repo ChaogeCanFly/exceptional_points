@@ -170,10 +170,13 @@ class Waveguide(Base):
             Delta = np.sqrt(delta**2 + 4*np.abs(self.B)**2 * eps**2)
 
             theta_dot = 2.*np.abs(self.B)*(eps_dot*delta - delta_dot*eps)/Delta**2
+            alpha = theta_dot/(2.*np.abs(self.B)*eps)
+            alpha[-1] = alpha[-2]  # avoid divergencies
 
-            alpha = theta_dot/(2*np.abs(self.B))
             theta_boundary = -2.*np.arctan(alpha)
-            eps = np.sqrt(eps**2 + (alpha)**2)
+            Bp = (-1j * (np.exp(1j*theta_boundary) + 1) * np.pi**2 /
+                    self.W**3 / np.sqrt(self.k0*self.k1))
+            eps = np.sqrt(np.abs(self.B)**2*eps**2 + (theta_dot/2.)**2)/np.abs(Bp)
 
         # HACK to incorporate correct x -> f(x) in smoothing procedure
         try:
