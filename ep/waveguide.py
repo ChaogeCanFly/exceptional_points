@@ -106,7 +106,7 @@ class Waveguide(Base):
         elif loop_type == "Allen-Eberly":
             # mind w=2pi/L!
             lambda1 = lambda t: x_R0 / np.cosh(2.*w*t - 2.*np.pi)
-            lambda2 = lambda t: sign*y_R0*np.tanh(sign*w*t - np.pi) + phi0
+            lambda2 = lambda t: sign*y_R0*np.tanh(2.*sign*w*t - 2.*np.pi) + phi0
             return lambda1(t), lambda2(t)
 
         elif loop_type == "Bell-Rubbmark":
