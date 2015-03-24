@@ -104,8 +104,9 @@ class Waveguide(Base):
             return lambda1(smooth(t)), lambda2(smooth(t))
 
         elif loop_type == "Allen-Eberly":
-            lambda1 = lambda t: x_R0 / np.cosh(4.*w*t - 2.*np.pi)
-            lambda2 = lambda t: sign*y_R0*np.tanh(2.*sign*w*t - np.pi) + phi0
+            # mind w=2pi/L!
+            lambda1 = lambda t: x_R0 / np.cosh(2.*w*t - 2.*np.pi)
+            lambda2 = lambda t: sign*y_R0*np.tanh(sign*w*t - np.pi) + phi0
             return lambda1(t), lambda2(t)
 
         elif loop_type == "Bell-Rubbmark":
