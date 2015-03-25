@@ -114,6 +114,11 @@ class Waveguide(Base):
             lambda2 = lambda t: sign*2.*y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + phi0
             return lambda1(t), lambda2(t)
 
+        elif loop_type == "Allen-Eberly-Rubbmark":
+            lambda1 = lambda t: x_R0 / np.cosh(2.*w*t - 2.*np.pi)
+            lambda2 = lambda t: sign*2.*y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + phi0
+            return lambda1(t), lambda2(t)
+
         else:
             raise Exception(("Error: loop_type {0}"
                              "does not exist!").format(loop_type))
