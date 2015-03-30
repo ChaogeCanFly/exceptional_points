@@ -227,7 +227,7 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
         np.savetxt("potential_real.dat", zip(range(len(real_vector)), real_vector),
                    fmt=["%i", "%.12f"])
         np.savez("potential_imag_xy.npz", X=X, Y=Y, P=imag_vector,
-                 X_nodes=p.xnodes, Y_nodes=p.ynodes)
+                 X_nodes=p.xnodes, Y_nodes=p.ynodes, sigmax=sigmax, sigmay=sigmay)
 
     if shape == 'RAP':
         xi_lower, xi_upper = p.WG.get_boundary(theta_boundary=theta_boundary)
