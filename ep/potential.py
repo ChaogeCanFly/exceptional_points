@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 
+import json
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -86,7 +87,11 @@ class Potential(object):
     def _get_parameters(self):
         """Return the waveguide parameters for a given number of open modes N."""
 
-        print vars(self)
+        print json.dumps(vars(self), sort_keys=True, indent=4)
+
+        with open("potential.cfg", "w") as f:
+            data = json.dumps(vars(self), sort_keys=True, indent=4)
+            f.write(data)
 
         wg_kwargs = {'N': self.N,
                      'L': self.L,
