@@ -58,7 +58,7 @@ class Potential(object):
     def __init__(self, N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                  L=100, W=1., x_R0=0.05, y_R0=0.4, init_phase=0.0, loop_type='Bell',
                  shape='RAP', direction='right', boundary_only=False,
-                 with_boundary=False, theta_boundary=None):
+                 with_boundary=False, theta_boundary=None, verbose=True):
         self.N = N
         self.pphw = pphw
         self.nx = int(L*(pphw*N+1)/W)
@@ -76,6 +76,7 @@ class Potential(object):
         self.direction = direction
         self.with_boundary = with_boundary
         self.theta_boundary = theta_boundary
+        self.verbose = verbose
 
         self._get_parameters()
         if not boundary_only:
@@ -87,7 +88,8 @@ class Potential(object):
     def _get_parameters(self):
         """Return the waveguide parameters for a given number of open modes N."""
 
-        print json.dumps(vars(self), sort_keys=True, indent=4)
+        if self.verbose:
+            print json.dumps(vars(self), sort_keys=True, indent=4)
 
         with open("potential.cfg", "w") as f:
             data = json.dumps(vars(self), sort_keys=True, indent=4)
@@ -121,11 +123,12 @@ class Potential(object):
 
         self.X0 = np.ones_like(self.X)*np.pi/self.kr
 
-        print "L:", self.WG.L
-        print "eta:", self.WG.eta
-        print "nx:", len(self.WG.t)
-        print "ny:", len(y)
-        print "2pi/kr:", 2.*np.pi/self.kr
+        if self.verbose:
+            print "L:", self.WG.L
+            print "eta:", self.WG.eta
+            print "nx:", len(self.WG.t)
+            print "ny:", len(y)
+            print "2pi/kr:", 2.*np.pi/self.kr
 
     def _get_imag_potential(self):
         """Return a complex potential."""
@@ -200,13 +203,14 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                     init_phase=0.0, shape='RAP', plot=True,
                     plot_dimensions=False, direction='right',
                     boundary_only=False, with_boundary=False,
-                    theta_boundary=0.0):
+                    theta_boundary=0.0, verbose=True):
 
     p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigmax=sigmax,
                   sigmay=sigmay, x_R0=x_R0, y_R0=y_R0, init_phase=init_phase,
                   shape=shape, L=L, W=W, loop_type=loop_type,
                   direction=direction, boundary_only=boundary_only,
-                  with_boundary=with_boundary, theta_boundary=theta_boundary)
+                  with_boundary=with_boundary, theta_boundary=theta_boundary,
+                  verbose=verbose)
 
     if not boundary_only:
         imag, imag_vector = p.imag, p.imag_vector
