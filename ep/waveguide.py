@@ -258,6 +258,7 @@ class Neumann(Waveguide):
 
         B = (-1j * (np.exp(1j*self.theta_boundary) + 1) *
                      self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
+        self.B = B
 
         H11 = -self.k0 - 1j*self.eta/2.
         H12 = B*eps
