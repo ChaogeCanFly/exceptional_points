@@ -19,6 +19,7 @@ def plot_riemann_sheets(part=np.real,
                         fignum='1c',
                         wireframe_skip=5.,
                         adiabatic=False,
+                        trajectory=True,
                         xN=153, yN=152, **kwargs):
     """Plot local Riemann sheet structure of the OM Hamiltonian."""
 
@@ -32,18 +33,18 @@ def plot_riemann_sheets(part=np.real,
         scale = 3.0
 
     #xN, yN = 31, 31
-    
+
     OM = OptoMech(**kwargs)
     x, y = OM.get_cycle_parameters(OM.t)
     _, c1, c2 = OM.solve_ODE()
-    
+
     e1 = part(OM.eVals[:,0])
     e2 = part(OM.eVals[:,1])
     if adiabatic:
         z = e1
     else:
         z = map_trajectory(c1, c2, e1, e2)
-    
+
     ############################################################################
     # two trajectories
     # import copy
@@ -58,16 +59,15 @@ def plot_riemann_sheets(part=np.real,
     # e2T = part(OM.eVals[:,1])
     # zT = map_trajectory(c1T, c2T, e1T, e2T)
     ############################################################################
-    
 
-    
-    X, Y, Z = OM.sample_H(xN=xN, yN=yN)
+    X, Y, Z = OM._sample_H(xN=xN, yN=yN, xmin=-0.11, xmax=0.11,
+                           ymin=0.5-0.11, ymax=0.5+0.11)
     E1 = part(Z[...,1])
     E0 = part(Z[...,0])
-    
+
     nx = np.sqrt(len(E1.ravel())).astype(int)/2
     ny = nx
-    
+
     # red blue
     red = tuple(map(lambda x: x/255., (228,26,28)))
     blue = tuple(map(lambda x: x/255., (55,126,184)))
@@ -91,24 +91,26 @@ def plot_riemann_sheets(part=np.real,
         cmap = LinearSegmentedColormap.from_list('RdBu_custom',
                                                  [red, blue], N=256)
         return cmap(np.arange(256))*255.
-    
+
     RdBu_custom = get_custom_cmap()
     if colorgradient:
         red, blue = None, None
 
     fig = mlab.figure(size=(1400,1000), bgcolor=(1,1,1))
-    
-    line_color = (0.25, 0.25, 0.25)
+
     #line_color = (0.5, 0.5, 0.5)
     # arrow_ending = 1000
     # arrow_ending = 1600
-    arrow_ending = 1250
-    mlab.plot3d(x[:-arrow_ending], y[:-arrow_ending], z[:-arrow_ending]/scale,
-                color=line_color,
-                opacity=1.,
-                tube_radius=0.005)
-                # tube_radius=0.00425)
-                # tube_radius=0.003)
+    if trajectory:
+        # arrow_ending = 1250
+        arrow_ending = OM.tN/10
+        line_color = (0.25, 0.25, 0.25)
+        mlab.plot3d(x[:-arrow_ending], y[:-arrow_ending], z[:-arrow_ending]/scale,
+                    color=line_color,
+                    opacity=1.,
+                    tube_radius=0.005)
+                    # tube_radius=0.00425)
+                    # tube_radius=0.003)
 
     ############################################################################
     # two trajectories
@@ -118,10 +120,10 @@ def plot_riemann_sheets(part=np.real,
     #             opacity=1.,
     #             tube_radius=0.003)
     ############################################################################
-    
-    W_Gauss_Fermi, W_Fermi, wmax, wmin = get_height_profile(X, Y, rho_y=1e-2, 
+
+    W_Gauss_Fermi, W_Fermi, wmax, wmin = get_height_profile(X, Y, rho_y=1e-2,
                                                             sigma_x=1e-4)
-    
+
     if part is np.real:
         E1s1p1 = mlab.mesh(X[:nx+1,:ny+1],
                          Y[:nx+1,:ny+1],
@@ -153,7 +155,7 @@ def plot_riemann_sheets(part=np.real,
         ###                 color=blue,
         ###                 vmin=wmin, vmax=wmax)
         # --> CONE
-        
+
         E0s1 = mlab.mesh(X[...,:ny+1],
                          Y[...,:ny+1],
                          E0[...,:ny+1]/scale,
@@ -174,11 +176,11 @@ def plot_riemann_sheets(part=np.real,
                          opacity=0.8,
                          #color=blue,
                          vmin=wmin, vmax=wmax)
-        
+
         E0s1.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
         E0s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom[::-1]
         E0s3.module_manager.scalar_lut_manager.lut.table = RdBu_custom
-        
+
         mlab.surf(X[nx+1::wireframe_skip,::wireframe_skip],
                   Y[nx+1::wireframe_skip,::wireframe_skip],
                   E0[nx+1::wireframe_skip,::wireframe_skip]/scale,
@@ -186,7 +188,7 @@ def plot_riemann_sheets(part=np.real,
                   color=(0,0,0),
                   representation='wireframe',
                   vmin=wmin, vmax=wmax)
-        
+
         mlab.surf(X[:nx+2:wireframe_skip,::wireframe_skip],
                   Y[:nx+2:wireframe_skip,::wireframe_skip],
                   E0[:nx+2:wireframe_skip,::wireframe_skip]/scale,
@@ -201,17 +203,17 @@ def plot_riemann_sheets(part=np.real,
                          E1[nx+1:,:ny+1]/scale,
                          scalars=W_Gauss_Fermi[nx+1:,:ny+1],
                          opacity=0.8,
-                         #color=red, 
+                         #color=red,
                          vmin=wmin, vmax=wmax)
         E1s3 = mlab.mesh(X[nx+1:,ny:],
                          Y[nx+1:,ny:],
                          E1[nx+1:,ny:]/scale,
                          scalars=W_Fermi[nx+1:,ny:],
                          opacity=0.8,
-                         #color=red, 
+                         #color=red,
                          vmin=wmin, vmax=wmax)
 
-        
+
         E1s1p1.module_manager.scalar_lut_manager.lut.table = RdBu_custom
         E1s1p2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
         E1s2.module_manager.scalar_lut_manager.lut.table = RdBu_custom
@@ -235,13 +237,13 @@ def plot_riemann_sheets(part=np.real,
 
     else:
         s2 = mlab.mesh(X, Y, E0/scale,
-                        scalars=W_Fermi, 
+                        scalars=W_Fermi,
                         representation='surface',
                         opacity=0.8,
                         color=blue,
                         vmin=-wmin, vmax=wmax)
         s1 = mlab.mesh(X, Y, E1/scale,
-                        scalars=W_Fermi, 
+                        scalars=W_Fermi,
                         representation='surface',
                         opacity=0.8,
                         color=red,
@@ -271,58 +273,59 @@ def plot_riemann_sheets(part=np.real,
                            [X[:,-1], Y[:,-1], E[:,-1]/scale],
                            [X[0,:],  Y[0,:],  E[0,:]/scale],
                            [X[-1,:], Y[-1,:], E[-1,:]/scale]):
-            
+
             edge_color = (0.25, 0.25, 0.25)
-            
             n = np.where(abs(np.diff(zz)) >= 0.01)[0]
             if n.size:
                 n = n[0]
                 mlab.plot3d(xx[:n+1], yy[:n+1], zz[:n+1],
-                            color=edge_color, 
+                            color=edge_color,
                             tube_radius=0.0005)
                 mlab.plot3d(xx[n+1:], yy[n+1:], zz[n+1:],
-                            color=edge_color, 
+                            color=edge_color,
                             tube_radius=0.0005)
             else:
                 mlab.plot3d(xx, yy, zz,
-                            color=edge_color, 
+                            color=edge_color,
                             tube_radius=0.0005)
-    
-    
-    mlab.points3d(x[0], y[0], z[0]/scale,
-                  color=line_color,
-                  # scale_factor=0.0125,
-                  # scale_factor=0.018,
-                  scale_factor=0.022,
-                  mode='sphere')
-    
-    u, v, w = [ np.gradient(n) for n in x, y, z/scale ]
-    x, y, z, u, v, w = [ n[-arrow_ending] for n in x, y, z/scale, u, v, w ]
-    mlab.quiver3d(x, y, z, u, v, w,
-                color=line_color,
-                # scale_factor=0.025,
-                # scale_factor=0.04,
-                scale_factor=0.05,
-                resolution=500,
-                mode='cone',
-                scale_mode='scalar'
-                )
+
+
+    if trajectory:
+        mlab.points3d(x[0], y[0], z[0]/scale,
+                    color=line_color,
+                    # scale_factor=0.0125,
+                    # scale_factor=0.018,
+                    scale_factor=0.022,
+                    mode='sphere')
+
+        u, v, w = [ np.gradient(n) for n in x, y, z/scale ]
+        x, y, z, u, v, w = [ n[-arrow_ending] for n in x, y, z/scale, u, v, w ]
+        mlab.quiver3d(x, y, z, u, v, w,
+                    color=line_color,
+                    # scale_factor=0.025,
+                    # scale_factor=0.04,
+                    scale_factor=0.05,
+                    resolution=500,
+                    mode='cone',
+                    scale_mode='scalar'
+                    )
 
     ############################################################################
     # quiver settings
     engine = mlab.get_engine()
-    try:
-        vectors = engine.scenes[0].children[14].children[0].children[0]
-        vectors.glyph.glyph_source.glyph_source.direction = np.array([0., 0., 0.])
-    except:
-        vectors = engine.scenes[0].children[23].children[0].children[0]
-        vectors.glyph.glyph_source.glyph_source.direction = np.array([0., 0., 0.])
+    if trajectory:
+        try:
+            vectors = engine.scenes[0].children[14].children[0].children[0]
+            vectors.glyph.glyph_source.glyph_source.direction = np.array([0., 0., 0.])
+        except:
+            vectors = engine.scenes[0].children[23].children[0].children[0]
+            vectors.glyph.glyph_source.glyph_source.direction = np.array([0., 0., 0.])
 
-    vectors.glyph.glyph_source.glyph_position = 'center'
-    vectors.glyph.glyph_source.glyph_source.angle = 18.0
-    vectors.glyph.glyph_source.glyph_source.center = np.array([0.2, 0., 0.])
-    vectors.glyph.glyph_source.glyph_source.height = 0.81
-    vectors.glyph.glyph_source.glyph_source.radius = 0.27
+        vectors.glyph.glyph_source.glyph_position = 'center'
+        vectors.glyph.glyph_source.glyph_source.angle = 18.0
+        vectors.glyph.glyph_source.glyph_source.center = np.array([0.2, 0., 0.])
+        vectors.glyph.glyph_source.glyph_source.height = 0.81
+        vectors.glyph.glyph_source.glyph_source.radius = 0.27
     ############################################################################
 
     ############################################################################
@@ -342,15 +345,15 @@ def plot_riemann_sheets(part=np.real,
     #             scale_mode='scalar'
     #             )
     ############################################################################
-    
+
     mlab.axes(figure=fig,
               color=(0.25,0.25,0.25),
               extent=[X.min(),X.max(),
                       Y.min()*0.95,Y.max()*0.95,
                       E0.min()/3.5,E1.max()/3.5])
-    
+
     engine = mlab.get_engine()
-    
+
     if part is np.imag:
         scene = engine.scenes[0]
         scene.scene.camera.position = [0.34763136753239232, -0.37268098883113926, 0.19025556632156901]
@@ -414,7 +417,7 @@ def plot_riemann_sheets(part=np.real,
             scene.scene.camera.view_up = [-0.44478871574781131, -0.53938487591390027, 0.71500136641740708]
             scene.scene.camera.clipping_range = [0.51554383800662118, 1.4991822541676811]
             scene.scene.camera.compute_view_plane_normal()
-            scene.scene.render()   
+            scene.scene.render()
         else:
             # scale = 3
             scene = engine.scenes[0]
@@ -496,13 +499,14 @@ def plot_riemann_sheets(part=np.real,
             scene.scene.camera.clipping_range = [0.59587171711805942, 1.3980660043314275]
             scene.scene.camera.compute_view_plane_normal()
             scene.scene.render()
-    
+
     # 2014-09-23: trajectory default normal fix
-    tube = engine.scenes[0].children[0].children[0].children[0]
-    tube.filter.default_normal = np.array([ 0.,  0.,  1.])
-    tube.filter.use_default_normal = True
+    if trajectory:
+        tube = engine.scenes[0].children[0].children[0].children[0]
+        tube.filter.default_normal = np.array([ 0.,  0.,  1.])
+        tube.filter.use_default_normal = True
     ####
-    
+
     if show:
         mlab.show()
     else:
@@ -519,7 +523,8 @@ def plot_riemann_sheets(part=np.real,
 
 
 def plot_figures(fignum='2a', part='imag', direction='-', show=False,
-                 colorgradient=False, T=45., R=0.1, gamma=1., adiabatic=False):
+                 colorgradient=False, T=45., R=0.1, gamma=1., adiabatic=False,
+                 trajectory=True):
     
     import subprocess
     
@@ -530,6 +535,7 @@ def plot_figures(fignum='2a', part='imag', direction='-', show=False,
                 "fignum": fignum,
                 "show": show,
                 "colorgradient": colorgradient,
+                "trajectory": trajectory,
                 "adiabatic": adiabatic
     }
     
@@ -545,38 +551,41 @@ def plot_figures(fignum='2a', part='imag', direction='-', show=False,
                 "init_state": 'a', 
                 "init_phase": 0, 
                 "loop_direction": '+',
-                }            
+                }
     elif fignum == '2b':
         settings = {
-                "init_state": 'b', 
-                "init_phase": 0, 
+                "init_state": 'b',
+                "init_phase": 0,
                 "loop_direction": '-',
                 }
     elif fignum == '2c':
         settings = {
-                "init_state": 'b', 
-                "init_phase": pi, 
+                "init_state": 'b',
+                "init_phase": pi,
                 "loop_direction": '-',
                 }
-    
+
     params.update(settings)
-    
+
     if part == 'imag':
         params['part'] = np.imag
     else:
         params['part'] = np.real
-        
+
     plot_riemann_sheets(**params)
-    
+
     for f in part, part + '_no_axes':
         infile = f + '.png'
         outfile = 'Fig{}_{}.png'.format(fignum, f)
-        cmd = ['convert', '-transparent', 'white', '-trim', infile, outfile]
-        subprocess.check_call(cmd)
-    
-    
+        try:
+            cmd = ['convert', '-transparent', 'white', '-trim', infile, outfile]
+            subprocess.check_call(cmd)
+        except:
+            pass
+
+
 if __name__ == '__main__':
     print "Warning: is normalization symmetric?"
-    
+
     import argh
     argh.dispatch_command(plot_figures)
