@@ -524,13 +524,13 @@ def plot_riemann_sheets(part=np.real,
 
 def plot_figures(fignum='2a', part='imag', direction='-', show=False,
                  colorgradient=False, T=45., R=0.1, gamma=1., adiabatic=False,
-                 trajectory=True):
-    
+                 trajectory=True, init_state='b'):
+
     import subprocess
-    
+
     params = {
-                "T": T, 
-                "R": R, 
+                "T": T,
+                "R": R,
                 "gamma": gamma,
                 "fignum": fignum,
                 "show": show,
@@ -538,18 +538,25 @@ def plot_figures(fignum='2a', part='imag', direction='-', show=False,
                 "trajectory": trajectory,
                 "adiabatic": adiabatic
     }
-    
+
     if fignum == '1c':
         params['R'] = 0.9*R
         settings = {
-                "init_state": 'b', 
-                "init_phase": pi/2, 
+                "init_state": 'b',
+                "init_phase": pi/2,
                 "loop_direction": '-',
+                }
+    elif fignum == '1c_alt':
+        params['R'] = 0.9*R
+        settings = {
+                "init_state": init_state,
+                "init_phase": pi/2,
+                "loop_direction": direction,
                 }
     elif fignum == '2a':
         settings = {
-                "init_state": 'a', 
-                "init_phase": 0, 
+                "init_state": 'a',
+                "init_phase": 0,
                 "loop_direction": '+',
                 }
     elif fignum == '2b':
@@ -571,6 +578,9 @@ def plot_figures(fignum='2a', part='imag', direction='-', show=False,
         params['part'] = np.imag
     else:
         params['part'] = np.real
+
+    if fignum == '1c_alt':
+        params['fignum'] = '1c'
 
     plot_riemann_sheets(**params)
 
