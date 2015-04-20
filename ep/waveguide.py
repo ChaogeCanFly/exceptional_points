@@ -167,22 +167,23 @@ class Waveguide(Base):
             W = self.W
         if kr is None:
             kr = self.kr
-        if theta_boundary is None or theta_boundary == 0.0:
+        if theta_boundary is None:
+        # if theta_boundary is None or theta_boundary == 0.0:
             theta_boundary = self.theta_boundary
-        else:
-            print "custom theta!"
-            eps_dot = np.gradient(eps, self.dt)
-            delta_dot = np.gradient(delta, self.dt)
-            Delta = np.sqrt(delta**2 + 4*np.abs(self.B)**2 * eps**2)
-
-            theta_dot = 2.*np.abs(self.B)*(eps_dot*delta - delta_dot*eps)/Delta**2
-            alpha = theta_dot/(2.*np.abs(self.B)*eps)
-            alpha[-1] = alpha[-2]  # avoid divergencies
-
-            theta_boundary = -2.*np.arctan(alpha)
-            Bp = (-1j * (np.exp(1j*theta_boundary) + 1) * np.pi**2 /
-                    self.W**3 / np.sqrt(self.k0*self.k1))
-            eps = np.sqrt(np.abs(self.B)**2*eps**2 + (theta_dot/2.)**2)/np.abs(Bp)
+        # else:
+        #     print "custom theta!"
+        #     eps_dot = np.gradient(eps, self.dt)
+        #     delta_dot = np.gradient(delta, self.dt)
+        #     Delta = np.sqrt(delta**2 + 4*np.abs(self.B)**2 * eps**2)
+        #
+        #     theta_dot = 2.*np.abs(self.B)*(eps_dot*delta - delta_dot*eps)/Delta**2
+        #     alpha = theta_dot/(2.*np.abs(self.B)*eps)
+        #     alpha[-1] = alpha[-2]  # avoid divergencies
+        #
+        #     theta_boundary = -2.*np.arctan(alpha)
+        #     Bp = (-1j * (np.exp(1j*theta_boundary) + 1) * np.pi**2 /
+        #             self.W**3 / np.sqrt(self.k0*self.k1))
+        #     eps = np.sqrt(np.abs(self.B)**2*eps**2 + (theta_dot/2.)**2)/np.abs(Bp)
 
         # HACK to incorporate correct x -> f(x) in smoothing procedure
         try:
@@ -347,9 +348,15 @@ class Dirichlet(Waveguide):
         mixing_angle_dot = 2.*np.abs(self.B)*(delta*eps_dot-delta_dot*eps)
         mixing_angle_dot /= (delta**2 + 4.*np.abs(self.B)**2*eps**2)
 
-        eps_prime = np.sqrt(4.*np.abs(self.B)**2*eps**2 + mixing_angle_dot**2)
-        eps_prime /= 2.*np.abs(self.B)
         theta_prime = -2.*np.arctan(mixing_angle_dot/(2*np.abs(self.B)*eps))
+
+        B_prime = (-1j * (np.exp(1j*theta_prime) + 1.) * np.pi**2 /
+                    self.W**3 / np.sqrt(self.k0*self.k1))
+
+        eps_prime = np.sqrt(4.*np.abs(self.B)**2*eps**2 + mixing_angle_dot**2)
+        eps_prime /= 2.*np.abs(B_prime)
+        # avoid divergencies
+        eps_prime[-1] = 0.0
 
         return eps_prime, delta, theta_prime
 
