@@ -320,7 +320,7 @@ class Dirichlet(Waveguide):
 
     def H(self, t, x=None, y=None, theta=None):
         if x is None and y is None:
-            eps, delta, theta = self.get_cycle_parameters(t)
+            eps, delta = self.get_cycle_parameters(t)
         else:
             eps, delta = x, y
 
