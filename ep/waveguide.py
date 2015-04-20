@@ -43,7 +43,7 @@ class Waveguide(Base):
         kF = N*np.pi/W                  # Fermi wavevector
         self.kF = kF
 
-    def H(self, t, x=None, y=None):
+    def H(self, t, x=None, y=None, theta=None):
         """Hamiltonian H is overwritten by inheriting classes."""
         pass
 
@@ -55,9 +55,9 @@ class Waveguide(Base):
 
         x_R0, y_R0 = self.x_R0, self.y_R0
         w, phi0 = self.w, self.init_phase
-        L = self.L
         loop_type = self.loop_type
         sign = -int(self.loop_direction + "1")
+        L = self.L
 
         if loop_type == "Constant":
             t0 = np.ones_like(t)
@@ -295,9 +295,9 @@ class Dirichlet(Waveguide):
         kr = k0 - k1
         self.kr = kr
 
-        B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
-                self.W**3 / np.sqrt(self.k0*self.k1))
-        self.B = B
+        # B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
+        #         self.W**3 / np.sqrt(self.k0*self.k1))
+        # self.B = B
 
         self.x_EP, self.y_EP = self._get_EP_coordinates()
 
@@ -318,11 +318,18 @@ class Dirichlet(Waveguide):
 
         return x_EP, y_EP
 
-    def H(self, t, x=None, y=None):
+    def H(self, t, x=None, y=None, theta=None):
         if x is None and y is None:
-            eps, delta = self.get_cycle_parameters(t)
+            eps, delta, theta = self.get_cycle_parameters(t)
         else:
             eps, delta = x, y
+
+        if theta is None:
+            theta = self.theta_boundary
+
+        B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
+               self.W**3 / np.sqrt(self.k0*self.k1))
+        self.B = B
 
         H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0
         H12 = self.B*eps
