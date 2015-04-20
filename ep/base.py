@@ -100,8 +100,8 @@ class Base:
         """Hamiltonian H is overwritten by inheriting classes."""
         pass
 
-    def _sample_H(self, xmin=None, xmax=None, xN=None, ymin=None, ymax=None,
-                  yN=None):
+    def sample_H(self, xmin=None, xmax=None, xN=None, ymin=None, ymax=None,
+                  yN=None, verbose=False):
         """Sample local eigenvalue geometry of Hamiltonian H.
 
             Parameters:
@@ -112,6 +112,8 @@ class Base:
                     Dimensions in y-direction.
                 xN, yN: int
                     Number of sampling points in x and y direction.
+                verbose: bool
+                    Show additional output.
 
             Returns:
             --------
@@ -142,7 +144,8 @@ class Base:
 
         for i, xi in enumerate(x):
             for j, yj in enumerate(y):
-                print "i,j", i, j
+                if verbose:
+                    print "(i,j) =", i, j
                 H = self.H(0,xi,yj)
                 Z[i,j,:] = c_eig(H)[0]
 
@@ -166,7 +169,7 @@ class Base:
                 part: str
                     Which function to apply to the eigenvalues before plotting.
         """
-        X, Y, Z = self._sample_H(xmin, xmax, xN, ymin, ymax, yN)
+        X, Y, Z = self.sample_H(xmin, xmax, xN, ymin, ymax, yN)
 
         Z0, Z1 = [ Z[...,n] for n in 0, 1 ]
 
