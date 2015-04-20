@@ -295,9 +295,9 @@ class Dirichlet(Waveguide):
         kr = k0 - k1
         self.kr = kr
 
-        # B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
-        #         self.W**3 / np.sqrt(self.k0*self.k1))
-        # self.B = B
+        B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
+                self.W**3 / np.sqrt(self.k0*self.k1))
+        self.B = B
 
         self.x_EP, self.y_EP = self._get_EP_coordinates()
 
@@ -339,6 +339,19 @@ class Dirichlet(Waveguide):
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
         return H
+
+    def get_quantum_driving_parameters(self):
+        eps, delta = self.get_cycle_parameters()
+        eps_dot, delta_dot = [np.gradient(x, WG.dt) for x in eps, delta]
+
+        mixing_angle_dot = 2.*np.abs(self.B)*(delta*eps_dot-delta_dot*eps)
+        mixing_angle_dot /= (delta**2 + 4.*np.abs(self.B)**2*eps**2)
+
+        eps_prime = np.sqrt(4.*np.abs(self.B)**2*eps**2 + mixing_angle_dot**2)
+        eps_prime /= 2.*np.abs(self.B)
+        theta_prime = -2.*np.arctan(mixing_angle_dot/(2*np.abs(self.B)*eps))
+
+        return eps_prime, delta, theta_prime
 
     def get_nodes(self, x=None, y=None):
         """Return the nodes of the Bloch-eigenvector."""
