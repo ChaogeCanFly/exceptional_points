@@ -79,6 +79,10 @@ class OptoMech(Base):
             phi = self.init_phase + self.w*t
             omega = self.R * np.sin(phi)
             g = self.R * np.cos(phi) + self.gamma/2. + self.R*0.9
+        if self.loop_type == "RAP":
+            sign = -int(self.loop_direction + "1")
+            g = self.x_R0/2.*(1.-np.cos(self.w*t))
+            omega = self.y_R0*sign*(sign*self.w*t/np.pi - 1)
         else:
             phi = self.init_phase + self.w*t
             omega = self.R * np.sin(phi)
@@ -99,11 +103,11 @@ class OptoMech(Base):
                     Non-adiabatic coupling parameter as a function of time t.
         """
 
-        e = self.eVals[:,0]
+        e = self.eVals[:, 0]
         delta, kappa = self.get_cycle_parameters(self.t)
         D = delta + 1j*kappa
         G = self.G * np.ones_like(D)
-        ep, Dp, Gp = [ c_gradient(x, self.dt) for x in (e, D, G) ]
+        ep, Dp, Gp = [c_gradient(x, self.dt) for x in (e, D, G)]
 
         f = ((ep - Dp) * G - (e - D) * Gp)/(2.*e*(e - D))
 
@@ -117,23 +121,23 @@ def plot_figures(fignum='2a', direction='-', show=False,
     cmap = brewer2mpl.get_map('Set1', 'qualitative', 9)
     colors = cmap.mpl_colors
 
-    params = { "T": T, 
-               "R": R, 
-               "gamma": gamma,
-               "loop_type": "Outside_circle"}
+    params = {"T": T,
+              "R": R,
+              "gamma": gamma,
+              "loop_type": "Outside_circle"}
 
     if fignum == '2a':
-        settings = { "init_state": 'a',
-                     "init_phase": 0,
-                     "loop_direction": '+'}
+        settings = {"init_state": 'a',
+                    "init_phase": 0,
+                    "loop_direction": '+'}
     elif fignum == '2b':
-        settings = { "init_state": 'b',
-                     "init_phase": 0, 
-                     "loop_direction": '-'}
+        settings = {"init_state": 'b',
+                    "init_phase": 0,
+                    "loop_direction": '-'}
     elif fignum == '2c':
-        settings = { "init_state": 'b',
-                     "init_phase": np.pi,
-                     "loop_direction": '-'}
+        settings = {"init_state": 'b',
+                    "init_phase": np.pi,
+                    "loop_direction": '-'}
 
     params.update(settings)
     OM = OptoMech(**params)
@@ -144,13 +148,17 @@ def plot_figures(fignum='2a', direction='-', show=False,
     # f, (ax1, ax2) = plt.subplots(ncols=2)
     f, ax1 = plt.subplots()
 
-    ax1.semilogy(t, np.abs(Psi[:,0])**2, ls="-", ms="o", color=colors[0], label=r"$|\alpha_+(t)|^2$")
-    ax1.semilogy(t, np.abs(Psi[:,1])**2, ls="-", ms="o", color=colors[1], label=r"$|\alpha_-(t)|^2$")
-    ax1.semilogy(t, np.abs(cp)**2, ls="--", color=colors[2], label=r"$|c_+(t)|^2$")
-    ax1.semilogy(t, np.abs(cm)**2, ls="--", color=colors[3], label=r"$|c_-(t)|^2$")
+    ax1.semilogy(t, np.abs(Psi[:, 0])**2, ls="-", ms="o",
+                 color=colors[0], label=r"$|\alpha_+(t)|^2$")
+    ax1.semilogy(t, np.abs(Psi[:, 1])**2, ls="-", ms="o",
+                 color=colors[1], label=r"$|\alpha_-(t)|^2$")
+    ax1.semilogy(t, np.abs(cp)**2, ls="--",
+                 color=colors[2], label=r"$|c_+(t)|^2$")
+    ax1.semilogy(t, np.abs(cm)**2, ls="--",
+                 color=colors[3], label=r"$|c_-(t)|^2$")
     ax1.legend(loc="lower right")
     ax1.set_xlabel(r"$t$")
-    m = [ (abs(x)**2).max() for x in Psi, cp, cm ]
+    m = [(abs(x)**2).max() for x in Psi, cp, cm]
     ax1.set_ylim(1e-3, max(m))
 
     omega, g = OM.get_cycle_parameters(t)
