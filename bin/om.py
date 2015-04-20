@@ -89,12 +89,17 @@ def plot_riemann_sheets(part=np.real,
     fig = mlab.figure(size=(1400, 1000), bgcolor=(1, 1, 1))
 
     if trajectory:
+        if fignum == 'DP':
+            tube_radius = 0.004
+        else:
+            tube_radius = 0.05
+
         arrow_end = OM.tN/10
         line_color = (0.25, 0.25, 0.25)
         mlab.plot3d(x[:-arrow_end], y[:-arrow_end], z[:-arrow_end]/scale,
                     color=line_color,
                     opacity=1.,
-                    tube_radius=0.005)
+                    tube_radius=tube_radius)
 
     W_Gauss_Fermi, W_Fermi, wmax, wmin = get_height_profile(X, Y,
                                                             rho_y=1e-2,
@@ -274,16 +279,23 @@ def plot_riemann_sheets(part=np.real,
                             tube_radius=0.0005)
 
     if trajectory:
+        if fignum == 'DP':
+            scale_factor_point = 0.015
+            scale_factor_quiver = 0.0175
+        else:
+            scale_factor_point = 0.022
+            scale_factor_quiver = 0.05
+
         mlab.points3d(x[0], y[0], z[0]/scale,
                       color=line_color,
-                      scale_factor=0.022,
+                      scale_factor=scale_factor_point,
                       mode='sphere')
 
         u, v, w = [np.gradient(m) for m in x, y, z/scale]
-        x, y, z, u, v, w = [n[-arrow_end] for m in x, y, z/scale, u, v, w]
+        x, y, z, u, v, w = [m[-arrow_end] for m in x, y, z/scale, u, v, w]
         mlab.quiver3d(x, y, z, u, v, w,
                       color=line_color,
-                      scale_factor=0.05,
+                      scale_factor=scale_factor_quiver,
                       resolution=500,
                       mode='cone',
                       scale_mode='scalar')
@@ -304,6 +316,13 @@ def plot_riemann_sheets(part=np.real,
         vectors.glyph.glyph_source.glyph_source.center = np.array([0.2, 0., 0.])
         vectors.glyph.glyph_source.glyph_source.height = 0.81
         vectors.glyph.glyph_source.glyph_source.radius = 0.27
+    elif trajectory and fignum == 'DP':
+        vectors = engine.scenes[0].children[26].children[0].children[0]
+        vectors.glyph.glyph_source.glyph_source.direction = np.array([ 1.,  0.,  0.])
+        vectors.glyph.glyph_source.glyph_source.center = np.array([ 0.5,  0. ,  0. ])
+        vectors.glyph.glyph_source.glyph_source.radius = 0.6
+        vectors.glyph.glyph_source.glyph_source.progress = 1.0
+        vectors.glyph.glyph_source.glyph_source.angle = 20.
     ###########################################################################
 
     mlab.axes(figure=fig,
@@ -477,8 +496,8 @@ def plot_figures(fignum='2a', part='imag', direction='-', show=False,
                     "init_phase": pi,
                     "loop_direction": '-',
                     "loop_type": "RAP",
-                    "x_R0": 0.9*R,
-                    "y_R0": 0.06}
+                    "x_R0": 1.1*R,
+                    "y_R0": 0.048}
 
     params.update(settings)
 
