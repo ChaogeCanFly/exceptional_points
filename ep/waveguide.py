@@ -342,7 +342,7 @@ class Dirichlet(Waveguide):
 
     def get_quantum_driving_parameters(self):
         eps, delta = self.get_cycle_parameters()
-        eps_dot, delta_dot = [np.gradient(x, WG.dt) for x in eps, delta]
+        eps_dot, delta_dot = [np.gradient(x, self.dt) for x in eps, delta]
 
         mixing_angle_dot = 2.*np.abs(self.B)*(delta*eps_dot-delta_dot*eps)
         mixing_angle_dot /= (delta**2 + 4.*np.abs(self.B)**2*eps**2)
