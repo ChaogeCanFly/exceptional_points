@@ -498,7 +498,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         # L = 2.*np.pi/(self.kr + np.zeros_like(delta))
         L = 2.*np.pi/(self.kr + delta)
         L_sum = np.cumsum(L)
-        L_sum -= L_sum[0]
+        # L_sum -= L_sum[0]
 
         xnodes, ynodes = [], []
         for epsn, deltan, xn, Ln_sum in zip(eps, delta, x, L_sum):
@@ -516,6 +516,7 @@ class DirichletPositionDependentLoss(Dirichlet):
             # xnodes.append(nodes[:,0] + xn)
             # xnodes.append(nodes[:,0]/(1+deltan/self.kr) + xn)
             xnodes.append(nodes[:,0]/(1+deltan/self.kr) + Ln_sum)
+            # xnodes.append(nodes[:,0] + Ln_sum)
             ynodes.append(nodes[:,1])
 
         xnodes, ynodes = [ np.asarray(v).flatten() for v in xnodes, ynodes ]
