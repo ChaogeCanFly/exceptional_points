@@ -241,7 +241,8 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
         np.savetxt("boundary.eps_delta", zip(eps, delta))
     if shape == 'RAP_TQD':
         eps_prime, delta_prime, theta_prime = p.WG.get_quantum_driving_parameters()
-        xi_lower, xi_upper = p.WG.get_boundary(eps=eps_prime, delta=delta_prime, theta_boundary=theta_prime)
+        xi_lower, xi_upper = p.WG.get_boundary(eps=eps_prime, delta=delta_prime,
+                                               theta_boundary=theta_prime)
         np.savetxt("upper.boundary", zip(range(p.nx), xi_upper))
         np.savetxt("lower.boundary", zip(range(p.nx), xi_lower))
         np.savetxt("boundary.eps_delta_theta", zip(eps_prime, delta_prime, theta_prime))
