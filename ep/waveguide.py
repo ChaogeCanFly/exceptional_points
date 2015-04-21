@@ -284,12 +284,14 @@ class Neumann(Waveguide):
 class Dirichlet(Waveguide):
     """Dirichlet class."""
 
-    def __init__(self, **waveguide_kwargs):
+    def __init__(self, tqd=False, **waveguide_kwargs):
         """Exceptional Point (EP) waveguide class with Dirichlet boundary
         conditons.
 
         Copies methods and variables from the Waveguide class."""
         Waveguide.__init__(self, **waveguide_kwargs)
+
+        self.tqd = tqd
 
         k0, k1 = [ self.k(n) for n in 1, 2 ]
         self.k0, self.k1 = k0, k1
@@ -298,7 +300,7 @@ class Dirichlet(Waveguide):
 
         B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
                 self.W**3 / np.sqrt(self.k0*self.k1))
-        self.B = B
+        self.B0 = B
 
         self.x_EP, self.y_EP = self._get_EP_coordinates()
 
@@ -319,22 +321,26 @@ class Dirichlet(Waveguide):
 
         return x_EP, y_EP
 
-    def H(self, t, x=None, y=None, theta=None):
+    def H(self, t, x=None, y=None):
         if x is None and y is None:
             eps, delta = self.get_cycle_parameters(t)
         else:
             eps, delta = x, y
 
-        if theta is None:
-            theta = self.theta_boundary
+        theta = self.theta_boundary
+
+        if self.tqd:
+            eps_array, delta_array, theta_array = self.get_quantum_driving_parameters()
+            idx = (np.abs(eps_array - eps)).argmin()
+            eps, delta, theta = [a[idx] for a in eps_array, delta_array, theta_array]
 
         B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
                self.W**3 / np.sqrt(self.k0*self.k1))
-        self.B = B
+        # self.B = B
 
         H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0
-        H12 = self.B*eps
-        H21 = self.B.conj()*eps
+        H12 = B*eps
+        H21 = B.conj()*eps
         H22 = -self.k0 - delta - 1j*self.eta/2.*self.kF/self.k1
 
         H = np.array([[H11, H12],
@@ -345,15 +351,15 @@ class Dirichlet(Waveguide):
         eps, delta = self.get_cycle_parameters()
         eps_dot, delta_dot = [np.gradient(x, self.dt) for x in eps, delta]
 
-        mixing_angle_dot = 2.*np.abs(self.B)*(delta*eps_dot-delta_dot*eps)
-        mixing_angle_dot /= (delta**2 + 4.*np.abs(self.B)**2*eps**2)
+        mixing_angle_dot = 2.*np.abs(self.B0)*(delta*eps_dot-delta_dot*eps)
+        mixing_angle_dot /= (delta**2 + 4.*np.abs(self.B0)**2*eps**2)
 
-        theta_prime = -2.*np.arctan(mixing_angle_dot/(2*np.abs(self.B)*eps))
+        theta_prime = -2.*np.arctan(mixing_angle_dot/(2*np.abs(self.B0)*eps))
 
         B_prime = (-1j * (np.exp(1j*theta_prime) + 1.) * np.pi**2 /
                     self.W**3 / np.sqrt(self.k0*self.k1))
 
-        eps_prime = np.sqrt(4.*np.abs(self.B)**2*eps**2 + mixing_angle_dot**2)
+        eps_prime = np.sqrt(4.*np.abs(self.B0)**2*eps**2 + mixing_angle_dot**2)
         eps_prime /= 2.*np.abs(B_prime)
         # avoid divergencies
         eps_prime[-1] = 0.0
