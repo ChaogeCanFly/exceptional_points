@@ -327,12 +327,12 @@ class Dirichlet(Waveguide):
         else:
             eps, delta = x, y
 
-        theta = self.theta_boundary
-
         if self.tqd:
             eps_array, delta_array, theta_array = self.get_quantum_driving_parameters()
             idx = (np.abs(eps_array - eps)).argmin()
             eps, delta, theta = [a[idx] for a in eps_array, delta_array, theta_array]
+        else:
+            theta = self.theta_boundary
 
         B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
                self.W**3 / np.sqrt(self.k0*self.k1))
