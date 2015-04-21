@@ -3,7 +3,6 @@
 from __future__ import division
 import numpy as np
 from numpy import pi
-import matplotlib.pyplot as plt
 try:
     from mayavi import mlab
 except:
@@ -38,12 +37,14 @@ class Base:
                     Determines initial state for the system's evolution:
                        'a': populate gain state |a>
                        'b': populate loss state |b>
-                       'c': superposition of gain and loss state 2^(-1/2)*(|a> + |b>)
-                       'd': superposition of gain and loss state 2^(-1/2)*(|a> - |b>)
+                       'c': superposition of gain and loss state:
+                                2^(-1/2)*(|a> + |b>)
+                       'd': superposition of gain and loss state:
+                                2^(-1/2)*(|a> - |b>)
                 loop_type : str, optional
                     Loop trajectory shape.
                 loop_direction : str, optional ("-"|"+")
-                    Direction of evolution around the EP (-: counterclockwise, +: clockwise).
+                    Direction of evolution around the EP (-: ccw, +: cw).
                 init_phase : float, optional
                     Starting point of evolution on trajectory.
                 calc_adiabatic_state : bool, optional
@@ -77,17 +78,17 @@ class Base:
         self.init_phase = init_phase
 
         # wavefunction |Psi(t)>
-        self.Psi = np.zeros((self.tN,2), dtype=np.complex256)
+        self.Psi = np.zeros((self.tN, 2), dtype=np.complex256)
 
         # instantaneous eigenvalues E_a, E_b and corresponding eigenvectors
         # |phi_a> and |phi_b>
-        self.eVals = np.zeros((self.tN,2), dtype=np.complex256)
-        self.eVecs_r = np.zeros((self.tN,2,2), dtype=np.complex256)
-        self.eVecs_l = np.zeros((self.tN,2,2), dtype=np.complex256)
+        self.eVals = np.zeros((self.tN, 2), dtype=np.complex256)
+        self.eVecs_r = np.zeros((self.tN, 2, 2), dtype=np.complex256)
+        self.eVecs_l = np.zeros((self.tN, 2, 2), dtype=np.complex256)
 
         # adiabatic coefficient and adiabatic phase
-        self.Psi_adiabatic = np.zeros((self.tN,2), dtype=np.complex256)
-        self.theta = np.zeros((self.tN,2), dtype=np.complex256)
+        self.Psi_adiabatic = np.zeros((self.tN, 2), dtype=np.complex256)
+        self.theta = np.zeros((self.tN, 2), dtype=np.complex256)
 
         self.calc_adiabatic_state = calc_adiabatic_state
         self.verbose = verbose
@@ -101,7 +102,7 @@ class Base:
         pass
 
     def sample_H(self, xmin=None, xmax=None, xN=None, ymin=None, ymax=None,
-                  yN=None, verbose=False):
+                 yN=None, verbose=False):
         """Sample local eigenvalue geometry of Hamiltonian H.
 
             Parameters:
@@ -140,14 +141,14 @@ class Base:
         y = np.linspace(ymin, ymax, yN)
 
         X, Y = np.meshgrid(x, y, indexing='ij')
-        Z = np.zeros((xN,yN,2), dtype=complex)
+        Z = np.zeros((xN, yN, 2), dtype=complex)
 
         for i, xi in enumerate(x):
             for j, yj in enumerate(y):
                 if verbose:
                     print "(i,j) =", i, j
-                H = self.H(0,xi,yj)
-                Z[i,j,:] = c_eig(H)[0]
+                H = self.H(0, x=xi, y=yj)
+                Z[i, j, :] = c_eig(H)[0]
 
         return X, Y, Z
 
@@ -171,7 +172,7 @@ class Base:
         """
         X, Y, Z = self.sample_H(xmin, xmax, xN, ymin, ymax, yN)
 
-        Z0, Z1 = [ Z[...,n] for n in 0, 1 ]
+        Z0, Z1 = [Z[..., n] for n in 0, 1]
 
         mlab.figure(0)
         mlab.surf(X.real, Y.real, Z0.real)
@@ -197,7 +198,7 @@ class Base:
         if trajectory:
             x, y = self.get_cycle_parameters(self.t)
             _, c1, c2 = self.solve_ODE()
-            e1, e2 = [ part(self.eVals[:,n]) for n in 0, 1 ]
+            e1, e2 = [part(self.eVals[:, n]) for n in 0, 1]
             z = map_trajectory(c1, c2, e1, e2)
 
             mlab.plot3d(x, y, z, tube_radius=5e-6)
@@ -232,7 +233,7 @@ class Base:
         # y = np.linspace(self.y_EP - 1.1*self.y_R0,
         #                 self.y_EP + 1.1*self.y_R0, yN)
 
-        z = np.linspace(-1,1,zN)
+        z = np.linspace(-1, 1, zN)
 
         if part is np.real:
             print "real"
@@ -243,21 +244,22 @@ class Base:
             f = lambda x, E: np.sign(x)*np.real(E)
 
         X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
-        X, Y = [ np.real(N) for N in X, Y ]
+        X, Y = [np.real(N) for N in X, Y]
 
-        E = np.zeros((xN,yN,2), dtype=complex)
-        F = np.zeros((xN,yN,zN), dtype=complex)
+        E = np.zeros((xN, yN, 2), dtype=complex)
+        F = np.zeros((xN, yN, zN), dtype=complex)
 
         for i, xi in enumerate(x):
             for j, yj in enumerate(y):
-                H = self.H(0,xi,yj)
-                E[i,j,:] = c_eig(H)[0]
+                H = self.H(0, x=xi, y=yj)
+                E[i, j, :] = c_eig(H)[0]
 
                 char_poly = np.poly(H)
 
                 for k, zk in enumerate(z):
-                    F[i,j,k] = np.polyval(char_poly,
-                                          zk + 1j*np.sign(zk)*np.imag(E[i,j,0]))
+                    F[i, j, k] = np.polyval(char_poly,
+                                            (zk + 1j*np.sign(zk) *
+                                             np.imag(E[i, j, 0])))
         return X, Y, Z, F
 
     def get_c_eigensystem(self):
@@ -271,14 +273,14 @@ class Base:
 
         # get eigenvalues and (left and right) eigenvectors at t=tn
         for n, tn in enumerate(self.t):
-            eVals[n,:], eVecs_l[n,:,:], eVecs_r[n,:,:] = c_eig(self.H(tn),
-                                                               left=True)
+            eVals[n, :], eVecs_l[n, :, :], eVecs_r[n, :, :] = c_eig(self.H(tn),
+                                                                    left=True)
 
         # check for discontinuities of first eigenvalue
         # and switch eigenvalues/eigenvectors accordingly:
 
         # 1) get differences between array components
-        diff = np.diff(eVals[:,0])
+        diff = np.diff(eVals[:, 0])
 
         # 2) if difference exceeds epsilon, switch
         epsilon = 1e-1
@@ -288,10 +290,10 @@ class Base:
         #    where eigenvalue-jumps occur
         for k in mask.nonzero()[0]:
             # correct phase to obtain continuous wavefunction
-            phase_0_R = np.angle(eVecs_r[k,:,0]) - np.angle(eVecs_r[k+1,:,1])
-            phase_0_L = np.angle(eVecs_l[k,:,0]) - np.angle(eVecs_l[k+1,:,1])
-            phase_1_R = np.angle(eVecs_r[k+1,:,0]) - np.angle(eVecs_r[k,:,1])
-            phase_1_L = np.angle(eVecs_l[k+1,:,0]) - np.angle(eVecs_l[k,:,1])
+            phase_0_R = np.angle(eVecs_r[k, :, 0]) - np.angle(eVecs_r[k+1, :, 1])
+            phase_0_L = np.angle(eVecs_l[k, :, 0]) - np.angle(eVecs_l[k+1, :, 1])
+            phase_1_R = np.angle(eVecs_r[k+1, :, 0]) - np.angle(eVecs_r[k, :, 1])
+            phase_1_L = np.angle(eVecs_l[k+1, :, 0]) - np.angle(eVecs_l[k, :, 1])
 
             # account for phase-jump v0(k) -> v1(k+1)
             eVecs_r[k+1:,:,1] *= np.exp(+1j*phase_0_R)
