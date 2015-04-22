@@ -311,22 +311,24 @@ class Dirichlet(Waveguide):
 
         mixing_angle_dot = 2.*np.abs(self.B0)*(delta*eps_dot-delta_dot*eps)
         mixing_angle_dot /= (delta**2 + 4.*np.abs(self.B0)**2*eps**2)
+        self.mixing_angle_dot = mixing_angle_dot
 
         self.mixing_angle = np.arctan(2.*np.abs(self.B0)*eps/delta)
-        print self.mixing_angle
-        self.mixing_angle_dot = mixing_angle_dot
         self.mixing_angle_dot_alt = np.gradient(self.mixing_angle, self.dt)
 
-        theta_prime = -2.*np.arctan(mixing_angle_dot/(2*np.abs(self.B0)*eps))
+        # theta_prime = -2.*np.arctan(mixing_angle_dot/(2*np.abs(self.B0)*eps))
+        theta_prime = -2.*np.arctan2(mixing_angle_dot, (2*np.abs(self.B0)*eps))
 
         B_prime = (-1j * (np.exp(1j*theta_prime) + 1.) * np.pi**2 /
                    self.W**3 / np.sqrt(self.k0*self.k1))
 
         eps_prime = np.sqrt(4.*np.abs(self.B0)**2*eps**2 + mixing_angle_dot**2)
         eps_prime /= 2.*np.abs(B_prime)
+
         # avoid divergencies
-        eps_prime[-1] = 0.0
-        eps_prime[0] = 0.0
+        for x in eps_prime, theta_prime, B_prime:
+            for n in range(-1, 1):
+                x[n] = 0.0
 
         return eps_prime, delta, theta_prime
 
@@ -443,7 +445,7 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         # here B without loss
         kF = self.kF
-        B = self.Dirichlet.B
+        B = self.Dirichlet.B0
 
         sq1 = (G[0, 0] - kF*G[1, 1])**2 + 4.*kF**2*G[0, 1]*G[1, 0]
         sq2 = (abs(B)**2 + (kF**2*(B*G[1, 0] + B.conj()*G[0, 1])**2 /
@@ -465,7 +467,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         self.Dirichlet.y_R0 = delta
         self._get_EP_coordinates()
 
-        B = self.Dirichlet.B
+        B = self.Dirichlet.B0
 
         # damping coefficient
         eps0 = 0.02
