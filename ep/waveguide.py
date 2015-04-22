@@ -53,11 +53,13 @@ class Waveguide(Base):
         if t is None:
             t = self.t
 
-        x_R0, y_R0 = self.x_R0, self.y_R0
-        w, Delta = self.w, self.init_phase
-        loop_type = self.loop_type
-        sign = -int(self.loop_direction + "1")
+        x_R0 = self.x_R0
+        y_R0 = self.y_R0
         L = self.L
+        loop_type = self.loop_type
+        w = self.w
+        Delta = self.init_phase
+        sign = -int(self.loop_direction + "1")
 
         if loop_type == "Constant":
             x, y = [np.ones_like(t)*z for z in x_R0, y_R0]
@@ -144,7 +146,8 @@ class Waveguide(Base):
         xi_upper = W + eps*np.sin((kr + delta)*x + theta_boundary)
 
         if smearing:
-            fermi = lambda x, sigma: 1./(np.exp(-x/sigma))
+            def fermi(x, sigma):
+                return 1./(np.exp(-x/sigma))
             lambda0 = abs(pi/(kr + delta))
             s = 1./(2*lambda0)
             pre = fermi(x-3*lambda0, s)*fermi(L-x-3*lambda0, s)
@@ -177,7 +180,7 @@ class Neumann(Waveguide):
         Copies methods and variables from the Waveguide class."""
         Waveguide.__init__(self, **waveguide_kwargs)
 
-        k0, k1 = [ self.k(n) for n in 0, 1 ]
+        k0, k1 = [self.k(n) for n in 0, 1]
         self.k0, self.k1 = k0, k1
         self.kr = k0 - k1
 
@@ -219,7 +222,7 @@ class Neumann(Waveguide):
         x, b0, b1 = self.t, self.phi_a, self.phi_b
         y = np.linspace(0, self.W, len(x)/self.L)
 
-        X, Y = np.meshgrid(x,y)
+        X, Y = np.meshgrid(x, y)
 
         PHI = b0 + b1 * (np.sqrt(2.*self.k0/self.k1) *
                           np.cos(pi*Y)*np.exp(-1j*self.kr*X))
@@ -239,7 +242,7 @@ class Dirichlet(Waveguide):
         self.tqd = tqd
         self._tqd_already_calculated = False
 
-        k0, k1 = [ self.k(n) for n in 1, 2 ]
+        k0, k1 = [self.k(n) for n in 1, 2]
         self.k0, self.k1 = k0, k1
         kr = k0 - k1
         self.kr = kr
@@ -349,17 +352,17 @@ class Dirichlet(Waveguide):
 
         # sort eigenvectors: always take the first one returned by c_eig,
         # change if the imaginary part switches sign
-        b1, b2 = evec[0,0], evec[1,0]
+        b1, b2 = evec[0, 0], evec[1, 0]
         if b1.imag > 0 or b2.imag < 0:
-            b1, b2 = evec[0,1], evec[1,1]
+            b1, b2 = evec[0, 1], evec[1, 1]
 
         # x0 = lambda s: (2.*pi/kr * (1+s)/2
         #                 - 1j/kr * np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
         x0 = lambda s: s*np.pi/(2.*kr)
         y0 = lambda s: W/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1))*abs(b1/b2))
 
-        xn = np.asarray([ x0(n) for n in (+1,-1) ])
-        yn = np.asarray([ y0(n) for n in (-1,+1) ])
+        xn = np.asarray([x0(n) for n in (+1, -1)])
+        yn = np.asarray([y0(n) for n in (-1, +1)])
 
         # mark invalid node coordinates with np.nan
         # -> caught in DirichletPositionDependentLoss._get_EP_coordinates where
@@ -380,12 +383,12 @@ class Dirichlet(Waveguide):
     def wavefunction(self, evecs=False, with_boundary=False):
         """Return the wavefunction Psi(x,y)."""
         if evecs == 'a':
-            b0, b1 = [ self.eVecs_r[:,n,0] for n in 0, 1 ]
+            b0, b1 = [self.eVecs_r[:, n, 0] for n in 0, 1]
         elif evecs == 'b':
-            b0, b1 = [ self.eVecs_r[:,n,1] for n in 0, 1 ]
+            b0, b1 = [self.eVecs_r[:, n, 1] for n in 0, 1]
         elif evecs == 'c':
-            b0, b1 = [ self.eVecs_r[:,n,0] for n in 0, 1 ]
-            b2, b3 = [ self.eVecs_r[:,n,1] for n in 0, 1 ]
+            b0, b1 = [self.eVecs_r[:, n, 0] for n in 0, 1]
+            b2, b3 = [self.eVecs_r[:, n, 1] for n in 0, 1]
 
             mask = np.logical_or(b0.imag > 0, b1.imag <= 0)
             b0[mask], b1[mask] = b2[mask], b3[mask]
@@ -532,14 +535,14 @@ def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1,
     cmap = brewer2mpl.get_map('Set1', 'qualitative', 9)
     colors = cmap.mpl_colors
 
-    params = { "L": L,
-               "N": N,
-               "eta": eta,
-               "init_phase": phase,
-               "loop_direction": direction,
-               "init_state": "c",
-               "calc_adiabatic_state": True,
-               "loop_type": "Bell"}
+    params = {"L": L,
+              "N": N,
+              "eta": eta,
+              "init_phase": phase,
+              "loop_direction": direction,
+              "init_state": "c",
+              "calc_adiabatic_state": True,
+              "loop_type": "Bell"}
 
     WG = Waveguide(**params)
     WG.x_EP = x_EP
@@ -555,8 +558,10 @@ def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1,
 
     ax1.semilogy(t, np.abs(cp), ls="-", color=colors[2], label=r"$|c_+(t)|^2$")
     ax1.semilogy(t, np.abs(cm), ls="-", color=colors[3], label=r"$|c_-(t)|^2$")
-    ax1.semilogy(t, np.abs(cp_ad), ls="--", ms="o", color=colors[2], label=r"$|c_+(t)|^2$")
-    ax1.semilogy(t, np.abs(cm_ad), ls="--", ms="o", color=colors[3], label=r"$|c_-(t)|^2$")
+    ax1.semilogy(t, np.abs(cp_ad), ls="--", ms="o",
+                 color=colors[2], label=r"$|c_+(t)|^2$")
+    ax1.semilogy(t, np.abs(cm_ad), ls="--", ms="o",
+                 color=colors[3], label=r"$|c_-(t)|^2$")
     ax1.legend(loc="lower left")
     ax1.set_xlabel(r"$t$")
     ax1.set_ylim(1e-6, 1.5e1)
@@ -564,7 +569,7 @@ def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1,
     eps, delta = WG.get_cycle_parameters(t)
 
     ax2 = plt.axes([0.65, 0.65, .2, .2])
-    k0, k1 = [ pi*np.sqrt(N**2 - n**2) for n in 0, 1 ]
+    k0, k1 = [np.pi*np.sqrt(N**2 - n**2) for n in 0, 1]
     ax2.plot(eta/(2*np.sqrt(2*k0*k1)), "ko")
     ax2.plot(eps, delta, ls="-", color=colors[0])
     ax2.set_xlim(-0.05, 0.05)
