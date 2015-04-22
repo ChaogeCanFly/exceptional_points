@@ -64,11 +64,11 @@ class Waveguide(Base):
             x = self.x_R0 + self.x_R0*np.cos(w*t + Delta)
             y = self.y_R0 + self.y_R0*np.sin(w*t + Delta)
         elif self.loop_type == "Varcircle":
-            x = self.x_R0/2.*(1.-np.cos(w*t))
+            x = self.x_R0/2. * (1. - np.cos(w*t))
             y = self.y_R0 - self.x_R0*np.sin(w*t) + Delta
         elif self.loop_type == "Bell":
             # take also sign change in w = 2pi/T into account (in y)
-            x = self.x_R0/2.*(1.-np.cos(w*t))
+            x = self.x_R0/2. * (1. - np.cos(w*t))
             y = self.y_R0*sign*(sign*w*t/pi - 1.) + Delta
         elif self.loop_type == "Allen-Eberly":
             # mind w = 2pi/L!
@@ -313,6 +313,7 @@ class Dirichlet(Waveguide):
         mixing_angle_dot /= (delta**2 + 4.*np.abs(self.B0)**2*eps**2)
 
         self.mixing_angle = np.arctan(2.*np.abs(self.B0)*eps/delta)
+        print self.mixing_angle
         self.mixing_angle_dot = mixing_angle_dot
         self.mixing_angle_dot_alt = np.gradient(self.mixing_angle, self.dt)
 
