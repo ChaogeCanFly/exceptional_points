@@ -168,22 +168,7 @@ class Waveguide(Base):
         if kr is None:
             kr = self.kr
         if theta_boundary is None:
-        # if theta_boundary is None or theta_boundary == 0.0:
             theta_boundary = self.theta_boundary
-        # else:
-        #     print "custom theta!"
-        #     eps_dot = np.gradient(eps, self.dt)
-        #     delta_dot = np.gradient(delta, self.dt)
-        #     Delta = np.sqrt(delta**2 + 4*np.abs(self.B)**2 * eps**2)
-        #
-        #     theta_dot = 2.*np.abs(self.B)*(eps_dot*delta - delta_dot*eps)/Delta**2
-        #     alpha = theta_dot/(2.*np.abs(self.B)*eps)
-        #     alpha[-1] = alpha[-2]  # avoid divergencies
-        #
-        #     theta_boundary = -2.*np.arctan(alpha)
-        #     Bp = (-1j * (np.exp(1j*theta_boundary) + 1) * np.pi**2 /
-        #             self.W**3 / np.sqrt(self.k0*self.k1))
-        #     eps = np.sqrt(np.abs(self.B)**2*eps**2 + (theta_dot/2.)**2)/np.abs(Bp)
 
         # HACK to incorporate correct x -> f(x) in smoothing procedure
         try:
@@ -309,6 +294,7 @@ class Dirichlet(Waveguide):
             self.x_R0, self.y_R0 = self.x_EP, self.y_EP
 
     def _get_EP_coordinates(self):
+        """Calculate and return the EP coordinates (x_EP, y_EP)."""
         eta = self.eta
         kF = self.kF
         kr = self.kr
@@ -317,12 +303,23 @@ class Dirichlet(Waveguide):
         W = self.W
         theta_boundary = self.theta_boundary
 
-        x_EP = eta*kF*kr*W**2/(4*np.pi**2 * np.sqrt(2*k0*k1*(1.+np.cos(theta_boundary))))
+        x_EP = eta*kF*kr*W**2/(4*np.pi**2 *
+                                np.sqrt(2*k0*k1*(1.+np.cos(theta_boundary))))
         y_EP = 0.0
 
         return x_EP, y_EP
 
     def H(self, t, x=None, y=None):
+        """Return the Dirichlet Hamiltoninan.
+
+            Paramters:
+            ----------
+                t: float
+                    Time at which to evaluate the Hamiltonian.
+                x, y: float (optional)
+                    Parameters for (eps, delta). If None, (eps, delta) are
+                    obtained from the get_cycle_parameters method at time t.
+        """
         if x is None and y is None:
             eps, delta = self.get_cycle_parameters(t)
         else:
@@ -350,6 +347,9 @@ class Dirichlet(Waveguide):
         return H
 
     def get_quantum_driving_parameters(self):
+        """Return the adapted parameters (eps_prime, delta, theta_prime) to
+        obtain adiabatic dynamics for arbitrary length.
+        """
         eps, delta = self.get_cycle_parameters()
         eps_dot, delta_dot = [np.gradient(x, self.dt) for x in eps, delta]
 
@@ -418,6 +418,7 @@ class Dirichlet(Waveguide):
         return np.asarray(zip(xn, yn))
 
     def wavefunction(self, evecs=False, with_boundary=False):
+        """Return the wavefunction Psi(x,y)."""
         if evecs == 'a':
             b0, b1 = [ self.eVecs_r[:,n,0] for n in 0, 1 ]
         elif evecs == 'b':
