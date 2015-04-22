@@ -82,27 +82,6 @@ class Waveguide(Base):
             lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1) + phi0
             return lambda1(t), lambda2(t)
 
-        elif loop_type == "Bell_smooth":
-            lambda1 = lambda t: x_R0/2.*(1.-np.cos(w*t))
-            lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1.) + phi0
-            smooth = lambda t: L/2.*(1. + np.tanh(2.*t/(1. - t**2)))
-            tp = 2./L*t - 1. + 1e-15
-            # important: return smoothing function for get_boundary routine
-            self.smooth = smooth
-            return lambda1(smooth(tp)), lambda2(smooth(tp))
-
-        elif loop_type == "Bell_smooth_constant":
-            lambda1 = lambda t: x_R0/2.*(1.-np.cos(w*t))
-            lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1.) + phi0
-            a = 2.
-            x0 = L/2.*(1.-1./a)
-            xL = L/2.*(1.+1./a)
-            smooth = lambda t: np.where(np.logical_and(t >= x0, t <= xL),
-                                        (1.-a)/2.*L + a*t,
-                                        np.where(t >= xL, L, 0))
-            self.smooth = smooth
-            return lambda1(smooth(t)), lambda2(smooth(t))
-
         elif loop_type == "Allen-Eberly":
             # mind w=2pi/L!
             lambda1 = lambda t: x_R0 / np.cosh(2.*w*t - 2.*np.pi)
@@ -169,12 +148,6 @@ class Waveguide(Base):
             kr = self.kr
         if theta_boundary is None:
             theta_boundary = self.theta_boundary
-
-        # HACK to incorporate correct x -> f(x) in smoothing procedure
-        try:
-            x = self.smooth(x)/2.
-        except AttributeError:
-            print "Warning: self.smooth method not set (using {})!".format(self.loop_type)
 
         # reverse x-coordinate for backward propagation
         if self.loop_direction == '+':
