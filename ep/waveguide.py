@@ -20,28 +20,25 @@ class Waveguide(Base):
 
             Additional parameters:
             ----------------------
-                W: float
-                    Waveguide width
+                L, W: float
+                    Waveguide length/width
                 eta: float
                     Dissipation coefficient
-                N: float
-                    Number of open modes
                 theta: float
                     Phase difference between upper and lower boundary
+                N: float
+                    Number of open modes
         """
         Base.__init__(self, T=L, **base_kwargs)
 
-        self.W = W                      # wire width
-        self.L = L                      # wire length
-        self.eta = eta                  # dissipation coefficient
+        self.L = L
+        self.W = W
+        self.eta = eta
+        self.theta = theta
+        self.N = N
 
-        self.theta = theta     # phase angle between upper
-                                        # and lower boundary
-        self.N = N                      # number of open modes
         self.k = lambda n: np.sqrt(N**2 - n**2)*np.pi/W
-                                        # get wavevector in x-direction
-        kF = N*np.pi/W                  # Fermi wavevector
-        self.kF = kF
+        self.kF = N*np.pi/W
 
     def H(self, t, x=None, y=None, theta=None):
         """Hamiltonian H is overwritten by inheriting classes."""
@@ -191,7 +188,6 @@ class Neumann(Waveguide):
         eta = self.eta
         k0 = self.k0
         k1 = self.k1
-        W = self.W
         theta = self.theta
 
         x_EP = eta / (2.*np.sqrt(k0*k1 * (1. + np.cos(theta))))
@@ -206,7 +202,7 @@ class Neumann(Waveguide):
             eps, delta = x, y
 
         B = (-1j * (np.exp(1j*self.theta) + 1) *
-                     self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
+             self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
         self.B = B
 
         H11 = -self.k0 - 1j*self.eta/2.
@@ -225,7 +221,7 @@ class Neumann(Waveguide):
         X, Y = np.meshgrid(x, y)
 
         PHI = b0 + b1 * (np.sqrt(2.*self.k0/self.k1) *
-                          np.cos(pi*Y)*np.exp(-1j*self.kr*X))
+                         np.cos(pi*Y)*np.exp(-1j*self.kr*X))
         return X, Y, PHI
 
 
@@ -248,7 +244,7 @@ class Dirichlet(Waveguide):
         self.kr = kr
 
         B = (-1j * (np.exp(1j*self.theta) + 1) * np.pi**2 /
-                self.W**3 / np.sqrt(self.k0*self.k1))
+             self.W**3 / np.sqrt(self.k0*self.k1))
         self.B0 = B
 
         self.x_EP, self.y_EP = self._get_EP_coordinates()
@@ -267,7 +263,7 @@ class Dirichlet(Waveguide):
         theta = self.theta
 
         x_EP = eta*kF*kr*W**2/(4*np.pi**2 *
-                                np.sqrt(2*k0*k1*(1.+np.cos(theta))))
+                               np.sqrt(2*k0*k1*(1.+np.cos(theta))))
         y_EP = 0.0
 
         return x_EP, y_EP
@@ -298,7 +294,7 @@ class Dirichlet(Waveguide):
             theta = self.theta
 
         B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
-               self.W**3 / np.sqrt(self.k0*self.k1))
+             self.W**3 / np.sqrt(self.k0*self.k1))
 
         H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0
         H12 = B*eps
@@ -326,7 +322,7 @@ class Dirichlet(Waveguide):
         theta_prime = -2.*np.arctan(mixing_angle_dot/(2*np.abs(self.B0)*eps))
 
         B_prime = (-1j * (np.exp(1j*theta_prime) + 1.) * np.pi**2 /
-                    self.W**3 / np.sqrt(self.k0*self.k1))
+                   self.W**3 / np.sqrt(self.k0*self.k1))
 
         eps_prime = np.sqrt(4.*np.abs(self.B0)**2*eps**2 + mixing_angle_dot**2)
         eps_prime /= 2.*np.abs(B_prime)
@@ -358,8 +354,11 @@ class Dirichlet(Waveguide):
 
         # x0 = lambda s: (2.*pi/kr * (1+s)/2
         #                 - 1j/kr * np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
-        x0 = lambda s: s*np.pi/(2.*kr)
-        y0 = lambda s: W/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1))*abs(b1/b2))
+        def x0(s):
+            return s*np.pi/(2.*kr)
+
+        def y0(s):
+            return W/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1))*abs(b1/b2))
 
         xn = np.asarray([x0(n) for n in (+1, -1)])
         yn = np.asarray([y0(n) for n in (-1, +1)])
@@ -398,7 +397,7 @@ class Dirichlet(Waveguide):
         x = self.t
         y = np.linspace(-2.*self.x_R0, self.W + 2*self.x_R0, len(x)/self.L)
 
-        X, Y = np.meshgrid(x,y)
+        X, Y = np.meshgrid(x, y)
 
         xi_lower, xi_upper = self.get_boundary(x=X)
         xi_lower *= -1  # greens_code counts from top
@@ -406,8 +405,8 @@ class Dirichlet(Waveguide):
         if with_boundary:
             Y -= xi_lower
         PHI = (b0 * np.sin(pi/self.W*Y) +
-                b1 * np.sqrt(self.k0/self.k1) *
-                  np.sin(2*np.pi/self.W*Y)*np.exp(-1j*self.kr*X))
+               b1 * np.sqrt(self.k0/self.k1) *
+               np.sin(2*np.pi/self.W*Y)*np.exp(-1j*self.kr*X))
         if with_boundary:
             Y += xi_lower
             PHI[np.logical_or(Y > xi_upper, Y < xi_lower)] = np.nan
@@ -435,9 +434,9 @@ class DirichletPositionDependentLoss(Dirichlet):
         self.nodes = self.Dirichlet.get_nodes()
 
         if np.any(np.isnan(self.nodes)):
-            G = np.zeros((2,2))
+            G = np.zeros((2, 2))
         else:
-            G1, G2 = [ Gamma.get_Gamma_tilde(x0, y0) for (x0, y0) in self.nodes ]
+            G1, G2 = [Gamma.get_Gamma_tilde(x0, y0) for (x0, y0) in self.nodes]
             G = G1 + G2
         self.Gamma_tilde = G
 
@@ -448,11 +447,12 @@ class DirichletPositionDependentLoss(Dirichlet):
         kF = self.kF
         B = self.Dirichlet.B
 
-        sq1 = (G[0,0] - kF*G[1,1])**2 + 4.*kF**2*G[0,1]*G[1,0]
-        sq2 = (abs(B)**2 + (kF**2*(B*G[1,0]+B.conj()*G[0,1])**2 / (G[0,0]-kF*G[1,1])**2))
+        sq1 = (G[0, 0] - kF*G[1, 1])**2 + 4.*kF**2*G[0, 1]*G[1, 0]
+        sq2 = (abs(B)**2 + (kF**2*(B*G[1, 0] + B.conj()*G[0, 1])**2 /
+               (G[0, 0] - kF*G[1, 1])**2))
 
         x_EP = np.sqrt(sq1)/(2.*np.sqrt(sq2)) * self.eta
-        y_EP = -2.*kF*(B*G[1,0]+B.conj()*G[0,1])/(G[0,0]-kF*G[1,1]) * x_EP
+        y_EP = -2.*kF*(B*G[1, 0]+B.conj()*G[0, 1])/(G[0, 0]-kF*G[1, 1]) * x_EP
 
         return x_EP, y_EP
 
@@ -474,10 +474,10 @@ class DirichletPositionDependentLoss(Dirichlet):
         G = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2 * self.Gamma_tilde
         self.Gamma_tilde = G
 
-        H11 = -self.k0 - 1j*self.eta*self.Gamma_tilde[0,0]
-        H12 = B*eps - 1j*self.eta*self.Gamma_tilde[0,1]
-        H21 = B.conj()*eps - 1j*self.eta*self.Gamma_tilde[1,0]
-        H22 = -self.k0 - delta - 1j*self.eta*self.Gamma_tilde[1,1]
+        H11 = -self.k0 - 1j*self.eta*self.Gamma_tilde[0, 0]
+        H12 = B*eps - 1j*self.eta*self.Gamma_tilde[0, 1]
+        H21 = B.conj()*eps - 1j*self.eta*self.Gamma_tilde[1, 0]
+        H22 = -self.k0 - delta - 1j*self.eta*self.Gamma_tilde[1, 1]
 
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
@@ -519,11 +519,11 @@ class DirichletPositionDependentLoss(Dirichlet):
             nodes = WGn.get_nodes(x=epsn, y=deltan)
             # xnodes.append(nodes[:,0] + xn)
             # xnodes.append(nodes[:,0]/(1+deltan/self.kr) + xn)
-            xnodes.append(nodes[:,0]/(1+deltan/self.kr) + Ln_sum)
+            xnodes.append(nodes[:, 0]/(1 + deltan/self.kr) + Ln_sum)
             # xnodes.append(nodes[:,0] + Ln_sum)
-            ynodes.append(nodes[:,1])
+            ynodes.append(nodes[:, 1])
 
-        xnodes, ynodes = [ np.asarray(v).flatten() for v in xnodes, ynodes ]
+        xnodes, ynodes = [np.asarray(v).flatten() for v in xnodes, ynodes]
 
         return xnodes, ynodes
 
@@ -549,8 +549,8 @@ def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1,
     t, cp, cm = WG.solve_ODE()
 
     # get adiabatic predictions
-    cp_ad, cm_ad = (WG.Psi_adiabatic[:,0],
-                    WG.Psi_adiabatic[:,1])
+    cp_ad, cm_ad = (WG.Psi_adiabatic[:, 0],
+                    WG.Psi_adiabatic[:, 1])
     cp_ad *= abs(cp[0])
     cm_ad *= abs(cm[0])
 
