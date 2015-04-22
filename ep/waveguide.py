@@ -292,6 +292,7 @@ class Dirichlet(Waveguide):
         Waveguide.__init__(self, **waveguide_kwargs)
 
         self.tqd = tqd
+        self._tqd_already_calculated = False
 
         k0, k1 = [ self.k(n) for n in 1, 2 ]
         self.k0, self.k1 = k0, k1
@@ -328,15 +329,16 @@ class Dirichlet(Waveguide):
             eps, delta = x, y
 
         if self.tqd:
-            eps_array, delta_array, theta_array = self.get_quantum_driving_parameters()
-            idx = (np.abs(eps_array - eps)).argmin()
-            eps, delta, theta = [a[idx] for a in eps_array, delta_array, theta_array]
+            if not self._tqd_already_calculated:
+                self.tqd_arrays = self.get_quantum_driving_parameters()
+                self._tqd_already_calculated = True
+            idx = (np.abs(self.tqd_arrays[0] - eps)).argmin()
+            eps, delta, theta = [a[idx] for a in self.tqd_arrays]
         else:
             theta = self.theta_boundary
 
         B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
                self.W**3 / np.sqrt(self.k0*self.k1))
-        # self.B = B
 
         H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0
         H12 = B*eps
