@@ -54,53 +54,40 @@ class Waveguide(Base):
             t = self.t
 
         x_R0, y_R0 = self.x_R0, self.y_R0
-        w, phi0 = self.w, self.init_phase
+        w, Delta = self.w, self.init_phase
         loop_type = self.loop_type
         sign = -int(self.loop_direction + "1")
         L = self.L
 
         if loop_type == "Constant":
-            t0 = np.ones_like(t)
-            return x_R0*t0, y_R0*t0
-
+            x, y = [np.ones_like(t)*z for z in x_R0, y_R0]
         elif loop_type == "Constant_delta":
-            return x_R0 * (1.0 - np.cos(w*t)), y_R0
-
+            x = x_R0 * (1.0 - np.cos(w*t))
+            y = y_R0
         elif loop_type == "Circle":
-            lambda1 = lambda t: x_R0 + x_R0*np.cos(w*t + phi0)
-            lambda2 = lambda t: y_R0 + y_R0*np.sin(w*t + phi0)
-            return lambda1(t), lambda2(t)
-
+            x = x_R0 + x_R0*np.cos(w*t + Delta)
+            y = y_R0 + y_R0*np.sin(w*t + Delta)
         elif loop_type == "Varcircle":
-            lambda1 = lambda t: x_R0/2.*(1.-np.cos(w*t))
-            lambda2 = lambda t: y_R0 - x_R0*np.sin(w*t) + phi0
-            return lambda1(t), lambda2(t)
-
+            x = x_R0/2.*(1.-np.cos(w*t))
+            y = y_R0 - x_R0*np.sin(w*t) + Delta
         elif loop_type == "Bell":
-            # take also sign change in w=2pi/T into account (in lambda2)
-            lambda1 = lambda t: x_R0/2.*(1.-np.cos(w*t))
-            lambda2 = lambda t: y_R0*sign*(sign*w*t/pi - 1) + phi0
-            return lambda1(t), lambda2(t)
-
+            # take also sign change in w = 2pi/T into account (in y)
+            x = x_R0/2.*(1.-np.cos(w*t))
+            y = y_R0*sign*(sign*w*t/pi - 1.) + Delta
         elif loop_type == "Allen-Eberly":
-            # mind w=2pi/L!
-            lambda1 = lambda t: x_R0 / np.cosh(2.*w*t - 2.*np.pi)
-            lambda2 = lambda t: sign*y_R0*np.tanh(2.*sign*w*t - 2.*np.pi) + phi0
-            return lambda1(t), lambda2(t)
-
+            # mind w = 2pi/L!
+            x = x_R0 / np.cosh(2.*w*t - 2.*np.pi)
+            y = sign*y_R0*np.tanh(2.*sign*w*t - 2.*np.pi) + Delta
         elif loop_type == "Bell-Rubbmark":
-            lambda1 = lambda t: x_R0/2. * (1. - np.cos(w*t))
-            lambda2 = lambda t: sign*2.*y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + phi0
-            return lambda1(t), lambda2(t)
-
+            x = x_R0/2. * (1. - np.cos(w*t))
+            y = sign*2.*y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + Delta
         elif loop_type == "Allen-Eberly-Rubbmark":
-            lambda1 = lambda t: x_R0 / np.cosh(2.*w*t - 2.*np.pi)
-            lambda2 = lambda t: sign*2.*y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + phi0
-            return lambda1(t), lambda2(t)
-
+            x = x_R0 / np.cosh(2.*w*t - 2.*np.pi)
+            y = sign*2.*y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + Delta
         else:
             raise Exception(("Error: loop_type {0}"
                              "does not exist!").format(loop_type))
+        return x, y
 
     def get_boundary(self, x=None, eps=None, delta=None, L=None,
                      W=None, kr=None, theta_boundary=None, smearing=False):
