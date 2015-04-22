@@ -316,7 +316,6 @@ class Dirichlet(Waveguide):
         self.mixing_angle = np.arctan(2.*np.abs(self.B0)*eps/delta)
         self.mixing_angle_dot_alt = np.gradient(self.mixing_angle, self.dt)
 
-        # theta_prime = -2.*np.arctan(mixing_angle_dot/(2*np.abs(self.B0)*eps))
         theta_prime = -2.*np.arctan2(mixing_angle_dot, (2*np.abs(self.B0)*eps))
 
         B_prime = (-1j * (np.exp(1j*theta_prime) + 1.) * np.pi**2 /
