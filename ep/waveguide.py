@@ -35,7 +35,7 @@ class Waveguide(Base):
         self.L = L                      # wire length
         self.eta = eta                  # dissipation coefficient
 
-        self.theta_boundary = theta     # phase angle between upper
+        self.theta = theta     # phase angle between upper
                                         # and lower boundary
         self.N = N                      # number of open modes
         self.k = lambda n: np.sqrt(N**2 - n**2)*np.pi/W
@@ -92,7 +92,7 @@ class Waveguide(Base):
         return x, y
 
     def get_boundary(self, x=None, eps=None, delta=None, L=None,
-                     W=None, kr=None, theta_boundary=None, smearing=False):
+                     W=None, kr=None, theta=None, smearing=False):
         """Get the boundary function xi as a function of the spatial coordinate x.
 
             Parameters:
@@ -109,7 +109,7 @@ class Waveguide(Base):
                     Waveguide width.
                 kr: float
                     Boundary modulation frequency.
-                theta_boundary: float
+                theta: float
                     Phase difference between lower and upper boundary.
                 smearing: bool
                     Return a profile which is smeared out at the edges.
@@ -135,15 +135,15 @@ class Waveguide(Base):
             W = self.W
         if kr is None:
             kr = self.kr
-        if theta_boundary is None:
-            theta_boundary = self.theta_boundary
+        if theta is None:
+            theta = self.theta
 
         # reverse x-coordinate for backward propagation
         if self.loop_direction == '+':
             x = x[::-1]
 
         xi_lower = eps*np.sin((kr + delta)*x)
-        xi_upper = W + eps*np.sin((kr + delta)*x + theta_boundary)
+        xi_upper = W + eps*np.sin((kr + delta)*x + theta)
 
         if smearing:
             def fermi(x, sigma):
@@ -192,9 +192,9 @@ class Neumann(Waveguide):
         k0 = self.k0
         k1 = self.k1
         W = self.W
-        theta_boundary = self.theta_boundary
+        theta = self.theta
 
-        x_EP = eta / (2.*np.sqrt(k0*k1 * (1. + np.cos(theta_boundary))))
+        x_EP = eta / (2.*np.sqrt(k0*k1 * (1. + np.cos(theta))))
         y_EP = 0.0
 
         return x_EP, y_EP
@@ -205,7 +205,7 @@ class Neumann(Waveguide):
         else:
             eps, delta = x, y
 
-        B = (-1j * (np.exp(1j*self.theta_boundary) + 1) *
+        B = (-1j * (np.exp(1j*self.theta) + 1) *
                      self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
         self.B = B
 
@@ -247,7 +247,7 @@ class Dirichlet(Waveguide):
         kr = k0 - k1
         self.kr = kr
 
-        B = (-1j * (np.exp(1j*self.theta_boundary) + 1) * np.pi**2 /
+        B = (-1j * (np.exp(1j*self.theta) + 1) * np.pi**2 /
                 self.W**3 / np.sqrt(self.k0*self.k1))
         self.B0 = B
 
@@ -264,10 +264,10 @@ class Dirichlet(Waveguide):
         k0 = self.k0
         k1 = self.k1
         W = self.W
-        theta_boundary = self.theta_boundary
+        theta = self.theta
 
         x_EP = eta*kF*kr*W**2/(4*np.pi**2 *
-                                np.sqrt(2*k0*k1*(1.+np.cos(theta_boundary))))
+                                np.sqrt(2*k0*k1*(1.+np.cos(theta))))
         y_EP = 0.0
 
         return x_EP, y_EP
@@ -295,7 +295,7 @@ class Dirichlet(Waveguide):
             idx = (np.abs(self.tqd_arrays[0] - eps)).argmin()
             eps, delta, theta = [a[idx] for a in self.tqd_arrays]
         else:
-            theta = self.theta_boundary
+            theta = self.theta
 
         B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
                self.W**3 / np.sqrt(self.k0*self.k1))
