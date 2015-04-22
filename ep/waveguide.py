@@ -22,20 +22,20 @@ class Waveguide(Base):
             ----------------------
                 L, W: float
                     Waveguide length/width
+                N: float
+                    Number of open modes
                 eta: float
                     Dissipation coefficient
                 theta: float
                     Phase difference between upper and lower boundary
-                N: float
-                    Number of open modes
         """
         Base.__init__(self, T=L, **base_kwargs)
 
         self.L = L
         self.W = W
+        self.N = N
         self.eta = eta
         self.theta = theta
-        self.N = N
 
         self.k = lambda n: np.sqrt(N**2 - n**2)*np.pi/W
         self.kF = N*np.pi/W
@@ -50,42 +50,39 @@ class Waveguide(Base):
         if t is None:
             t = self.t
 
-        x_R0 = self.x_R0
-        y_R0 = self.y_R0
         L = self.L
-        loop_type = self.loop_type
         w = self.w
         Delta = self.init_phase
         sign = -int(self.loop_direction + "1")
 
-        if loop_type == "Constant":
-            x, y = [np.ones_like(t)*z for z in x_R0, y_R0]
-        elif loop_type == "Constant_delta":
-            x = x_R0 * (1.0 - np.cos(w*t))
-            y = y_R0
-        elif loop_type == "Circle":
-            x = x_R0 + x_R0*np.cos(w*t + Delta)
-            y = y_R0 + y_R0*np.sin(w*t + Delta)
-        elif loop_type == "Varcircle":
-            x = x_R0/2.*(1.-np.cos(w*t))
-            y = y_R0 - x_R0*np.sin(w*t) + Delta
-        elif loop_type == "Bell":
+        if self.loop_type == "Constant":
+            x, y = [np.ones_like(t)*z for z in self.x_R0, self.y_R0]
+        elif self.loop_type == "Constant_delta":
+            x = self.x_R0 * (1.0 - np.cos(w*t))
+            y = self.y_R0
+        elif self.loop_type == "Circle":
+            x = self.x_R0 + self.x_R0*np.cos(w*t + Delta)
+            y = self.y_R0 + self.y_R0*np.sin(w*t + Delta)
+        elif self.loop_type == "Varcircle":
+            x = self.x_R0/2.*(1.-np.cos(w*t))
+            y = self.y_R0 - self.x_R0*np.sin(w*t) + Delta
+        elif self.loop_type == "Bell":
             # take also sign change in w = 2pi/T into account (in y)
-            x = x_R0/2.*(1.-np.cos(w*t))
-            y = y_R0*sign*(sign*w*t/pi - 1.) + Delta
-        elif loop_type == "Allen-Eberly":
+            x = self.x_R0/2.*(1.-np.cos(w*t))
+            y = self.y_R0*sign*(sign*w*t/pi - 1.) + Delta
+        elif self.loop_type == "Allen-Eberly":
             # mind w = 2pi/L!
-            x = x_R0 / np.cosh(2.*w*t - 2.*np.pi)
-            y = sign*y_R0*np.tanh(2.*sign*w*t - 2.*np.pi) + Delta
-        elif loop_type == "Bell-Rubbmark":
-            x = x_R0/2. * (1. - np.cos(w*t))
-            y = sign*2.*y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + Delta
-        elif loop_type == "Allen-Eberly-Rubbmark":
-            x = x_R0 / np.cosh(2.*w*t - 2.*np.pi)
-            y = sign*2.*y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + Delta
+            x = self.x_R0 / np.cosh(2.*w*t - 2.*np.pi)
+            y = sign*self.y_R0*np.tanh(2.*sign*w*t - 2.*np.pi) + Delta
+        elif self.loop_type == "Bell-Rubbmark":
+            x = self.x_R0/2. * (1. - np.cos(w*t))
+            y = sign*2.*self.y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + Delta
+        elif self.loop_type == "Allen-Eberly-Rubbmark":
+            x = self.x_R0 / np.cosh(2.*w*t - 2.*np.pi)
+            y = sign*2.*self.y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + Delta
         else:
             raise Exception(("Error: loop_type {0}"
-                             "does not exist!").format(loop_type))
+                             "does not exist!").format(self.loop_type))
         return x, y
 
     def get_boundary(self, x=None, eps=None, delta=None, L=None,
