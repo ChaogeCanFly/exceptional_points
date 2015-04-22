@@ -407,11 +407,14 @@ class Base:
         f = lambda t, phi: -1j*H(t).dot(phi)
 
         # create ode object to solve Schroedinger equation (SE)
-        SE = complex_ode(f).set_integrator('dopri5', rtol=1e-9, atol=1e-9)
+        ode_kwargs = {'rtol': 1e-9,
+                      'atol': 1e-9}
+        SE = complex_ode(f).set_integrator('dopri5', **ode_kwargs)
+        # SE = complex_ode(f).set_integrator('dop853', **ode_kwargs)
 
         # set initial conditions
-        self.get_c_eigensystem()    # calculate eigensystem for all times
-        self._get_gain_state()       # find state with total (relative) gain
+        self.get_c_eigensystem()        # calculate eigensystem for all times
+        self._get_gain_state()          # find state with total (relative) gain
         self.eVec0 = self._get_init_state()         # define initial state
         SE.set_initial_value(self.eVec0, t=0.0)     # y0, t0
 
