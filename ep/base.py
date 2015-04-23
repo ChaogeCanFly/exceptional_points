@@ -403,22 +403,19 @@ class Base:
         if H is None:
             H = self.H
 
-        # r.h.s of ode d/dt y = f(t, y)
-        f = lambda t, phi: -1j*H(t).dot(phi)
+        # set initial conditions
+        self.get_c_eigensystem()        # calculate eigensystem for all times
+        self._get_gain_state()          # find state with total (relative) gain
+        self.eVec0 = self._get_init_state()
 
         # create ode object to solve Schroedinger equation (SE)
         ode_kwargs = {'rtol': 1e-9,
                       'atol': 1e-9}
-        SE = complex_ode(f).set_integrator('dopri5', **ode_kwargs)
-        # SE = complex_ode(f).set_integrator('dop853', **ode_kwargs)
+        SE = complex_ode(lambda t, phi: -1j*H(t).dot(phi))
+        SE.set_integrator('dopri5', **ode_kwargs)
+        SE.set_initial_value(self.eVec0, t=0.0)
 
-        # set initial conditions
-        self.get_c_eigensystem()        # calculate eigensystem for all times
-        self._get_gain_state()          # find state with total (relative) gain
-        self.eVec0 = self._get_init_state()         # define initial state
-        SE.set_initial_value(self.eVec0, t=0.0)     # y0, t0
-
-        # iterate ode
+        # iterate SE
         for n, tn in enumerate(self.t):
             if SE.successful():
                 self.Psi[n,:] = SE.y
@@ -432,7 +429,7 @@ class Base:
         projection = np.einsum('ijk,ij -> ik',
                                self.eVecs_l, self.Psi)
 
-        self.phi_a, self.phi_b = [ projection[:,n] for n in (0,1) ]
+        self.phi_a, self.phi_b = [projection[:,n] for n in (0,1)]
 
         return self.t, self.phi_a, self.phi_b
 
