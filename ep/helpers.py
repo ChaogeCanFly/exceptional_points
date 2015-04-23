@@ -63,27 +63,26 @@ def c_eig(H, left=False, **kwargs):
     # 1) from option left=True
     eVals, eVecs_l, eVecs_r = eig(H, left=True, **kwargs)
     eVecs_l = eVecs_l.conj()
-    #print np.einsum('ij,ij -> i', eVecs_r.conj(), eVecs_r)
-    #print np.einsum('ij,ij -> i', eVecs_l.conj(), eVecs_l)
-    #test_eigenvalues(eVals, eVecs_l, eVecs_r, H)
+    # test_eigenvalues(eVals, eVecs_l, eVecs_r, H)
 
     # 2) left eigenvalues are the (transposed) right eigenvectors of H.T
     # (results in extremely large eigenvectors)
-    #eVals, eVecs_r = eig(H, **kwargs)
-    #_, eVecs_l = eig(H.T, **kwargs)
-    #test_eigenvalues(eVals, eVecs_l, eVecs_r, H)
+    # eVals, eVecs_r = eig(H, **kwargs)
+    # _, eVecs_l = eig(H.T, **kwargs)
+    # test_eigenvalues(eVals, eVecs_l, eVecs_r, H)
 
     # 3) X_L * X_R = 1, X_L = inv(X_R).T
-    #eVals, eVecs_r = eig(H, **kwargs)
-    #eVecs_l = inv(eVecs_r).T
-    #test_eigenvalues(eVals, eVecs_l, eVecs_r, H)
+    # eVals, eVecs_r = eig(H, **kwargs)
+    # eVecs_l = inv(eVecs_r).T
+    # test_eigenvalues(eVals, eVecs_l, eVecs_r, H)
 
     # normalize eigenvectors w.r.t. biorthogonality
     # scipy.linalg.eig uses LAPACK's geev routine to compute the eigensystem,
     # which returns eigenvectors that are "normalized to have Euclidian norm
     # equal to 1 and largest component real" [1]
     # [1] https://software.intel.com/en-us/node/521147
-    c_norm = lambda ev_l, ev_r: np.sqrt(ev_l.dot(ev_r))
+    def c_norm(vl, vr):
+        return np.sqrt(vl.dot(vr))
 
     for n in (0, 1):
         # here one has freedom to have N = N_r * N_l, i.e., with
@@ -93,11 +92,16 @@ def c_eig(H, left=False, **kwargs):
         # we choose to leave the Euclidian norm of the right eigenvectors
         # intact, s.t. abs(eVecs_r)**2 = 1
         # and put the remaining normalization into the left eigenvectors
-        N = c_norm(eVecs_l[:,n],eVecs_r[:,n])
-        eVecs_l[:,n] /= N**2
+        N = c_norm(eVecs_l[:, n], eVecs_r[:, n])
+        eVecs_l[:, n] /= N**2
+        # ---------------------------------------------------------------------
+        # symmetric normalization
+        # eVecs_r[:, n] /= N
+        # eVecs_l[:, n] /= N
+        # ---------------------------------------------------------------------
 
-    #print "after R:", np.einsum('ij,ij -> i', eVecs_r.conj(), eVecs_r)
-    #print "after L:", np.einsum('ij,ij -> i', eVecs_l.conj(), eVecs_l)
+    # print "after R:", np.einsum('ij,ij -> i', eVecs_r.conj(), eVecs_r)
+    # print "after L:", np.einsum('ij,ij -> i', eVecs_l.conj(), eVecs_l)
 
     if left:
         return eVals, eVecs_l, eVecs_r
@@ -160,7 +164,7 @@ def map_trajectory(c1, c2, E1, E2):
         --------
             mapped trajectory: ndarray
     """
-    c1, c2 = [ np.abs(x)**2 for x in c1, c2 ]
+    c1, c2 = [np.abs(x)**2 for x in c1, c2]
 
     return (E1*c1 + E2*c2)/(c1 + c2)
 
@@ -168,8 +172,9 @@ def map_trajectory(c1, c2, E1, E2):
 def set_scientific_axes(ax, axis='x'):
     """Set axes to scientific notation."""
 
-    #xticks(rotation=30)
-    #ax.ticklabel_format(style='sci', axis=axis, scilimits=(0,0), useOffset=False)
+    # xticks(rotation=30)
+    # ax.ticklabel_format(style='sci', axis=axis,
+    #                     scilimits=(0,0), useOffset=False)
     ax.ticklabel_format(style='plain', axis=axis, useOffset=False)
     ax.xaxis.set_major_locator(plt.MaxNLocator(4))
     ax.yaxis.set_major_locator(plt.MaxNLocator(4))
@@ -191,17 +196,17 @@ def cmap_discretize(cmap, indices):
     if type(cmap) == str:
         cmap = plt.get_cmap(cmap)
 
-    indices = np.ma.concatenate([[0],indices,[1]])
+    indices = np.ma.concatenate([[0], indices, [1]])
     N = len(indices)
 
-    colors_i = np.concatenate((np.linspace(0,1.,N),
-                               (0.,0.,0.,0.)))
+    colors_i = np.concatenate((np.linspace(0., 1., N),
+                              (0., 0., 0., 0.)))
     colors_rgba = cmap(colors_i)
 
     cdict = {}
-    for ki, key in enumerate(('red','green','blue')):
-        cdict[key] = [ (indices[i], colors_rgba[i-1,ki],
-                        colors_rgba[i,ki]) for i in xrange(N) ]
+    for ki, key in enumerate(('red', 'green', 'blue')):
+        cdict[key] = [(indices[i], colors_rgba[i-1, ki],
+                       colors_rgba[i, ki]) for i in xrange(N)]
 
     return LinearSegmentedColormap(cmap.name + "_%d" % N, cdict, 1024)
 
@@ -237,12 +242,12 @@ def test_eigenvalues(eVals, eVecs_l, eVecs_r, H):
     print "eVecs_l\n", eVecs_l
     print
 
-    for n in (0,1):
-        print "ev_l*H\n  ", eVecs_l[:,n].dot(H)
-        print "e1*ev_l\n  ", eVals[n]*eVecs_l[:,n]
+    for n in (0, 1):
+        print "ev_l*H\n  ", eVecs_l[:, n].dot(H)
+        print "e1*ev_l\n  ", eVals[n]*eVecs_l[:, n]
         print
-        print "H*ev_r\n  ", H.dot(eVecs_r[:,n])
-        print "e1*ev_r\n  ", eVals[n]*eVecs_r[:,n]
+        print "H*ev_r\n  ", H.dot(eVecs_r[:, n])
+        print "e1*ev_r\n  ", eVals[n]*eVecs_r[:, n]
         print
 
     print 50*"#"
@@ -261,7 +266,8 @@ def get_height_profile(X, Y, sigma_x=1e-4, rho_y=1e-2):
             Returns:
             --------
                 W_Gauss_Fermi: (Nx,Ny) ndarray
-                    Height-profile with Gauss in x-, and Fermi shape in y direction.
+                    Height-profile with Gauss in x-, and Fermi shape in
+                    y-direction.
                 W_Fermi: (Nx,Ny) ndarray
                     Height profile with Fermi shape in y direction.
                 wmax, wmin: float
@@ -289,14 +295,15 @@ def get_local_peaks(v, peak_type='minimum'):
     # taken from stackoverflow.com/questions/3684484
 
     from scipy.ndimage.filters import minimum_filter, maximum_filter
-    from scipy.ndimage.morphology import generate_binary_structure, binary_erosion
+    from scipy.ndimage.morphology import binary_erosion
+    from scipy.ndimage.morphology import generate_binary_structure
 
     if peak_type == 'minimum':
         peak_filter = minimum_filter
     elif peak_type == 'maximum':
         peak_filter = maximum_filter
 
-    neighborhood = generate_binary_structure(2,2)
+    neighborhood = generate_binary_structure(2, 2)
     local_peak = peak_filter(v, footprint=neighborhood) == v
     background = (v == 0)
     eroded_background = binary_erosion(background,
