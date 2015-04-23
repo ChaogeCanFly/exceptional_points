@@ -325,7 +325,8 @@ class Dirichlet(Waveguide):
         eps_prime /= 2.*np.abs(B_prime)
 
         # avoid divergencies
-        eps_prime[-1] = 0.0
+        for n in (0,-1):
+            eps_prime[n] = 0.0
 
         self.eps_prime = eps_prime
         self.delta_prime = delta
