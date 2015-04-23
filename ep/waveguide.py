@@ -285,7 +285,7 @@ class Dirichlet(Waveguide):
             if not self._tqd_already_calculated:
                 self.tqd_arrays = self.get_quantum_driving_parameters()
                 self._tqd_already_calculated = True
-            idx = (np.abs(self.tqd_arrays[0] - eps)).argmin()
+            idx = (np.abs(self.t - t)).argmin()
             eps, delta, theta = [a[idx] for a in self.tqd_arrays]
         else:
             theta = self.theta
@@ -325,9 +325,11 @@ class Dirichlet(Waveguide):
         eps_prime /= 2.*np.abs(B_prime)
 
         # avoid divergencies
-        for x in eps_prime, theta_prime, B_prime:
-            for n in range(-1, 1):
-                x[n] = 0.0
+        eps_prime[-1] = 0.0
+
+        self.eps_prime = eps_prime
+        self.delta_prime = delta
+        self.theta_prime = theta_prime
 
         return eps_prime, delta, theta_prime
 
@@ -341,8 +343,7 @@ class Dirichlet(Waveguide):
         kr = self.kr
         W = self.W
 
-        # get eigenvectors of Hermitian system to find the nodes of one
-        # Bloch mode
+        # get eigenvectors of Hermitian system to find Bloch mode nodes
         _, evec = c_eig(self.H(0, x, y))
 
         # sort eigenvectors: always take the first one returned by c_eig,
