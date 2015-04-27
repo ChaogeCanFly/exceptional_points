@@ -203,7 +203,7 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                     init_phase=0.0, shape='RAP', plot=True,
                     plot_dimensions=False, direction='right',
                     boundary_only=False, with_boundary=False,
-                    theta=0.0, verbose=True):
+                    theta=0.0, smearing=False, verbose=True):
 
     p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigmax=sigmax,
                   sigmay=sigmay, x_R0=x_R0, y_R0=y_R0, init_phase=init_phase,
@@ -234,7 +234,8 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                  X_nodes=p.xnodes, Y_nodes=p.ynodes, sigmax=sigmax, sigmay=sigmay)
 
     if shape == 'RAP':
-        xi_lower, xi_upper = p.WG.get_boundary(theta=theta)
+        print "smearing", smearing
+        xi_lower, xi_upper = p.WG.get_boundary(theta=theta, smearing=smearing)
         # set last element to 0 (xi_lower) or W (xi_upper)
         xi_lower[-1] = 0.0
         xi_upper[-1] = W
@@ -245,7 +246,8 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
     if shape == 'RAP_TQD':
         eps_prime, delta_prime, theta_prime = p.WG.get_quantum_driving_parameters()
         xi_lower, xi_upper = p.WG.get_boundary(eps=eps_prime, delta=delta_prime,
-                                               theta=theta_prime)
+                                               theta=theta_prime,
+                                               smearing=smearing)
         # set last element to 0 (xi_lower) or W (xi_upper)
         xi_lower[-1] = 0.0
         xi_upper[-1] = W
