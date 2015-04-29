@@ -124,7 +124,7 @@ class Potential(object):
         self.X0 = np.ones_like(self.X)*np.pi/self.kr
 
         if self.verbose:
-            print "L:", self.WG.L
+            print "L:", self.L
             print "eta:", self.WG.eta
             print "nx:", len(self.WG.t)
             print "ny:", len(y)
@@ -230,8 +230,9 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                    fmt=["%i", "%.12f"])
         np.savetxt("potential_real.dat", zip(range(len(real_vector)), real_vector),
                    fmt=["%i", "%.12f"])
-        np.savez("potential_imag_xy.npz", X=X, Y=Y, P=imag_vector,
-                 X_nodes=p.xnodes, Y_nodes=p.ynodes, sigmax=sigmax, sigmay=sigmay)
+        if shape != 'science':
+            np.savez("potential_imag_xy.npz", X=X, Y=Y, P=imag_vector,
+                    X_nodes=p.xnodes, Y_nodes=p.ynodes, sigmax=sigmax, sigmay=sigmay)
 
     if shape == 'RAP':
         print "smearing", smearing
