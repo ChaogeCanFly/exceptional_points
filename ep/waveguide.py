@@ -104,8 +104,6 @@ class Waveguide(Base):
                     Phase difference between lower and upper boundary.
                 smearing: bool
                     Return a profile which is smeared out at the edges.
-                a: float (1 <= a <= 2)
-                    Parameter for Bell_smooth_constant loop parametrization.
 
             Returns:
             --------
