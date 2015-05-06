@@ -130,6 +130,7 @@ class Waveguide(Base):
             theta = self.theta
 
         # reverse x-coordinate for backward propagation
+        # corresponds to x -> L - x
         if self.loop_direction == '+':
             x = x[::-1]
 
