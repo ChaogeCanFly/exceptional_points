@@ -52,8 +52,8 @@ class Waveguide(Base):
 
         L = self.L
         w = self.w
+        sign = np.sign(w)
         Delta = self.init_phase
-        sign = -int(self.loop_direction + "1")
 
         if self.loop_type == "Constant":
             x, y = [np.ones_like(t)*z for z in self.x_R0, self.y_R0]
