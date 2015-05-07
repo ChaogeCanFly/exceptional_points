@@ -130,7 +130,8 @@ class Waveguide(Base):
         # reverse x-coordinate for backward propagation
         # corresponds to x -> L - x
         if self.loop_direction == '+':
-            x = x[::-1]
+            # x = x[::-1]
+            x = L - x
 
         xi_lower = eps*np.sin((kr + delta)*x)
         xi_upper = W + eps*np.sin((kr + delta)*x + theta)
