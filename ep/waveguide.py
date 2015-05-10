@@ -69,8 +69,8 @@ class Waveguide(Base):
             y = self.y_R0*sign*(sign*w*t/pi - 1.) + Delta
         elif self.loop_type == "Allen-Eberly":
             # mind w = 2pi/L!
-            x = self.x_R0 / np.cosh(2.*w*t - 2.*np.pi)
-            y = sign*self.y_R0*np.tanh(2.*sign*w*t - 2.*np.pi) + Delta
+            x = self.x_R0 / np.cosh(4.*w*t - 2.*np.pi)
+            y = sign*self.y_R0*np.tanh(4.*sign*w*t - 2.*np.pi) + Delta
         elif self.loop_type == "Bell-Rubbmark":
             x = self.x_R0/2. * (1. - np.cos(w*t))
             y = sign*2.*self.y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + Delta
