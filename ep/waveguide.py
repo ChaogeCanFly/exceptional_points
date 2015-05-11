@@ -338,7 +338,7 @@ class Dirichlet(Waveguide):
 
         if self.loop_type == 'Allen-Eberly_linearized':
             print "Allen-Eberly linearized!"
-            delta = cumtrapz(self.kr + delta_prime,
+            delta = cumtrapz(self.kr + delta,
                              self.t, self.dt, initial=0.0)
 
         self.eps_prime = eps_prime
