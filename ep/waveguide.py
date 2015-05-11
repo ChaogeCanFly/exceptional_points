@@ -3,6 +3,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import pi
+from scipy.integrate import cumtrapz
 
 from ep.base import Base
 from ep.dissipation import Loss
@@ -334,6 +335,11 @@ class Dirichlet(Waveguide):
         # avoid divergencies
         for n in (0, -1):
             eps_prime[n] = 0.0
+
+        if self.loop_type == 'Allen-Eberly_linearized':
+            print "Allen-Eberly linearized!"
+            delta = cumtrapz(self.kr + delta_prime,
+                             self.t, self.dt, initial=0.0)
 
         self.eps_prime = eps_prime
         self.delta_prime = delta
