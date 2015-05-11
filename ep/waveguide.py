@@ -73,7 +73,7 @@ class Waveguide(Base):
             y = sign*self.y_R0*np.tanh(2.*sign*w*t - 2.*np.pi) + Delta
         elif self.loop_type == "Allen-Eberly_linearized":
             x = self.x_R0 / np.cosh(2.*w*t - 2.*np.pi)
-            y = (self.kr*t + self.y_R0 * L / (4.*np.pi) *
+            y = (self.kr*t + Delta*t + self.y_R0 * L / (4.*np.pi) *
                     (np.log(np.cosh(4.*np.pi/L*t - 2.*np.pi)) -
                         np.log(np.cosh(2.*np.pi))))
             # TODO: take loop_direction into account!
