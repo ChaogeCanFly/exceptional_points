@@ -37,7 +37,6 @@ class Waveguide(Base):
         self.N = N
         self.eta = eta
         self.theta = theta
-        self.linearized = linearized
 
         self.k = lambda n: np.sqrt(N**2 - n**2)*np.pi/W
         self.kF = N*np.pi/W
@@ -201,6 +200,7 @@ class Dirichlet(Waveguide):
         Waveguide.__init__(self, **waveguide_kwargs)
 
         self.tqd = tqd
+        self.linearized = linearized
         self._tqd_already_calculated = False
 
         k0, k1 = [self.k(n) for n in 1, 2]
