@@ -37,6 +37,7 @@ class Waveguide(Base):
         self.N = N
         self.eta = eta
         self.theta = theta
+        self.linearized = linearized
 
         self.k = lambda n: np.sqrt(N**2 - n**2)*np.pi/W
         self.kF = N*np.pi/W
@@ -72,12 +73,12 @@ class Waveguide(Base):
             # mind w = 2pi/L!
             x = self.x_R0 / np.cosh(2.*w*t - 2.*np.pi)
             y = sign*self.y_R0*np.tanh(2.*sign*w*t - 2.*np.pi) + Delta
-        elif self.loop_type == "Allen-Eberly_linearized":
-            x = self.x_R0 / np.cosh(2.*w*t - 2.*np.pi)
-            y = (self.kr*t + Delta*t + self.y_R0 * L / (4.*np.pi) *
-                    (np.log(np.cosh(4.*np.pi/L*t - 2.*np.pi)) -
-                        np.log(np.cosh(2.*np.pi))))
-            # TODO: take loop_direction into account!
+        # elif self.loop_type == "Allen-Eberly_linearized":
+        #     x = self.x_R0 / np.cosh(2.*w*t - 2.*np.pi)
+        #     y = (self.kr*t + Delta*t + self.y_R0 * L / (4.*np.pi) *
+        #             (np.log(np.cosh(4.*np.pi/L*t - 2.*np.pi)) -
+        #                 np.log(np.cosh(2.*np.pi))))
+        #     # TODO: take loop_direction into account!
         elif self.loop_type == "Bell-Rubbmark":
             x = self.x_R0/2. * (1. - np.cos(w*t))
             y = sign*2.*self.y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + Delta
@@ -140,13 +141,20 @@ class Waveguide(Base):
             # x = x[::-1]
             x = L - x
 
-        xi_lower = eps*np.sin((kr + delta)*x)
-        xi_upper = W + eps*np.sin((kr + delta)*x + theta)
+        # if self.loop_type == 'Allen-Eberly_linearized':
+        #     print "Allen-Eberly linearized!"
+        #     xi_lower = eps*np.sin(delta)
+        #     xi_upper = W + eps*np.sin(delta + theta)
 
-        if self.loop_type == 'Allen-Eberly_linearized':
+        if self.linearized:
             print "Allen-Eberly linearized!"
+            delta = cumtrapz(self.kr + delta,
+                             self.t, self.dt, initial=0.0)
             xi_lower = eps*np.sin(delta)
             xi_upper = W + eps*np.sin(delta + theta)
+        else:
+            xi_lower = eps*np.sin((kr + delta)*x)
+            xi_upper = W + eps*np.sin((kr + delta)*x + theta)
 
         if smearing:
             def fermi(x, sigma):
@@ -172,72 +180,24 @@ class Waveguide(Base):
         return X, Y, Z
 
 
-class Neumann(Waveguide):
-    """Neumann class."""
-
-    def __init__(self, **waveguide_kwargs):
-        """Exceptional Point (EP) waveguide class with Neumann boundary
-        conditons.
-
-        Copies methods and variables from the Waveguide class."""
-        Waveguide.__init__(self, **waveguide_kwargs)
-
-        k0, k1 = [self.k(n) for n in 0, 1]
-        self.k0, self.k1 = k0, k1
-        self.kr = k0 - k1
-
-        if self.x_R0 is None or self.y_R0 is None:
-            self.x_R0, self.y_R0 = self._get_EP_coordinates()
-
-    def _get_EP_coordinates(self):
-        eta = self.eta
-        k0 = self.k0
-        k1 = self.k1
-        theta = self.theta
-
-        x_EP = eta / (2.*np.sqrt(k0*k1 * (1. + np.cos(theta))))
-        y_EP = 0.0
-
-        return x_EP, y_EP
-
-    def H(self, t, x=None, y=None):
-        if x is None and y is None:
-            eps, delta = self.get_cycle_parameters(t)
-        else:
-            eps, delta = x, y
-
-        B = (-1j * (np.exp(1j*self.theta) + 1) *
-             self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
-        self.B = B
-
-        H11 = -self.k0 - 1j*self.eta/2.
-        H12 = B*eps
-        H21 = B.conj()*eps
-        H22 = -self.k0 - delta - 1j*self.eta*self.k0/(2.*self.k1)
-
-        H = np.array([[H11, H12],
-                      [H21, H22]], dtype=complex)
-        return H
-
-    def wavefunction(self):
-        x, b0, b1 = self.t, self.phi_a, self.phi_b
-        y = np.linspace(0, self.W, len(x)/self.L)
-
-        X, Y = np.meshgrid(x, y)
-
-        PHI = b0 + b1 * (np.sqrt(2.*self.k0/self.k1) *
-                         np.cos(pi*Y)*np.exp(-1j*self.kr*X))
-        return X, Y, PHI
-
-
 class Dirichlet(Waveguide):
     """Dirichlet class."""
 
-    def __init__(self, tqd=False, **waveguide_kwargs):
+    def __init__(self, tqd=False, linearized=False, **waveguide_kwargs):
         """Exceptional Point (EP) waveguide class with Dirichlet boundary
         conditons.
 
-        Copies methods and variables from the Waveguide class."""
+        Copies methods and variables from the Waveguide class.
+
+            Parameters:
+            -----------
+                tqd: bool
+                    Whether to use the transitionless quantum driving
+                    algorithm.
+                linearized: bool
+                    Whether to derive the linearized phase (returns phase of
+                    sine function in boundary instead of detuning).
+        """
         Waveguide.__init__(self, **waveguide_kwargs)
 
         self.tqd = tqd
@@ -336,10 +296,10 @@ class Dirichlet(Waveguide):
         for n in (0, -1):
             eps_prime[n] = 0.0
 
-        if self.loop_type == 'Allen-Eberly_linearized':
-            print "Allen-Eberly linearized!"
-            delta = cumtrapz(self.kr + delta,
-                             self.t, self.dt, initial=0.0)
+        # if self.loop_type == 'Allen-Eberly_linearized':
+        #     print "Allen-Eberly linearized!"
+        #     delta = cumtrapz(self.kr + delta,
+        #                      self.t, self.dt, initial=0.0)
 
         self.eps_prime = eps_prime
         self.delta_prime = delta
@@ -540,6 +500,64 @@ class DirichletPositionDependentLoss(Dirichlet):
         xnodes, ynodes = [np.asarray(v).flatten() for v in xnodes, ynodes]
 
         return xnodes, ynodes
+
+
+class Neumann(Waveguide):
+    """Neumann class."""
+
+    def __init__(self, **waveguide_kwargs):
+        """Exceptional Point (EP) waveguide class with Neumann boundary
+        conditons.
+
+        Copies methods and variables from the Waveguide class."""
+        Waveguide.__init__(self, **waveguide_kwargs)
+
+        k0, k1 = [self.k(n) for n in 0, 1]
+        self.k0, self.k1 = k0, k1
+        self.kr = k0 - k1
+
+        if self.x_R0 is None or self.y_R0 is None:
+            self.x_R0, self.y_R0 = self._get_EP_coordinates()
+
+    def _get_EP_coordinates(self):
+        eta = self.eta
+        k0 = self.k0
+        k1 = self.k1
+        theta = self.theta
+
+        x_EP = eta / (2.*np.sqrt(k0*k1 * (1. + np.cos(theta))))
+        y_EP = 0.0
+
+        return x_EP, y_EP
+
+    def H(self, t, x=None, y=None):
+        if x is None and y is None:
+            eps, delta = self.get_cycle_parameters(t)
+        else:
+            eps, delta = x, y
+
+        B = (-1j * (np.exp(1j*self.theta) + 1) *
+             self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
+        self.B = B
+
+        H11 = -self.k0 - 1j*self.eta/2.
+        H12 = B*eps
+        H21 = B.conj()*eps
+        H22 = -self.k0 - delta - 1j*self.eta*self.k0/(2.*self.k1)
+
+        H = np.array([[H11, H12],
+                      [H21, H22]], dtype=complex)
+        return H
+
+    def wavefunction(self):
+        x, b0, b1 = self.t, self.phi_a, self.phi_b
+        y = np.linspace(0, self.W, len(x)/self.L)
+
+        X, Y = np.meshgrid(x, y)
+
+        PHI = b0 + b1 * (np.sqrt(2.*self.k0/self.k1) *
+                         np.cos(pi*Y)*np.exp(-1j*self.kr*X))
+        return X, Y, PHI
 
 
 def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1,
