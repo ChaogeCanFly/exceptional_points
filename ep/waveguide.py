@@ -147,10 +147,10 @@ class Waveguide(Base):
 
         if self.linearized:
             print "Allen-Eberly linearized!"
-            delta = cumtrapz(self.kr + delta,
-                             self.t, self.dt, initial=0.0)
-            xi_lower = eps*np.sin(delta)
-            xi_upper = W + eps*np.sin(delta + theta)
+            phi = cumtrapz(self.kr + delta,
+                           self.t, self.dt, initial=0.0)
+            xi_lower = eps*np.sin(phi)
+            xi_upper = W + eps*np.sin(phi + theta)
         else:
             xi_lower = eps*np.sin((kr + delta)*x)
             xi_upper = W + eps*np.sin((kr + delta)*x + theta)
