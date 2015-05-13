@@ -137,16 +137,10 @@ class Waveguide(Base):
         # reverse x-coordinate for backward propagation
         # corresponds to x -> L - x
         if self.loop_direction == '+':
-            # x = x[::-1]
             x = L - x
 
-        # if self.loop_type == 'Allen-Eberly_linearized':
-        #     print "Allen-Eberly linearized!"
-        #     xi_lower = eps*np.sin(delta)
-        #     xi_upper = W + eps*np.sin(delta + theta)
-
         if self.linearized:
-            print "Allen-Eberly linearized!"
+            print "Phase linearized!"
             phi = cumtrapz(self.kr + delta,
                            self.t, self.dt, initial=0.0)
             xi_lower = eps*np.sin(phi)
@@ -295,11 +289,6 @@ class Dirichlet(Waveguide):
         # avoid divergencies
         for n in (0, -1):
             eps_prime[n] = 0.0
-
-        # if self.loop_type == 'Allen-Eberly_linearized':
-        #     print "Allen-Eberly linearized!"
-        #     delta = cumtrapz(self.kr + delta,
-        #                      self.t, self.dt, initial=0.0)
 
         self.eps_prime = eps_prime
         self.delta_prime = delta
