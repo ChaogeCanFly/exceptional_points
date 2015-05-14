@@ -142,9 +142,9 @@ class Waveguide(Base):
         if self.linearized:
             print "Phase linearized!"
             phi = cumtrapz(self.kr + delta,
-                           self.t, self.dt, initial=0.0)
-            xi_lower = eps*np.sin(phi)
-            xi_upper = W + eps*np.sin(phi + theta)
+                           x=self.t, dx=self.dt, initial=0.0)
+            xi_lower = eps*np.sin(phi - theta/2.)
+            xi_upper = W + eps*np.sin(phi + theta/2.)
         else:
             xi_lower = eps*np.sin((kr + delta)*x)
             xi_upper = W + eps*np.sin((kr + delta)*x + theta)
