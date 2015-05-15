@@ -237,7 +237,6 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                     X_nodes=p.xnodes, Y_nodes=p.ynodes, sigmax=sigmax, sigmay=sigmay)
 
     if shape == 'RAP':
-        print "smearing", smearing
         xi_lower, xi_upper = p.WG.get_boundary(theta=theta, smearing=smearing)
         # set last element to 0 (xi_lower) or W (xi_upper)
         xi_lower[-1] = 0.0
