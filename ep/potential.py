@@ -98,6 +98,7 @@ class Potential(object):
 
         wg_kwargs = {'N': self.N,
                      'L': self.L,
+                     'W': self.W,
                      'tN': self.nx,
                      'loop_type': self.loop_type,
                      'x_R0': self.x_R0,
@@ -234,7 +235,8 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                    fmt=["%i", "%.12f"])
         if shape != 'science':
             np.savez("potential_imag_xy.npz", X=X, Y=Y, P=imag_vector,
-                    X_nodes=p.xnodes, Y_nodes=p.ynodes, sigmax=sigmax, sigmay=sigmay)
+                     X_nodes=p.xnodes, Y_nodes=p.ynodes,
+                     sigmax=sigmax, sigmay=sigmay)
 
     if shape == 'RAP':
         xi_lower, xi_upper = p.WG.get_boundary(theta=theta, smearing=smearing)
