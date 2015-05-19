@@ -1,4 +1,5 @@
 from __future__ import division
+
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
