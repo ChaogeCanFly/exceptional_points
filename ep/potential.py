@@ -1,4 +1,7 @@
 #!/usr/bin/env python2.7
+# TODO: bugfix: -b option necessary for W != 1 (linspace(0, T, tN) in ep.base
+#       receives negative values)
+#
 
 import json
 import matplotlib.pyplot as plt
