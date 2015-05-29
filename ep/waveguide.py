@@ -78,6 +78,9 @@ class Waveguide(Base):
         #             (np.log(np.cosh(4.*np.pi/L*t - 2.*np.pi)) -
         #                 np.log(np.cosh(2.*np.pi))))
         #     # TODO: take loop_direction into account!
+        elif self.loop_type == "Allen-Eberly-Gauss":
+            x = self.x_R0 * np.exp(-(t-L/2.)**2 * 2./L)
+            y = sign*self.y_R0*np.tanh(2.*sign*w*t - 2.*np.pi) + Delta
         elif self.loop_type == "Bell-Rubbmark":
             x = self.x_R0/2. * (1. - np.cos(w*t))
             y = sign*2.*self.y_R0*(1./(1.+np.exp(-12./L*(t-L/2.)))-0.5) + Delta
