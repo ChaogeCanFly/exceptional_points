@@ -43,7 +43,7 @@ def get_colors():
     """Return colorbrewer's Set1 colors and a colormap similar to MATLAB's
     'parula' colormap."""
 
-    colors = palettable.colorbrewer.qualitative.Set1_9.mpl_colors()
+    colors = palettable.colorbrewer.qualitative.Set1_9.mpl_colors
 
     rgb = [[0.20784314, 0.16470588, 0.52941176],
            [0.01176471, 0.38823529, 0.88235294],
