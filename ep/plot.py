@@ -54,7 +54,7 @@ def get_colors():
            [0.85098039, 0.72941176, 0.33725490],
            [0.98823529, 0.80784314, 0.18039216],
            [0.97647059, 0.98431373, 0.05490196]]
-    parula = LinearSegmentedColormap.from_list('parula', rgb)
+    parula = LinearSegmentedColormap.from_list('parula', rgb, N=256)
     parula_discrete = ListedColormap(rgb, name='parula_discrete', N=9)
 
     for cmap in (parula, parula_discrete):
