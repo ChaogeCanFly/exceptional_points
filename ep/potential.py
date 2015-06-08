@@ -4,7 +4,6 @@
 #
 
 import json
-import matplotlib.pyplot as plt
 import numpy as np
 
 import argh
@@ -225,6 +224,7 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
 
     if not boundary_only:
         if plot:
+            import matplotlib.pyplot as plt
             if plot_dimensions:
                 plt.figure(figsize=(L, W))
             plt.pcolormesh(X, Y, imag, cmap='RdBu_r')
