@@ -1,6 +1,5 @@
 #!/usr/bin/env python2.7
 
-import matplotlib.pyplot as plt
 import numpy as np
 from numpy import pi
 from scipy.integrate import cumtrapz
@@ -554,6 +553,8 @@ class Neumann(Waveguide):
 
 def plot_figures(show=False, L=100., eta=0.1, N=1.05, phase=-0.1,
                  direction="-", x_EP=0.05):
+
+    import matplotlib.pyplot as plt
 
     import brewer2mpl
     cmap = brewer2mpl.get_map('Set1', 'qualitative', 9)

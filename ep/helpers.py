@@ -1,7 +1,5 @@
 from __future__ import division
 
-import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 from numpy import pi
 from scipy.linalg import eig
@@ -172,6 +170,7 @@ def map_trajectory(c1, c2, E1, E2):
 
 def set_scientific_axes(ax, axis='x'):
     """Set axes to scientific notation."""
+    import matplotlib.pyplot as plt
 
     # xticks(rotation=30)
     # ax.ticklabel_format(style='sci', axis=axis,
@@ -193,6 +192,8 @@ def cmap_discretize(cmap, indices):
         --------
             segmented colormap
     """
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LinearSegmentedColormap
 
     if type(cmap) == str:
         cmap = plt.get_cmap(cmap)
