@@ -57,6 +57,9 @@ class Waveguide(Base):
 
         if self.loop_type == "Constant":
             x, y = [np.ones_like(t)*z for z in self.x_R0, self.y_R0]
+        elif self.loop_type == "Landau-Zener":
+            x = np.ones_like(t)*self.x_R0
+            y = self.y_R0 + self.y_R0*np.sin(w*t + Delta)
         elif self.loop_type == "Circle":
             x = self.x_R0 + self.x_R0*np.cos(w*t + Delta)
             y = self.y_R0 + self.y_R0*np.sin(w*t + Delta)
