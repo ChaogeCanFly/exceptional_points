@@ -3,7 +3,7 @@ from __future__ import division
 import numpy as np
 from numpy import pi
 from scipy.linalg import eig
-from scipy.integrate import trapz
+from scipy.integrate import trapz, cumtrapz
 
 
 class FileOperations():
@@ -124,6 +124,26 @@ def c_trapz(f, dx, **kwargs):
 
     real_int = trapz(f.real, dx=dx, **kwargs)
     imag_int = trapz(f.imag, dx=dx, **kwargs)
+
+    return real_int + 1j*imag_int
+
+
+def c_cumtrapz(f, dx, **kwargs):
+    """Wrapper for scipy.integrate.trapz that allows to integrate complex-valued
+    arrays.
+
+        Parameters:
+        -----------
+            f:  (N,) ndarray
+           dx:  float
+
+        Returns:
+        --------
+            c_cumtrapz: (N,) ndarray
+    """
+
+    real_int = cumtrapz(f.real, dx=dx, initial=0.0, **kwargs)
+    imag_int = cumtrapz(f.imag, dx=dx, initial=0.0, **kwargs)
 
     return real_int + 1j*imag_int
 
