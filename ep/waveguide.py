@@ -157,8 +157,9 @@ class Waveguide(Base):
         if smearing:
             def fermi(x, sigma):
                 return 1./(1. + np.exp(-x/sigma))
-            s = 0.050
-            pre = fermi(x-3.*s, s)*fermi(L-x-3.*s, s)
+            s = 0.500
+            # pre = fermi(x-3.*s, s)*fermi(L-x-3.*s, s)
+            pre = fermi(x-4.*s, s)*fermi(L-x-4.*s, s)
             xi_lower *= pre
             xi_upper = pre*(xi_upper - W) + W
 
