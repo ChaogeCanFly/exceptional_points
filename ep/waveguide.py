@@ -303,7 +303,7 @@ class Dirichlet(Waveguide):
         return eps_prime, delta, theta_prime
 
     def get_nodes(self, x=None, y=None):
-        """Return the nodes of the Bloch-eigenvector."""
+        """Return the nodes of the Bloch-eigenvector in the unit cell."""
 
         if not self.loop_type == 'Constant':
             raise Exception("Error: loop_type not 'Constant'!")
@@ -321,8 +321,9 @@ class Dirichlet(Waveguide):
         if b1.imag > 0 or b2.imag < 0:
             b1, b2 = evec[0, 1], evec[1, 1]
 
-        # x0 = lambda s: (2.*pi/kr * (1+s)/2
-        #                 - 1j/kr * np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
+        # def x0(s):
+        #   (2.*pi/kr * (1+s)/2 - 1j/kr * np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
+
         def x0(s):
             return s*np.pi/(2.*kr)
 
@@ -351,12 +352,12 @@ class Dirichlet(Waveguide):
     def wavefunction(self, evecs=False, with_boundary=False):
         """Return the wavefunction Psi(x,y)."""
         if evecs == 'a':
-            b0, b1 = [self.eVecs_r[:, n, 0] for n in 0, 1]
+            b0, b1 = [self.eVecs_r[:, n, 0] for n in (0, 1)]
         elif evecs == 'b':
-            b0, b1 = [self.eVecs_r[:, n, 1] for n in 0, 1]
+            b0, b1 = [self.eVecs_r[:, n, 1] for n in (0, 1)]
         elif evecs == 'c':
-            b0, b1 = [self.eVecs_r[:, n, 0] for n in 0, 1]
-            b2, b3 = [self.eVecs_r[:, n, 1] for n in 0, 1]
+            b0, b1 = [self.eVecs_r[:, n, 0] for n in (0, 1)]
+            b2, b3 = [self.eVecs_r[:, n, 1] for n in (0, 1)]
 
             mask = np.logical_or(b0.imag > 0, b1.imag <= 0)
             b0[mask], b1[mask] = b2[mask], b3[mask]
@@ -486,10 +487,7 @@ class DirichletPositionDependentLoss(Dirichlet):
                           'y_R0': deltan}
             WGn = Dirichlet(**wgn_kwargs)
             nodes = WGn.get_nodes(x=epsn, y=deltan)
-            # xnodes.append(nodes[:,0] + xn)
-            # xnodes.append(nodes[:,0]/(1+deltan/self.kr) + xn)
-            xnodes.append(nodes[:, 0]/(1 + deltan/self.kr) + Ln_sum)
-            # xnodes.append(nodes[:,0] + Ln_sum)
+            xnodes.append(nodes[:, 0] + Ln_sum)
             ynodes.append(nodes[:, 1])
 
         xnodes, ynodes = [np.asarray(v).flatten() for v in xnodes, ynodes]

@@ -9,7 +9,7 @@ except:
     print "Warning: mayavi not found!"
 from scipy.integrate import complex_ode
 
-from ep.helpers import c_eig, c_trapz, map_trajectory
+from ep.helpers import c_eig, c_trapz, c_cumtrapz, map_trajectory
 
 
 class Base:
@@ -88,7 +88,7 @@ class Base:
 
         # adiabatic coefficient and adiabatic phase
         self.Psi_adiabatic = np.zeros((self.tN, 2), dtype=np.complex256)
-        self.theta = np.zeros((self.tN, 2), dtype=np.complex256)
+        self.theta_adiabatic = np.zeros((self.tN, 2), dtype=np.complex256)
 
         self.calc_adiabatic_state = calc_adiabatic_state
         self.verbose = verbose
@@ -314,7 +314,7 @@ class Base:
         self.eVecs_l = eVecs_l
         self.eVecs_r = eVecs_r
 
-    def _get_adiabatic_state(self, n):
+    def _get_adiabatic_state(self):
         """Calculate the adiabatic prediction exp(1j*theta).
 
             Parameters:
@@ -327,12 +327,10 @@ class Base:
                 adiabatic prediction: float
         """
 
-        E_a, E_b = [ self.eVals[:n,i] for i in (0,1) ]
-
-        self.theta[n,:] = [ -c_trapz(E, dx=self.dt) for E in (E_a,E_b) ]
-        exp_a, exp_b = [ np.exp(1j*theta) for theta in self.theta[n,:] ]
-
-        return exp_a, exp_b
+        for i in (0, 1):
+            E = self.eVals[:, i]
+            self.theta_adiabatic[:, i] = -c_cumtrapz(E, dx=self.dt)
+            self.Psi_adiabatic[:, i] = np.exp(1j*self.theta_adiabatic[:, i])
 
     def _get_gain_state(self):
         """Determine the (relative) gain and loss states.
@@ -419,11 +417,12 @@ class Base:
         for n, tn in enumerate(self.t):
             if SE.successful():
                 self.Psi[n,:] = SE.y
-                if self.calc_adiabatic_state:
-                    self.Psi_adiabatic[n,:] = self._get_adiabatic_state(n)
                 SE.integrate(SE.t + self.dt)
             else:
                 raise Exception("ODE convergence error!")
+
+        if self.calc_adiabatic_state:
+            self._get_adiabatic_state()
 
         # replace projection of states by dot product via Einstein sum
         projection = np.einsum('ijk,ij -> ik',

@@ -7,7 +7,7 @@ import numpy as np
 
 import brewer2mpl as brew
 
-from ep.waveguide import Waveguide
+from ep.waveguide import Dirichlet
 from ep.helpers import FileOperations, cmap_discretize
 from ep.helpers import map_trajectory, set_scientific_axes
 
@@ -17,7 +17,7 @@ def circle_EP(filename=None, write_profile=False, **kwargs):
 
     f = FileOperations(filename)
 
-    WG = Waveguide(**kwargs)
+    WG = Dirichlet(**kwargs)
 
     ##
     # plot amplitudes b0(x), b1(x)
@@ -196,7 +196,7 @@ class Diodicity:
         
         # flip-error R0
         self.kwargs['loop_direction'] = '-'
-        WG = Waveguide(**self.kwargs)
+        WG = Dirichlet(**self.kwargs)
         _, b0, b1 = WG.solve_ODE()
         R0_b0 = abs(b0[-1])
         R0_b1 = abs(b1[-1])
@@ -204,7 +204,7 @@ class Diodicity:
 
         # flip-error R1
         self.kwargs['loop_direction'] = '+'
-        WG = Waveguide(**self.kwargs)
+        WG = Dirichlet(**self.kwargs)
         _, b0, b1 = WG.solve_ODE()
         R1_b0 = abs(b0[-1])
         R1_b1 = abs(b1[-1])
