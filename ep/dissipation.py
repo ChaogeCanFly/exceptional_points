@@ -14,7 +14,7 @@ class Loss(object):
     """
 
     def __init__(self, k=None, kF=None, kr=None, W=None,
-                 sigmax=0.05, sigmay=0.05, integrate_R2=True,
+                 sigmax=0.01, sigmay=0.01, integrate_R2=True,
                  test_integrals=False):
         self.sigmax = sigmax
         self.sigmay = sigmay
