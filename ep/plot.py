@@ -41,7 +41,15 @@ def cmap_discretize(cmap, indices):
 
 def get_colors():
     """Return colorbrewer's Set1 colors and a colormap similar to MATLAB's
-    'parula' colormap."""
+    'parula' colormap.
+
+        Returns:
+        --------
+        colors: list
+        parula: list
+        parula_discrete: list
+
+    """
 
     colors = palettable.colorbrewer.qualitative.Set1_9.mpl_colors
 
