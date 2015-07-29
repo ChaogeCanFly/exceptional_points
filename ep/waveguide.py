@@ -12,7 +12,7 @@ from ep.helpers import c_eig
 class Waveguide(Base):
     """Waveguide class."""
 
-    def __init__(self, L=100, W=1, eta=0.0, N=2.5, theta=0.0, **base_kwargs):
+    def __init__(self, L=100.0, W=1.0, eta=0.0, N=2.5, theta=0.0, **base_kwargs):
         """Exceptional Point (EP) waveguide class.
 
         Copies methods and variables from the Base class and adds new
