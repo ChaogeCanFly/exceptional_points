@@ -2,6 +2,7 @@
 
 import numpy as np
 from numpy import pi
+from scipy import interpolate, integrate
 from scipy.integrate import cumtrapz
 
 from ep.base import Base
@@ -322,7 +323,8 @@ class Dirichlet(Waveguide):
             b1, b2 = evec[0, 1], evec[1, 1]
 
         # def x0(s):
-        #   (2.*pi/kr * (1+s)/2 - 1j/kr * np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
+        #   (2.*pi/kr * (1+s)/2 - 1j/kr *
+        #    np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
 
         def x0(s):
             return s*np.pi/(2.*kr)
@@ -493,6 +495,78 @@ class DirichletPositionDependentLoss(Dirichlet):
         xnodes, ynodes = [np.asarray(v).flatten() for v in xnodes, ynodes]
 
         return xnodes, ynodes
+
+
+class DirichletNumericPotential(Dirichlet):
+    """Dirichlet class with potential input."""
+
+    def __init__(self, potential_file=None, **waveguide_kwargs):
+        """Exceptional Point (EP) waveguide class with Dirichlet boundary
+        conditons and position dependent losses.
+
+        Copies methods and variables from the Dirichlet class.
+
+                Additional parameters:
+                ----------------------
+                    potential_file: .npz container
+                        X, Y and P meshes of the potential and the underlying
+                        grid
+
+        """
+        dirichlet_kwargs = waveguide_kwargs.copy()
+        dirichlet_kwargs.update({'loop_type': 'Constant',
+                                 'eta': 0.0})
+        self.Dirichlet = Dirichlet(**dirichlet_kwargs)
+        Dirichlet.__init__(self, **waveguide_kwargs)
+
+        self.potential_file = potential_file
+
+    def _get_potential_interpolating_function(self):
+
+        F = np.load(self.potential_file)
+        xgrid, ygrid, pgrid = [F[s].T for s in 'X', 'Y', 'P']
+        x, y = [np.unique(i) for i in xgrid, ygrid]
+
+        return xgrid, ygrid, interpolate.RectBivariateSpline(x, y, pgrid)
+
+    def _get_EP_position(self, tn):
+        prefactor = lambda n, m: (1./(2.*pi*self.W) * self.kF * self.kr / np.sqrt(self.k(n)*self.k(m)))
+        def Gamma(y, x, n, m, part=np.real):
+            G = self.numeric_potential(x, y)
+            G *= prefactor(n, m)*np.sin(n*pi/self.W*y)*np.sin(m*pi/self.W*y)
+            G *= np.exp(1j*(self.k(n)-self.k(m)*x))
+            return part(G)
+        G = lambda n, m: (integrate.quad(Gamma, 0, self.W, args=(tn, n, m, np.real))[0] +
+                           1j*integrate.quad(Gamma, 0, self.W, args=(tn, n, m, np.imag))[0])
+
+        eps_EP = np.sqrt((G(0, 0) - G(1, 1))**2 + 4.*G(0, 1)*G(1, 0))
+        eps_EP /= 2.*np.sqrt(abs(self.B0)**2 + (self.B0.conj()*G(0, 1) + self.B0 * G(1, 0)**2 / (G(0, 0) - G(1, 1)**2)))
+        delta_EP = - 2. * (self.B0.conj()*G(0, 1) + self.B0 * G(1, 0)) * eps_EP
+        delta_EP /= G(0, 0) - G(1, 1)
+        print "tn", tn, "eps_EP", eps_EP, "delta_EP", delta_EP
+        print "G_00", G(0, 0)
+        print "G_01", G(0, 1)
+        print "G_10", G(1, 0)
+        print "G_11", G(1, 1)
+        return eps_EP, delta_EP
+
+    def get_EP_positions(self):
+        xgrid, ygrid, self.numeric_potential = self._get_potential_interpolating_function()
+        # print "xgrid", xgrid.min(), xgrid.max()
+        # print "ygrid", ygrid.min(), ygrid.max()
+        # x = np.linspace(0, self.L)
+        # y = np.linspace(0, self.W)
+        # X, Y = np.meshgrid(x, y)
+        # z = self.numeric_potential.ev(X, Y)
+        # import matplotlib.pyplot as plt
+        # plt.clf()
+        # plt.pcolormesh(x, y, z)
+        # zz = self.numeric_potential.ev(xgrid, ygrid)
+        # plt.pcolormesh(xgrid, ygrid, zz)
+        # plt.show()
+        eps_EP, delta_EP = np.asarray([self._get_EP_position(tN) for tN in self.t]).T
+
+        return eps_EP, delta_EP
 
 
 class Neumann(Waveguide):
