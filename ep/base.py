@@ -16,8 +16,8 @@ class Base:
     """Base class."""
 
     def __init__(self, T=100, tN=None, x_R0=0.05, y_R0=0.4, loop_type="Circle",
-                 loop_direction='-', init_state='a', init_phase=0.0,
-                 calc_adiabatic_state=False, verbose=False):
+                 loop_direction='-', init_state='a', init_state_method='gain',
+                 init_phase=0.0, calc_adiabatic_state=False, verbose=False):
         """Exceptional Point (EP) base class.
 
         The dynamics of a 2-level system are determined via an Runge-Kutta
@@ -41,9 +41,11 @@ class Base:
                                 2^(-1/2)*(|a> + |b>)
                        'd': superposition of gain and loss state:
                                 2^(-1/2)*(|a> - |b>)
+                init_state_method: str, optional ('gain'|'energy')
+                    Determines which method to use for sorting the eigensystem.
                 loop_type : str, optional
                     Loop trajectory shape.
-                loop_direction : str, optional ("-"|"+")
+                loop_direction : str, optional ('-'|'+')
                     Direction of evolution around the EP (-: ccw, +: cw).
                 init_phase : float, optional
                     Starting point of evolution on trajectory.
@@ -57,6 +59,7 @@ class Base:
         self.T = T
 
         self.init_state = init_state
+        self.init_state_method = init_state_method
         self.loop_type = loop_type
         self.loop_direction = loop_direction
 
@@ -332,7 +335,7 @@ class Base:
             self.theta_adiabatic[:, i] = -c_cumtrapz(E, dx=self.dt)
             self.Psi_adiabatic[:, i] = np.exp(1j*self.theta_adiabatic[:, i])
 
-    def _get_gain_state(self):
+    def _find_gain_state(self):
         """Determine the (relative) gain and loss states.
 
         The integral int_0,T E_a(t) dt is calculated. If the imaginary part of
@@ -348,6 +351,16 @@ class Base:
         # change order of energy eigenvalues and eigenvectors if
         # imag(integral_E0) is smaller than imag(integral_E1)
         if np.imag(intE0) < np.imag(intE1):
+            self.eVals[:,:] = self.eVals[:,::-1]
+            self.eVecs_r[:,:,:] = self.eVecs_r[:,:,::-1]
+            self.eVecs_l[:,:,:] = self.eVecs_l[:,:,::-1]
+
+    def _find_lower_energy_state(self):
+        """Determine the lower-energy state and sort the eigensystem such that
+        the first state |0> corresponds to Re(E_0) < Re(E_1) of the second
+        state |1> at time t=0."""
+
+        if self.eVals[0, 0] > self.eVals[0, 1]:
             self.eVals[:,:] = self.eVals[:,::-1]
             self.eVecs_r[:,:,:] = self.eVecs_r[:,:,::-1]
             self.eVecs_l[:,:,:] = self.eVecs_l[:,:,::-1]
@@ -403,7 +416,10 @@ class Base:
 
         # set initial conditions
         self.get_c_eigensystem()        # calculate eigensystem for all times
-        self._get_gain_state()          # find state with total (relative) gain
+        if self.init_state_method == 'gain':
+            self._find_gain_state()
+        elif self.init_state_method == 'energy':
+            self._find_lower_energy_state
         self.eVec0 = self._get_init_state()
 
         # create ode object to solve Schroedinger equation (SE)
