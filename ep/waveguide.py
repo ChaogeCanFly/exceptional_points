@@ -442,8 +442,9 @@ class DirichletPositionDependentLoss(Dirichlet):
         B = self.Dirichlet.B0
 
         # damping coefficient
-        eps0 = 0.02
+        eps0 = 0.1*self.x_R0
         G = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2 * self.Gamma_tilde
+        # G = np.sin(np.pi/self.L*t)*self.Gamma_tilde
         self.Gamma_tilde = G
 
         if abs(self.Dirichlet.eta) > 0.0:
