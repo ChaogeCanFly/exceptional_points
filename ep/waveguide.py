@@ -403,8 +403,8 @@ class DirichletPositionDependentLoss(Dirichlet):
 
     def _get_EP_coordinates(self, x=None, y=None):
         Gamma = Loss(k=self.k, kF=self.kF, kr=self.kr, W=self.W,
-                     sigmax=1.e-3, sigmay=1.e-3)
-        self.nodes = self.Dirichlet.get_nodes()
+                     sigmax=1.e-2, sigmay=1.e-2)
+        self.nodes = self.Dirichlet.get_nodes(x=x, y=y)
 
         if np.any(np.isnan(self.nodes)):
             G = np.zeros((2, 2))
