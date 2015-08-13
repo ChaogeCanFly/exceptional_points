@@ -446,13 +446,9 @@ class DirichletPositionDependentLoss(Dirichlet):
         G = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2 * self.Gamma_tilde
         self.Gamma_tilde = G
 
-        H11 = -self.k0 - 1j*self.eta*self.Gamma_tilde[0, 0]
-        H12 = B*eps - 1j*self.eta*self.Gamma_tilde[0, 1]
-        H21 = B.conj()*eps - 1j*self.eta*self.Gamma_tilde[1, 0]
-        H22 = -self.k0 - delta - 1j*self.eta*self.Gamma_tilde[1, 1]
-
-        H = np.array([[H11, H12],
-                      [H21, H22]], dtype=complex)
+        if abs(self.Dirichlet.eta) > 0.0:
+            raise Exception("Error: eta should be zero in self.Dirichlet!")
+        H = self.Dirichlet.H(t, x=x, y=y) - 1j*self.eta*self.Gamma_tilde
 
         if self.verbose:
             print "t", t
