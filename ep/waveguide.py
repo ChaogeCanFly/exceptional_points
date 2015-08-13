@@ -436,16 +436,20 @@ class DirichletPositionDependentLoss(Dirichlet):
             eps, delta = x, y
 
         # force re-evaluation of Gamma_tilde
-        # self.Dirichlet.x_R0 = eps
-        # self.Dirichlet.y_R0 = delta
-        self.EP_positions.append(self._get_EP_coordinates(x=eps, y=delta))
+        EP_coordinates = self._get_EP_coordinates(x=eps, y=delta)
+        self.EP_coordinates.append(EP_coordinates)
 
         B = self.Dirichlet.B0
 
         # damping coefficient
-        eps0 = 0.1*self.x_R0
-        G = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2 * self.Gamma_tilde
-        # G = np.sin(np.pi/self.L*t)*self.Gamma_tilde
+        # eps0 = 0.1*self.x_R0
+        # G = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2 * self.Gamma_tilde
+        t0, t1 = 0.25*self.L, 0.75*self.L
+        L0 = (t1 - t0)/2.
+        envelope = np.sin(np.pi/(2.*L0)*(t - t0))
+        if (t < t0) | (t > t1):
+            envelope = 0.0
+        G = envelope*self.Gamma_tilde
         self.Gamma_tilde = G
 
         if abs(self.Dirichlet.eta) > 0.0:
@@ -538,7 +542,8 @@ class DirichletNumericPotential(Dirichlet):
                            1j*integrate.quad(Gamma, 0, self.W, args=(tn, n, m, np.imag))[0])
 
         eps_EP = np.sqrt((G(0, 0) - G(1, 1))**2 + 4.*G(0, 1)*G(1, 0))
-        eps_EP /= 2.*np.sqrt(abs(self.B0)**2 + (self.B0.conj()*G(0, 1) + self.B0 * G(1, 0))**2 / (G(0, 0) - G(1, 1)**2))
+        eps_EP /= (2.*np.sqrt(abs(self.B0)**2 + (self.B0.conj()*G(0, 1) +
+                    self.B0 * G(1, 0))**2 / (G(0, 0) - G(1, 1)**2)))
         delta_EP = - 2. * (self.B0.conj()*G(0, 1) + self.B0 * G(1, 0)) * eps_EP
         delta_EP /= (G(0, 0) - G(1, 1))
         print "tn", tn, "eps_EP", eps_EP, "delta_EP", delta_EP
