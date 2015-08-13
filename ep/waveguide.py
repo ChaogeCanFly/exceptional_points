@@ -538,9 +538,9 @@ class DirichletNumericPotential(Dirichlet):
                            1j*integrate.quad(Gamma, 0, self.W, args=(tn, n, m, np.imag))[0])
 
         eps_EP = np.sqrt((G(0, 0) - G(1, 1))**2 + 4.*G(0, 1)*G(1, 0))
-        eps_EP /= 2.*np.sqrt(abs(self.B0)**2 + (self.B0.conj()*G(0, 1) + self.B0 * G(1, 0)**2 / (G(0, 0) - G(1, 1)**2)))
+        eps_EP /= 2.*np.sqrt(abs(self.B0)**2 + (self.B0.conj()*G(0, 1) + self.B0 * G(1, 0))**2 / (G(0, 0) - G(1, 1)**2))
         delta_EP = - 2. * (self.B0.conj()*G(0, 1) + self.B0 * G(1, 0)) * eps_EP
-        delta_EP /= G(0, 0) - G(1, 1)
+        delta_EP /= (G(0, 0) - G(1, 1))
         print "tn", tn, "eps_EP", eps_EP, "delta_EP", delta_EP
         print "G_00", G(0, 0)
         print "G_01", G(0, 1)
