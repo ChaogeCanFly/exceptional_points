@@ -401,7 +401,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         self.Dirichlet = Dirichlet(**dirichlet_kwargs)
         Dirichlet.__init__(self, **waveguide_kwargs)
 
-    def _get_EP_coordinates(self):
+    def _get_EP_coordinates(self, x=None, y=None):
         Gamma = Loss(k=self.k, kF=self.kF, kr=self.kr, W=self.W,
                      sigmax=1.e-3, sigmay=1.e-3)
         self.nodes = self.Dirichlet.get_nodes()
@@ -436,9 +436,9 @@ class DirichletPositionDependentLoss(Dirichlet):
             eps, delta = x, y
 
         # force re-evaluation of Gamma_tilde
-        self.Dirichlet.x_R0 = eps
-        self.Dirichlet.y_R0 = delta
-        self._get_EP_coordinates()
+        # self.Dirichlet.x_R0 = eps
+        # self.Dirichlet.y_R0 = delta
+        self.EP_positions.append(self._get_EP_coordinates(x=eps, y=delta))
 
         B = self.Dirichlet.B0
 
