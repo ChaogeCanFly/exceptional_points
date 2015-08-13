@@ -402,7 +402,8 @@ class DirichletPositionDependentLoss(Dirichlet):
         Dirichlet.__init__(self, **waveguide_kwargs)
 
     def _get_EP_coordinates(self):
-        Gamma = Loss(k=self.k, kF=self.kF, kr=self.kr, W=self.W)
+        Gamma = Loss(k=self.k, kF=self.kF, kr=self.kr, W=self.W,
+                     sigmax=1.e-3, sigmay=1.e-3)
         self.nodes = self.Dirichlet.get_nodes()
 
         if np.any(np.isnan(self.nodes)):
