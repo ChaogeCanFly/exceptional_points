@@ -150,8 +150,8 @@ class Gamma_Gauss(Gamma):
         return Gamma
 
     def get_matrix(self, x0, y0):
-        Gamma = [self.get_matrix(n, m, x0=x0, y0=y0) for n in (1, 2)
-                                                      for m in (1, 2) ]
+        Gamma = [self.get_matrix_element(n, m, x0=x0, y0=y0) for n in (1, 2)
+                                                              for m in (1, 2)]
         return np.asarray(Gamma).reshape(2,-1)
 
 
