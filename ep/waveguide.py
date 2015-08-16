@@ -6,7 +6,7 @@ from scipy import interpolate, integrate
 from scipy.integrate import cumtrapz
 
 from ep.base import Base
-from ep.dissipation import Loss
+from ep.dissipation import Gamma_Gauss
 from ep.helpers import c_eig
 
 
@@ -395,39 +395,57 @@ class DirichletPositionDependentLoss(Dirichlet):
         conditons and position dependent losses.
 
         Copies methods and variables from the Dirichlet class."""
-        dirichlet_kwargs = waveguide_kwargs.copy()
-        dirichlet_kwargs.update({'loop_type': 'Constant',
-                                 'eta': 0.0})
-        self.Dirichlet = Dirichlet(**dirichlet_kwargs)
         Dirichlet.__init__(self, **waveguide_kwargs)
+        # self.EP_coordinates = []
+        dirichlet_kwargs = waveguide_kwargs.copy()
+        self.envelope = []
+        # have a loss potential built from a fixed mode (-: a, +: b)
+        # both switch in the course of the evolution
+        if waveguide_kwargs.get('loop_direction') == '-':
+            dirichlet_init_state = 'b'
+        else:
+            dirichlet_init_state = 'a'
 
-    def _get_EP_coordinates(self, x=None, y=None):
-        Gamma = Loss(k=self.k, kF=self.kF, kr=self.kr, W=self.W,
-                     sigmax=1.e-2, sigmay=1.e-2)
+        dirichlet_kwargs.update({'loop_type': 'Constant',
+                                 'eta': 0.0,
+                                 'loop_direction': '-',
+                                 'init_state': dirichlet_init_state})
+        self.Dirichlet = Dirichlet(**dirichlet_kwargs)
+
+    def _get_loss_matrix(self, x=None, y=None):
+        Gamma = Gamma_Gauss(k=self.k, kF=self.kF, kr=self.kr, W=self.W,
+                            sigmax=1.e-2, sigmay=1.e-2)
         self.nodes = self.Dirichlet.get_nodes(x=x, y=y)
 
         if np.any(np.isnan(self.nodes)):
             G = np.zeros((2, 2))
         else:
-            G1, G2 = [Gamma.get_Gamma_tilde(x0, y0) for (x0, y0) in self.nodes]
+            G1, G2 = [Gamma.get_matrix(x0, y0) for (x0, y0) in self.nodes]
             G = G1 + G2
         self.Gamma_tilde = G
 
         if self.verbose:
             print "G\n", G
 
-        # here B without loss
-        kF = self.kF
-        B = self.Dirichlet.B0
+        return G
 
-        sq1 = (G[0, 0] - kF*G[1, 1])**2 + 4.*kF**2*G[0, 1]*G[1, 0]
-        sq2 = (abs(B)**2 + (kF**2*(B*G[1, 0] + B.conj()*G[0, 1])**2 /
-               (G[0, 0] - kF*G[1, 1])**2))
+    def _get_EP_coordinates(self, x=None, y=None):
+        return x, y
+        # merge with DirichletNumericPotential?
 
-        x_EP = np.sqrt(sq1)/(2.*np.sqrt(sq2)) * self.eta
-        y_EP = -2.*kF*(B*G[1, 0]+B.conj()*G[0, 1])/(G[0, 0]-kF*G[1, 1]) * x_EP
-
-        return x_EP, y_EP
+        # kF = self.kF
+        # # TODO: B of Dirichlet necessary here? Why not self.B?
+        # B = self.Dirichlet.B0
+        #
+        # G = self._get_loss_matrix()
+        # sq1 = (G[0, 0] - kF*G[1, 1])**2 + 4.*kF**2*G[0, 1]*G[1, 0]
+        # sq2 = (abs(B)**2 + (kF**2*(B*G[1, 0] + B.conj()*G[0, 1])**2 /
+        #        (G[0, 0] - kF*G[1, 1])**2))
+        #
+        # x_EP = np.sqrt(sq1)/(2.*np.sqrt(sq2)) * self.eta
+        # y_EP = -2.*kF*(B*G[1, 0]+B.conj()*G[0, 1])/(G[0, 0]-kF*G[1, 1]) * x_EP
+        #
+        # return x_EP, y_EP
 
     def H(self, t, x=None, y=None):
         if x is None and y is None:
@@ -436,25 +454,32 @@ class DirichletPositionDependentLoss(Dirichlet):
             eps, delta = x, y
 
         # force re-evaluation of Gamma_tilde
-        EP_coordinates = self._get_EP_coordinates(x=eps, y=delta)
-        self.EP_coordinates.append(EP_coordinates)
+        # EP_coordinates = self._get_EP_coordinates(x=eps, y=delta)
+        # self.EP_coordinates.append(EP_coordinates)
+        self._get_loss_matrix(x=eps, y=delta)
 
-        B = self.Dirichlet.B0
+        # B = self.Dirichlet.B0
 
         # damping coefficient
-        # eps0 = 0.1*self.x_R0
-        # G = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2 * self.Gamma_tilde
-        t0, t1 = 0.25*self.L, 0.75*self.L
-        L0 = (t1 - t0)/2.
-        envelope = np.sin(np.pi/(2.*L0)*(t - t0))
-        if (t < t0) | (t > t1):
-            envelope = 0.0
-        G = envelope*self.Gamma_tilde
-        self.Gamma_tilde = G
+        eps0 = 0.1*self.x_R0
+        envelope = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2
+        # t0, t1 = 0.25*self.L, 0.75*self.L
+        # L0 = (t1 - t0)/2.
+        # envelope = np.sin(np.pi/(2.*L0)*(t - t0))
+        # if (t < t0) | (t > t1):
+        #     envelope = 0.0
+        self.envelope.append([t, envelope])
+        self.Gamma_tile = envelope*self.Gamma_tilde
 
-        if abs(self.Dirichlet.eta) > 0.0:
-            raise Exception("Error: eta should be zero in self.Dirichlet!")
-        H = self.Dirichlet.H(t, x=x, y=y) - 1j*self.eta*self.Gamma_tilde
+        H11 = -self.k0
+        H12 = self.B0*eps
+        H21 = self.B0.conj()*eps
+        H22 = -self.k0 - delta
+
+        H = np.array([[H11, H12],
+                      [H21, H22]], dtype=complex)
+
+        H -= 1j*self.eta*self.Gamma_tilde
 
         if self.verbose:
             print "t", t
