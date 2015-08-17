@@ -3,15 +3,14 @@
 from __future__ import division
 import numpy as np
 from numpy import pi
+from scipy.integrate import dblquad
+from scipy.interpolate import RectBivariateSpline
+from scipy.special import erf, erfc
 
 
 class Gamma(object):
     """Position dependent loss class."""
-    def __init__(self, k=None, kF=None, kr=None, W=None,
-                 sigmax=0.01, sigmay=0.01):
-        self.sigmax = sigmax
-        self.sigmay = sigmay
-
+    def __init__(self, k=None, kF=None, kr=None, W=None):
         if None in (k, kF, kr, W):
             raise Exception("Error: need wavenumber/width information!")
         else:
@@ -29,19 +28,45 @@ class Gamma(object):
         pass
 
 
-class Gamma_From_Grid(Gamma)
+class Gamma_From_Grid(Gamma):
     """Position dependent loss class which reads a .npz mesh."""
-    def __init__(self, npz_file=None, **gamma_kwargs):
+
+    def __init__(self, x0, potential_file=None, **gamma_kwargs):
         Gamma.__init__(self, **gamma_kwargs)
-        self.npz_file = npz_file
+        self.potential_file = potential_file
+        self.x0 = x0
+        (self.x, self.y, self.X,
+         self.Y, self.P, self.P_interpolate) = self._load_potential()
+
+    def _load_potential(self):
+        P_npz = np.load(self.potential_file)
+        X, Y, P = [P_npz[s].T for s in 'X', 'Y', 'P']
+        x, y = [np.unique(i) for i in X, Y]
+
+        # greens_code counts from top
+        P = np.flipud(P)
+
+        return x, y, X, Y, P, RectBivariateSpline(y, x)
 
     def get_matrix_element(self, n, m):
-        pass
+
+        def coeff(x, y):
+            coeff_x = np.exp(1j*(self.k(n)-self.k(m))*x)
+            coeff_y = np.sin(n*np.pi/self.W*y)*np.sin(m*np.pi/self.W*y)
+            heaviside = 0.5*(np.sign(self.x[-1] - x) + 1.)
+            return coeff_x*coeff_y*heaviside
+
+        integral = dblquad(lambda x, y: self.P_interpolate(y, x)*coeff(x, y),
+                           self.x0, self.x0 + 2.*np.pi/self.kr,
+                           lambda x: 0, lambda x: self.W)
+
+        prefactor = 1./(2.*np.pi*self.W) * self.kF * self.kr
+        prefactor /= np.sqrt(self.k(n)*self.k(m))
+
+        return prefactor*integral
 
     def get_matrix(self):
         pass
-
-
 
 
 class Gamma_Gauss(Gamma):
@@ -51,8 +76,12 @@ class Gamma_Gauss(Gamma):
     coordinates {x0,y0}.
     """
 
-    def __init__(self, integrate_R2=True, test_integrals=False, **gamma_kwargs):
+    def __init__(self, sigmax=1.e-2, sigmay=1.e-2, integrate_R2=True,
+                 test_integrals=False, **gamma_kwargs):
         Gamma.__init__(self, **gamma_kwargs)
+        self.sigmax = sigmax
+        self.sigmay = sigmay
+
         self.test_integrals = test_integrals
         self.integrate_R2 = integrate_R2
 
@@ -153,6 +182,7 @@ class Gamma_Gauss(Gamma):
         Gamma = [self.get_matrix_element(n, m, x0=x0, y0=y0) for n in (1, 2)
                                                               for m in (1, 2)]
         return np.asarray(Gamma).reshape(2,-1)
+
 
 
 # class Loss(object):
