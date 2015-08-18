@@ -386,8 +386,8 @@ class Base:
             eVec0_r = self.eVecs_r[0,:,0] + self.eVecs_r[0,:,1]
             eVec0_l = self.eVecs_l[0,:,0] + self.eVecs_l[0,:,1]
             norm = lambda vl, vr: np.sqrt(vl.dot(vr))
-            print norm(eVec0_l, eVec0_r)
-            print norm(eVec0_r.conj(), eVec0_r)
+            # print norm(eVec0_l, eVec0_r)
+            # print norm(eVec0_r.conj(), eVec0_r)
             eVec0_r /= norm(eVec0_r.conj(), eVec0_r)
 
         elif self.init_state == 'd':
