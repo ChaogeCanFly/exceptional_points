@@ -3,10 +3,6 @@
 from __future__ import division
 import numpy as np
 from numpy import pi
-try:
-    from mayavi import mlab
-except:
-    print "Warning: mayavi not found!"
 from scipy.integrate import complex_ode
 
 from ep.helpers import c_eig, c_trapz, c_cumtrapz, map_trajectory
@@ -173,6 +169,8 @@ class Base:
                 part: str
                     Which function to apply to the eigenvalues before plotting.
         """
+        from mayavi import mlab
+
         X, Y, Z = self.sample_H(xmin, xmax, xN, ymin, ymax, yN)
 
         Z0, Z1 = [Z[..., n] for n in 0, 1]
