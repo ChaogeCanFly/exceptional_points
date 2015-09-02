@@ -17,6 +17,8 @@ def plot_riemann_sheets(part=np.real,
                         wireframe_skip=5.,
                         adiabatic=False,
                         trajectory=True,
+                        parallel_projection=False,
+                        opacity=1.0,
                         xN=153, yN=152, **kwargs):
     """Plot local Riemann sheet structure of the OM Hamiltonian."""
 
@@ -88,13 +90,17 @@ def plot_riemann_sheets(part=np.real,
 
     fig = mlab.figure(size=(1400, 1000), bgcolor=(1, 1, 1))
 
+    # opacity=1.0
+
     if trajectory:
         if fignum == 'DP':
             tube_radius = 0.004
         else:
-            tube_radius = 0.05
+            #tube_radius = 0.05
+            tube_radius = 0.005
 
         arrow_end = OM.tN/10
+        arrow_end = OM.tN/15
         line_color = (0.25, 0.25, 0.25)
         mlab.plot3d(x[:-arrow_end], y[:-arrow_end], z[:-arrow_end]/scale,
                     color=line_color,
@@ -109,14 +115,14 @@ def plot_riemann_sheets(part=np.real,
                            Y[:nx+1, :ny+1],
                            E1[:nx+1, :ny+1]/scale,
                            scalars=W_Gauss_Fermi[:nx+1, :ny+1],
-                           opacity=0.8,
+                           opacity=opacity,
                            # color=blue,
                            vmin=wmin, vmax=wmax)
         E1s2 = mlab.mesh(X[:nx+1, ny:],
                          Y[:nx+1, ny:],
                          E1[:nx+1, ny:]/scale,
                          scalars=W_Fermi[:nx+1, ny:],
-                         opacity=0.8,
+                         opacity=opacity,
                          # color=blue,
                          vmin=wmin, vmax=wmax)
         # <!-- CONE
@@ -125,14 +131,14 @@ def plot_riemann_sheets(part=np.real,
                              Y[:nx+1, :ny+1],
                              E0[:nx+1, :ny+1]/scale,
                              scalars=W_Gauss_Fermi[:nx+1, :ny+1],
-                             opacity=0.8,
+                             opacity=opacity,
                              # color=red,
                              vmin=wmin, vmax=wmax)
             E0s11 = mlab.mesh(X[nx+1:, :ny+1],
                               Y[nx+1:, :ny+1],
                               E0[nx+1:, :ny+1]/scale,
                               scalars=W_Gauss_Fermi[nx+1:, :ny+1],
-                              opacity=0.8,
+                              opacity=opacity,
                               # color=blue,
                               vmin=wmin, vmax=wmax)
         # --> CONE
@@ -141,20 +147,20 @@ def plot_riemann_sheets(part=np.real,
                              Y[..., :ny+1],
                              E0[..., :ny+1]/scale,
                              scalars=W_Gauss_Fermi[..., :ny+1],
-                             opacity=0.8,
+                             opacity=opacity,
                              vmin=wmin,
                              vmax=wmax)
         E0s2 = mlab.mesh(X[:nx+1, ny:],
                          Y[:nx+1, ny:],
                          E0[:nx+1, ny:]/scale,
                          scalars=W_Fermi[:nx+1, ny:],
-                         opacity=0.8,
+                         opacity=opacity,
                          vmin=wmin, vmax=wmax)
         E0s3 = mlab.mesh(X[nx+1:, ny:],
                          Y[nx+1:, ny:],
                          E0[nx+1:, ny:]/scale,
                          scalars=W_Fermi[nx+1:, ny:],
-                         opacity=0.8,
+                         opacity=opacity,
                          vmin=wmin, vmax=wmax)
 
         if fignum == 'DP':
@@ -189,13 +195,13 @@ def plot_riemann_sheets(part=np.real,
                            Y[nx+1:, :ny+1],
                            E1[nx+1:, :ny+1]/scale,
                            scalars=W_Gauss_Fermi[nx+1:, :ny+1],
-                           opacity=0.8,
+                           opacity=opacity,
                            vmin=wmin, vmax=wmax)
         E1s3 = mlab.mesh(X[nx+1:, ny:],
                          Y[nx+1:, ny:],
                          E1[nx+1:, ny:]/scale,
                          scalars=W_Fermi[nx+1:, ny:],
-                         opacity=0.8,
+                         opacity=opacity,
                          vmin=wmin, vmax=wmax)
 
         if fignum == 'DP':
@@ -229,13 +235,13 @@ def plot_riemann_sheets(part=np.real,
         s2 = mlab.mesh(X, Y, E0/scale,
                        scalars=W_Fermi,
                        representation='surface',
-                       opacity=0.8,
+                       opacity=opacity,
                        color=blue,
                        vmin=-wmin, vmax=wmax)
         s1 = mlab.mesh(X, Y, E1/scale,
                        scalars=W_Fermi,
                        representation='surface',
-                       opacity=0.8,
+                       opacity=opacity,
                        color=red,
                        vmin=-wmin, vmax=wmax)
 
@@ -362,6 +368,37 @@ def plot_riemann_sheets(part=np.real,
             scene.scene.camera.clipping_range = [0.53148188620606163, 1.4791195352031188]
             scene.scene.camera.compute_view_plane_normal()
             scene.scene.render()
+    elif fignum == "1c_alt2":
+        scene = engine.scenes[0]
+        # scene.scene.camera.position = [0.31711523580558498, 1.1642118272307824, 0.20395496351643158]
+        # scene.scene.camera.focal_point = [0.0, 0.5, 0.0]
+        # scene.scene.camera.view_angle = 30.0
+        # scene.scene.camera.view_up = [-0.10288267155095651, -0.2467661383627425, 0.96359827150741528]
+        # scene.scene.camera.clipping_range = [0.40107728370499668, 1.2409037835660328]
+        # scene.scene.camera.compute_view_plane_normal()
+        # scene.scene.render()
+        # scene.scene.camera.position = [-0.51815159271833855, 0.097670913179314714, 0.39113588970821772]
+        # scene.scene.camera.focal_point = [0.0, 0.5, 0.0]
+        # scene.scene.camera.view_angle = 30.0
+        # scene.scene.camera.view_up = [0.38872327316588934, 0.33412016842343056, 0.85863725166795324]
+        # scene.scene.camera.clipping_range = [0.3528091439102139, 1.2715604145934434]
+        # scene.scene.camera.compute_view_plane_normal()
+        # scene.scene.render()
+        # scene.scene.camera.position = [-0.66777984484416308, 0.20460786784526436, 0.22394333755967094]
+        # scene.scene.camera.focal_point = [0.0, 0.5, 0.0]
+        # scene.scene.camera.view_angle = 30.0
+        # scene.scene.camera.view_up = [0.2346378925600564, 0.19200359181842613, 0.95293214874082133]
+        # scene.scene.camera.clipping_range = [0.39729306372221307, 1.2185826095947825]
+        # scene.scene.camera.compute_view_plane_normal()
+        # scene.scene.render()
+        scene.scene.camera.position = [-0.58666637486265438, 0.34190933964282821, 0.46278176181631675]
+        scene.scene.camera.focal_point = [0.0, 0.5, 0.0]
+        scene.scene.camera.view_angle = 30.0
+        scene.scene.camera.view_up = [0.54725173023115548, 0.27905704792369884, 0.78907712409061603]
+        scene.scene.camera.clipping_range = [0.38983416938417631, 1.231847141331484]
+        scene.scene.camera.compute_view_plane_normal()
+        scene.scene.render()
+        scene.scene.parallel_projection = parallel_projection
     elif fignum == '2a' or fignum == '2b':
         # scale=3.5
         scene = engine.scenes[0]
@@ -443,7 +480,8 @@ def plot_riemann_sheets(part=np.real,
     if show:
         mlab.show()
     else:
-        fig.scene.render_window.aa_frames = 16
+        # fig.scene.render_window.aa_frames = 16
+        fig.scene.render_window.aa_frames = 32
         if part is np.real:
             str_part = "real"
         else:
@@ -456,7 +494,8 @@ def plot_riemann_sheets(part=np.real,
 
 def plot_figures(fignum='2a', part='imag', direction='-', show=False,
                  colorgradient=False, T=45., R=0.1, gamma=1., adiabatic=False,
-                 trajectory=True, init_state='b'):
+                 opacity=1.0, trajectory=True, init_state='b',
+                 parallel_projection=False):
 
     import subprocess
 
@@ -467,6 +506,8 @@ def plot_figures(fignum='2a', part='imag', direction='-', show=False,
               "show": show,
               "colorgradient": colorgradient,
               "trajectory": trajectory,
+              "parallel_projection": parallel_projection,
+              "opacity": opacity,
               "adiabatic": adiabatic}
 
     if fignum == '1c':
@@ -478,6 +519,16 @@ def plot_figures(fignum='2a', part='imag', direction='-', show=False,
         params['R'] = 0.9*R
         settings = {"init_state": init_state,
                     "init_phase": pi/2,
+                    "loop_direction": direction, }
+    elif fignum == '1c_alt2':
+        params['R'] = 0.9*R
+        settings = {"init_state": init_state,
+                    "init_phase": 0.1,
+                    "loop_direction": direction, }
+    elif fignum == '1c_alt3':
+        params['R'] = 0.9*R
+        settings = {"init_state": init_state,
+                    "init_phase": pi+0.5,
                     "loop_direction": direction, }
     elif fignum == '2a':
         settings = {"init_state": 'a',
@@ -510,7 +561,7 @@ def plot_figures(fignum='2a', part='imag', direction='-', show=False,
 
     for f in part, part + '_no_axes':
         infile = f + '.png'
-        outfile = 'Fig{}_{}.png'.format(fignum, f)
+        outfile = 'Fig{}_{}_{}_{}.png'.format(fignum, f, init_state, direction)
         try:
             cmd = 'convert -transparent white -trim {} {}'.format(infile, outfile)
             subprocess.check_call(cmd.split())
