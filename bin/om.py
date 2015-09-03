@@ -523,7 +523,7 @@ def plot_figures(fignum='2a', part='imag', direction='-', show=False,
     elif fignum == '1c_alt2':
         params['R'] = 0.9*R
         settings = {"init_state": init_state,
-                    "init_phase": 0.1,
+                    "init_phase": 0.01,
                     "loop_direction": direction, }
     elif fignum == '1c_alt3':
         params['R'] = 0.9*R
