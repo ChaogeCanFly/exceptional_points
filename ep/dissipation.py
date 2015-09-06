@@ -19,8 +19,6 @@ class Gamma(object):
             self.kr = kr
             self.W = W
 
-        self.gamma = self.get_matrix_element()
-
     def get_matrix_element(self, n, m):
         pass
 

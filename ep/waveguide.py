@@ -461,8 +461,10 @@ class DirichletPositionDependentLoss(Dirichlet):
         # B = self.Dirichlet.B0
 
         # damping coefficient
-        eps0 = 0.1*self.x_R0
-        envelope = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2
+        # eps0 = 0.1*self.x_R0
+        # envelope = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2
+        envelope = eps**2
+
         # t0, t1 = 0.25*self.L, 0.75*self.L
         # L0 = (t1 - t0)/2.
         # envelope = np.sin(np.pi/(2.*L0)*(t - t0))
