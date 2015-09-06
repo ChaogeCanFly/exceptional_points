@@ -327,7 +327,7 @@ class Dirichlet(Waveguide):
         #    np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
 
         def x0(s):
-            return s*np.pi/(2.*kr)
+            return s*np.pi/(2.*kr) + (1.-s)/2. * 2.*pi/kr
 
         def y0(s):
             return W/pi*np.arccos(s*0.5*np.sqrt(k(2)/k(1))*abs(b1/b2))
