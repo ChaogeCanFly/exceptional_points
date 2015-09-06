@@ -16,7 +16,7 @@ class Base:
                  init_phase=0.0, calc_adiabatic_state=False, verbose=False):
         """Exceptional Point (EP) base class.
 
-        The dynamics of a 2-level system are determined via an Runge-Kutta
+        The dynamics of a 2-level system are determined via a Runge-Kutta
         method of order (4) 5 due to Dormand and Prince.
 
             Parameters:
@@ -152,7 +152,8 @@ class Base:
         return X, Y, Z
 
     def plot_3D_spectrum(self, xmin=None, xmax=None, xN=None, ymin=None,
-                         ymax=None, yN=None, trajectory=False, part='imag'):
+                         ymax=None, yN=None, trajectory=False, tube_radius=1e-2,
+                         part='imag'):
         """Plot the Riemann sheet structure around the EP.
 
             Parameters:
@@ -168,12 +169,14 @@ class Base:
                     coefficients.
                 part: str
                     Which function to apply to the eigenvalues before plotting.
+                tube_radius: float
+                    Trajectory tube thickness.
         """
         from mayavi import mlab
 
         X, Y, Z = self.sample_H(xmin, xmax, xN, ymin, ymax, yN)
 
-        Z0, Z1 = [Z[..., n] for n in 0, 1]
+        Z0, Z1 = [Z[..., n] for n in (0, 1)]
 
         mlab.figure(0)
         mlab.surf(X.real, Y.real, Z0.real)
@@ -185,24 +188,19 @@ class Base:
         mlab.mesh(X.real, Y.real, Z1.imag)
         mlab.axes(zlabel="Im(E)")
 
-        mlab.figure(2)
-        mlab.mesh(X.real, Y.real, abs(Z0-Z1))
-        mlab.axes(zlabel="abs(E0-E1)")
-
-        if part == 'imag':
-            part = np.imag
-        elif part == 'real':
-            part = np.real
-        else:
-            part = np.abs
-
         if trajectory:
             x, y = self.get_cycle_parameters(self.t)
             _, c1, c2 = self.solve_ODE()
-            e1, e2 = [part(self.eVals[:, n]) for n in 0, 1]
-            z = map_trajectory(c1, c2, e1, e2)
 
-            mlab.plot3d(x, y, z, tube_radius=5e-6)
+            for i, part in enumerate([np.real, np.imag]):
+                e1, e2 = [part(self.eVals[:, n]) for n in (0, 1)]
+                z = map_trajectory(c1, c2, e1, e2)
+                mlab.figure(i)
+                mlab.plot3d(x, y, z, tube_radius=tube_radius)
+                mlab.points3d(x[0], y[0], z[0],
+                              # color=line_color,
+                              scale_factor=1e-1,
+                              mode='sphere')
 
         mlab.show()
 
