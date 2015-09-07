@@ -418,6 +418,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         else:
             dirichlet_init_state = 'a'
 
+        self.sigma = sigma
         dirichlet_kwargs.update({'loop_type': 'Constant',
                                  'eta': 0.0,
                                  'loop_direction': '-',
@@ -426,7 +427,7 @@ class DirichletPositionDependentLoss(Dirichlet):
 
     def _get_loss_matrix(self, x=None, y=None):
         Gamma = Gamma_Gauss(k=self.k, kF=self.kF, kr=self.kr, W=self.W,
-                            sigmax=1.e-2, sigmay=1.e-2)
+                            sigmax=self.sigma, sigmay=self.sigma)
         self.nodes = self.Dirichlet.get_nodes(x=x, y=y)
 
         if np.any(np.isnan(self.nodes)):
