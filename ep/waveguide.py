@@ -397,7 +397,7 @@ class Dirichlet(Waveguide):
 class DirichletPositionDependentLoss(Dirichlet):
     """Dirichlet class with position dependent loss."""
 
-    def __init__(self, sigma=1e-2, **waveguide_kwargs):
+    def __init__(self, eta0=0.0, sigma=1e-2, **waveguide_kwargs):
         """Exceptional Point (EP) waveguide class with Dirichlet boundary
         conditons and position dependent losses.
 
@@ -405,6 +405,8 @@ class DirichletPositionDependentLoss(Dirichlet):
 
             Additional parameters:
             ----------------------
+                eta0: float
+                    Constant loss strength.
                 sigma: float
                     Standard deviation of the Gaussian loss potential.
         """
@@ -418,6 +420,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         else:
             dirichlet_init_state = 'a'
 
+        self.eta0 = eta0
         self.sigma = sigma
         dirichlet_kwargs.update({'loop_type': 'Constant',
                                  'eta': 0.0,
@@ -488,7 +491,7 @@ class DirichletPositionDependentLoss(Dirichlet):
                                        [0.0, self.kF/self.k1]], dtype=complex)
 
         H -= 1j*self.eta*Gamma_matrix
-        H -= 1j*self.eta/2.*Gamma_matrix_const*0.1
+        H -= 1j*self.eta0/2.*Gamma_matrix_const
 
         if self.verbose:
             print "t", t
