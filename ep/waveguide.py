@@ -314,13 +314,17 @@ class Dirichlet(Waveguide):
         W = self.W
 
         # get eigenvectors of Hermitian system to find Bloch mode nodes
-        _, evec = c_eig(self.H(0, x, y))
+        evals, evecs = c_eig(self.H(0, x, y))
+
+        # only kill eigenvector for which the eigenvalue is smaller
+        if evals[0] > evals[1]:
+            evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
 
         # sort eigenvectors: always take the first one returned by c_eig,
         # change if the imaginary part switches sign
-        b1, b2 = evec[0, 0], evec[1, 0]
+        b1, b2 = evecs[0, 0], evecs[1, 0]
         if b1.imag > 0 or b2.imag < 0:
-            b1, b2 = evec[0, 1], evec[1, 1]
+            b1, b2 = evecs[0, 1], evecs[1, 1]
 
         # def x0(s):
         #   (2.*pi/kr * (1+s)/2 - 1j/kr *
