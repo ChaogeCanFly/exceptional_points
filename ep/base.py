@@ -177,14 +177,22 @@ class Base:
         X, Y, Z = self.sample_H(xmin, xmax, xN, ymin, ymax, yN)
         Z0, Z1 = [Z[..., n] for n in (0, 1)]
 
+        def get_min_and_max(*args):
+            data = np.concatenate(*args)
+            return data.min(), data.max()
+
+        surf_kwargs = dict(colormap='Spectral', mask=np.diff(Z0.real) > 0.015)
+
         mlab.figure(0)
-        mlab.surf(X.real, Y.real, Z0.real)
-        mlab.surf(X.real, Y.real, Z1.real)
+        Z_min, Z_max = get_min_and_max([Z0.real, Z1.real])
+        mlab.surf(X.real, Y.real, Z0.real, vmin=Z_min, vmax=Z_max, **surf_kwargs)
+        mlab.surf(X.real, Y.real, Z1.real, vmin=Z_min, vmax=Z_max, **surf_kwargs)
         mlab.axes(zlabel="Re(E)")
 
         mlab.figure(1)
-        mlab.mesh(X.real, Y.real, Z0.imag)
-        mlab.mesh(X.real, Y.real, Z1.imag)
+        Z_min, Z_max = get_min_and_max([Z0.imag, Z1.imag])
+        mlab.mesh(X.real, Y.real, Z0.imag, vmin=Z_min, vmax=Z_max, **surf_kwargs)
+        mlab.mesh(X.real, Y.real, Z1.imag, vmin=Z_min, vmax=Z_max, **surf_kwargs)
         mlab.axes(zlabel="Im(E)")
 
         if trajectory:
