@@ -177,16 +177,14 @@ class Base:
         X, Y, Z = self.sample_H(xmin, xmax, xN, ymin, ymax, yN)
         Z0, Z1 = [Z[..., n] for n in (0, 1)]
 
-        extent = (0, 1, 0, 1, 0, 1)
-
         mlab.figure(0)
-        mlab.surf(X.real, Y.real, Z0.real, extent=extent)
-        mlab.surf(X.real, Y.real, Z1.real, extent=extent)
+        mlab.surf(X.real, Y.real, Z0.real)
+        mlab.surf(X.real, Y.real, Z1.real)
         mlab.axes(zlabel="Re(E)")
 
         mlab.figure(1)
-        mlab.mesh(X.real, Y.real, Z0.imag, extent=extent)
-        mlab.mesh(X.real, Y.real, Z1.imag, extent=extent)
+        mlab.mesh(X.real, Y.real, Z0.imag)
+        mlab.mesh(X.real, Y.real, Z1.imag)
         mlab.axes(zlabel="Im(E)")
 
         if trajectory:
@@ -197,11 +195,11 @@ class Base:
                 e1, e2 = [part(self.eVals[:, n]) for n in (0, 1)]
                 z = map_trajectory(c1, c2, e1, e2)
                 mlab.figure(i)
-                mlab.plot3d(x, y, z, tube_radius=tube_radius, extent=extent)
+                mlab.plot3d(x, y, z, tube_radius=tube_radius)
                 mlab.points3d(x[0], y[0], z[0],
                               # color=line_color,
                               scale_factor=1e-1,
-                              mode='sphere', extent=extent)
+                              mode='sphere')
 
         mlab.show()
 

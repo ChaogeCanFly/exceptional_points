@@ -435,7 +435,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         else:
             G1, G2 = [Gamma.get_matrix(x0, y0) for (x0, y0) in self.nodes]
             G = G1 + G2
-        self.Gamma_tilde = G
+        self.Gamma_matrix = G
 
         if self.verbose:
             print "G\n", G
@@ -466,20 +466,15 @@ class DirichletPositionDependentLoss(Dirichlet):
         else:
             eps, delta = x, y
 
-        self._get_loss_matrix(x=eps, y=delta)
+        Gamma_matrix = self._get_loss_matrix(x=eps, y=delta)
 
         # damping coefficient
         # eps0 = 0.1*self.x_R0
         # envelope = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2
         envelope = eps**2
 
-        # t0, t1 = 0.25*self.L, 0.75*self.L
-        # L0 = (t1 - t0)/2.
-        # envelope = np.sin(np.pi/(2.*L0)*(t - t0))
-        # if (t < t0) | (t > t1):
-        #     envelope = 0.0
-        self.envelope.append([t, envelope])
-        self.Gamma_tile = envelope*self.Gamma_tilde
+        Gamma_matrix *= envelope
+        self.Gamma_matrix = Gamma_matrix
 
         H11 = -self.k0
         H12 = self.B0*eps
@@ -489,7 +484,11 @@ class DirichletPositionDependentLoss(Dirichlet):
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
 
-        H -= 1j*self.eta*self.Gamma_tilde
+        Gamma_matrix_const = np.array([[self.kF/self.k0, 0.0],
+                                       [0.0, self.kF/self.k1]], dtype=complex)
+
+        H -= 1j*self.eta*Gamma_matrix
+        H -= 1j*self.eta/2.*Gamma_matrix_const*0.1
 
         if self.verbose:
             print "t", t
@@ -497,7 +496,7 @@ class DirichletPositionDependentLoss(Dirichlet):
             print "delta", delta
             print "H\n", H
             print "nodes", self.nodes
-            print "Gamma_tilde\n", self.Gamma_tilde
+            print "Gamma_matrix\n", self.Gamma_matrix
 
         return H
 
