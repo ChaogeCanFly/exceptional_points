@@ -303,28 +303,29 @@ class Dirichlet(Waveguide):
 
         return eps_prime, delta, theta_prime
 
-    def get_nodes(self, x=None, y=None):
+    # def get_nodes(self, x=None, y=None):
+    def get_nodes(self, b1=None, b2=None):
         """Return the nodes of the Bloch-eigenvector in the unit cell."""
 
-        if not self.loop_type == 'Constant':
-            raise Exception("Error: loop_type not 'Constant'!")
+        # if not self.loop_type == 'Constant':
+        #     raise Exception("Error: loop_type not 'Constant'!")
 
         k = self.k
         kr = self.kr
         W = self.W
 
         # get eigenvectors of Hermitian system to find Bloch mode nodes
-        evals, evecs = c_eig(self.H(0, x, y))
+        # evals, evecs = c_eig(self.H(0, x, y))
 
         # only kill eigenvector for which the eigenvalue is smaller
-        if evals[0] > evals[1]:
-            evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
+        # if evals[0] > evals[1]:
+        #     evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
 
         # sort eigenvectors: always take the first one returned by c_eig,
         # change if the imaginary part switches sign
-        b1, b2 = evecs[0, 0], evecs[1, 0]
-        if b1.imag > 0 or b2.imag < 0:
-            b1, b2 = evecs[0, 1], evecs[1, 1]
+        # b1, b2 = evecs[0, 0], evecs[1, 0]
+        # if b1.imag > 0 or b2.imag < 0:
+        #     b1, b2 = evecs[0, 1], evecs[1, 1]
 
         # def x0(s):
         #   (2.*pi/kr * (1+s)/2 - 1j/kr *
@@ -341,6 +342,9 @@ class Dirichlet(Waveguide):
 
         xn = np.asarray([x0(n) for n in (+1, -1)])
         yn = np.asarray([y0(n) for n in (-1, +1)])
+
+        if not yn.size:
+            yn = np.array([np.nan, np.nan])
 
         # mark invalid node coordinates with np.nan
         # -> caught in DirichletPositionDependentLoss._get_EP_coordinates where
@@ -422,16 +426,22 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         self.eta0 = eta0
         self.sigma = sigma
-        dirichlet_kwargs.update({'loop_type': 'Constant',
+        print "test"
+        dirichlet_kwargs.update({#'loop_type': 'Constant',
                                  'eta': 0.0,
                                  'loop_direction': '-',
+                                  # 'init_state': 'a'})
                                  'init_state': dirichlet_init_state})
         self.Dirichlet = Dirichlet(**dirichlet_kwargs)
+        self.Dirichlet.get_c_eigensystem()
+        self.Dirichlet._find_lower_energy_state()
 
-    def _get_loss_matrix(self, x=None, y=None):
+    def _get_loss_matrix(self, t): #x=None, y=None):
         Gamma = Gamma_Gauss(k=self.k, kF=self.kF, kr=self.kr, W=self.W,
                             sigmax=self.sigma, sigmay=self.sigma)
-        self.nodes = self.Dirichlet.get_nodes(x=x, y=y)
+        n = np.where(np.isclose(t, self.t))[0]
+        b1, b2 = [self.Dirichlet.eVecs_r[n, i, 0] for i in (0, 1)]
+        self.nodes = self.Dirichlet.get_nodes(b1, b2) #x=x, y=y)
 
         if np.any(np.isnan(self.nodes)):
             G = np.zeros((2, 2))
@@ -469,12 +479,12 @@ class DirichletPositionDependentLoss(Dirichlet):
         else:
             eps, delta = x, y
 
-        Gamma_matrix = self._get_loss_matrix(x=eps, y=delta)
+        Gamma_matrix = self._get_loss_matrix(t) #x=eps, y=delta)
 
         # damping coefficient
-        # eps0 = 0.1*self.x_R0
-        # envelope = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2
-        envelope = eps**2
+        eps0 = 0.1*self.x_R0
+        envelope = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2
+        # envelope = eps**2
 
         Gamma_matrix *= envelope
         self.Gamma_matrix = Gamma_matrix
