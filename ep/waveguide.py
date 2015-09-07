@@ -397,13 +397,18 @@ class Dirichlet(Waveguide):
 class DirichletPositionDependentLoss(Dirichlet):
     """Dirichlet class with position dependent loss."""
 
-    def __init__(self, **waveguide_kwargs):
+    def __init__(self, sigma=1e-2, **waveguide_kwargs):
         """Exceptional Point (EP) waveguide class with Dirichlet boundary
         conditons and position dependent losses.
 
-        Copies methods and variables from the Dirichlet class."""
+        Copies methods and variables from the Dirichlet class.
+
+            Additional parameters:
+            ----------------------
+                sigma: float
+                    Standard deviation of the Gaussian loss potential.
+        """
         Dirichlet.__init__(self, **waveguide_kwargs)
-        # self.EP_coordinates = []
         dirichlet_kwargs = waveguide_kwargs.copy()
         self.envelope = []
         # have a loss potential built from a fixed mode (-: a, +: b)
@@ -460,12 +465,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         else:
             eps, delta = x, y
 
-        # force re-evaluation of Gamma_tilde
-        # EP_coordinates = self._get_EP_coordinates(x=eps, y=delta)
-        # self.EP_coordinates.append(EP_coordinates)
         self._get_loss_matrix(x=eps, y=delta)
-
-        # B = self.Dirichlet.B0
 
         # damping coefficient
         # eps0 = 0.1*self.x_R0
