@@ -317,18 +317,18 @@ class Dirichlet(Waveguide):
         evals, evecs = c_eig(self.H(0, x, y))
 
         # only kill eigenvector for which the eigenvalue is smaller
-        if evals[0] > evals[1]:
-            evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
+        # if evals[0] > evals[1]:
+        #     evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
 
         # sort eigenvectors: always take the first one returned by c_eig,
         # change if the imaginary part switches sign
-        b1, b2 = evecs[0, 0], evecs[1, 0]
+        b1, b2 = [evecs[i, 0] for i in (0, 1)]
         if b1.imag > 0 or b2.imag < 0:
-            b1, b2 = evecs[0, 1], evecs[1, 1]
+            b1, b2 = [evecs[i, 1] for i in (0, 1)]
 
         # def x0(s):
         #   (2.*pi/kr * (1+s)/2 - 1j/kr *
-        #    np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
+        #     np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
 
         def x0(s):
             """Return x-coordinates in unit cell.  Only valid for boundary
@@ -412,20 +412,19 @@ class DirichletPositionDependentLoss(Dirichlet):
         """
         Dirichlet.__init__(self, **waveguide_kwargs)
         dirichlet_kwargs = waveguide_kwargs.copy()
-        self.envelope = []
+
         # have a loss potential built from a fixed mode (-: a, +: b)
         # both switch in the course of the evolution
-        if waveguide_kwargs.get('loop_direction') == '-':
-            dirichlet_init_state = 'b'
-        else:
-            dirichlet_init_state = 'a'
+        # if waveguide_kwargs.get('loop_direction') == '-':
+        #     dirichlet_init_state = 'b'
+        # else:
+        #     dirichlet_init_state = 'a'
 
         self.eta0 = eta0
         self.sigma = sigma
         dirichlet_kwargs.update({'loop_type': 'Constant',
-                                 'eta': 0.0,
-                                 'loop_direction': '-',
-                                 'init_state': dirichlet_init_state})
+                                 'eta': 0.0})
+                                 #'init_state': dirichlet_init_state})
         self.Dirichlet = Dirichlet(**dirichlet_kwargs)
 
     def _get_loss_matrix(self, x=None, y=None):
@@ -438,7 +437,13 @@ class DirichletPositionDependentLoss(Dirichlet):
         else:
             G1, G2 = [Gamma.get_matrix(x0, y0) for (x0, y0) in self.nodes]
             G = G1 + G2
-        self.Gamma_matrix = G
+
+        # dyadic product
+        # evals, evecs = c_eig(self.Dirichlet.H(0, x, y))
+        # if evals[0] > evals[1]:
+        #     evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
+        # b1, b2 = [evecs[i, 0] for i in (0, 1)]
+        # G = np.outer(b1, b1.conj())
 
         if self.verbose:
             print "G\n", G
