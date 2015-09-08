@@ -322,7 +322,6 @@ class Dirichlet(Waveguide):
 
         # sort eigenvectors: always take the first one returned by c_eig,
         # change if the imaginary part switches sign
-        b1, b2 = [evecs[i, 0] for i in (0, 1)]
         if b1.imag > 0 or b2.imag < 0:
             b1, b2 = [evecs[i, 1] for i in (0, 1)]
 
