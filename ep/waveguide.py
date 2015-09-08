@@ -322,9 +322,19 @@ class Dirichlet(Waveguide):
 
         # sort eigenvectors: always take the first one returned by c_eig,
         # change if the imaginary part switches sign
-        b1, b2 = [evecs[i, 0] for i in (0, 1)]
+        # if self.loop_direction == '+':
+        #     j = 1
+        # else:
+        #     j = 0
+        j = 0
+        b1, b2 = [evecs[i, j] for i in (0, 1)]
         if b1.imag > 0 or b2.imag < 0:
             b1, b2 = [evecs[i, 1] for i in (0, 1)]
+
+        # with open("evecs_master.dat", "ab") as f:
+        #     data = [p(evecs[i, j]) for i in (0, 1) for j in (0, 1) for p in np.real, np.imag]
+        #     np.savetxt(f, data, newline="\t")
+        #     f.write("\n")
 
         # def x0(s):
         #   (2.*pi/kr * (1+s)/2 - 1j/kr *
