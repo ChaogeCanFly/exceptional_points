@@ -490,7 +490,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         Gamma_matrix_const = np.array([[self.kF/self.k0, 0.0],
                                        [0.0, self.kF/self.k1]], dtype=complex)
 
-        H -= 1j*self.eta*Gamma_matrix
+        H -= 1j*self.eta/2.*Gamma_matrix
         H -= 1j*self.eta0/2.*Gamma_matrix_const
 
         if self.verbose:

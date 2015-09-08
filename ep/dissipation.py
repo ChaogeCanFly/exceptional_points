@@ -58,7 +58,7 @@ class Gamma_From_Grid(Gamma):
                            self.x0, self.x0 + 2.*np.pi/self.kr,
                            lambda x: 0, lambda x: self.W)
 
-        prefactor = 1./(2.*np.pi*self.W) * self.kF * self.kr
+        prefactor = 1./(np.pi*self.W) * self.kF * self.kr
         prefactor /= np.sqrt(self.k(n)*self.k(m))
 
         return prefactor*integral
@@ -172,7 +172,7 @@ class Gamma_Gauss(Gamma):
                 print "Ix, Ixalt, |Ix-Ixalt|", Ix, Ixalt, abs(Ix-Ixalt)
                 print "Iy, Iyalt, |Iy-Iyalt|", Iy, Iyalt, abs(Iy-Iyalt)
 
-        Gamma = 1./(2.*np.pi*W) * kF * kr / np.sqrt(k(n)*k(m)) * (Ix * Iy)
+        Gamma = 1./(np.pi*W) * kF * kr / np.sqrt(k(n)*k(m)) * (Ix * Iy)
 
         return Gamma
 
