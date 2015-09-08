@@ -303,7 +303,7 @@ class Dirichlet(Waveguide):
 
         return eps_prime, delta, theta_prime
 
-    def get_nodes(self, b1=None, b2=None):
+    def get_nodes(self, tn): #b1=None, b2=None):
         """Return the nodes of the Bloch-eigenvector in the unit cell."""
 
         # if not self.loop_type == 'Constant':
@@ -316,14 +316,16 @@ class Dirichlet(Waveguide):
         # get eigenvectors of Hermitian system to find Bloch mode nodes
         # evals, evecs = c_eig(self.H(0, x, y))
 
+        b1, b2 = [self.eVecs_r[tn, i, 0] for i in (0, 1)]
+
         # only kill eigenvector for which the eigenvalue is smaller
         # if evals[0] > evals[1]:
         #     evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
 
         # sort eigenvectors: always take the first one returned by c_eig,
         # change if the imaginary part switches sign
-        if b1.imag > 0 or b2.imag < 0:
-            b1, b2 = [evecs[i, 1] for i in (0, 1)]
+        # if b1.imag > 0 or b2.imag < 0:
+        #     b1, b2 = [evecs[i, 1] for i in (0, 1)]
 
         # def x0(s):
         #   (2.*pi/kr * (1+s)/2 - 1j/kr *
@@ -429,11 +431,12 @@ class DirichletPositionDependentLoss(Dirichlet):
     def _get_loss_matrix(self, t): #x=None, y=None):
         Gamma = Gamma_Gauss(k=self.k, kF=self.kF, kr=self.kr, W=self.W,
                             sigmax=self.sigma, sigmay=self.sigma)
-        n = np.where(np.isclose(t, self.t))[0]
+        tn = np.where(np.isclose(t, self.t))[0]
 
-        j = 0.
-        b1, b2 = [self.Dirichlet.eVecs_r[n, i, j] for i in (0, 1)]
-        self.nodes = self.Dirichlet.get_nodes(b1, b2) #x=x, y=y)
+        # j = 0.
+        # b1, b2 = [self.Dirichlet.eVecs_r[n, i, j] for i in (0, 1)]
+        np.savetxt("evecs.dat", self.Dirichlet.eVecs_r[:, :, 0])
+        self.nodes = self.Dirichlet.get_nodes(tn) #b1, b2) #x=x, y=y)
 
         if np.any(np.isnan(self.nodes)):
             G = np.zeros((2, 2))
