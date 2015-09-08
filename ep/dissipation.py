@@ -172,7 +172,7 @@ class Gamma_Gauss(Gamma):
                 print "Ix, Ixalt, |Ix-Ixalt|", Ix, Ixalt, abs(Ix-Ixalt)
                 print "Iy, Iyalt, |Iy-Iyalt|", Iy, Iyalt, abs(Iy-Iyalt)
 
-        Gamma = 1./(2.*np.pi*W) * kF * kr / np.sqrt(k(n)*k(m)) * (Ix * Iy)
+        Gamma = 1./(np.pi*W) * kF * kr / np.sqrt(k(n)*k(m)) * (Ix * Iy)
 
         return Gamma
 

@@ -342,6 +342,7 @@ class Dirichlet(Waveguide):
         xn = np.asarray([x0(n) for n in (+1, -1)])
         yn = np.asarray([y0(n) for n in (-1, +1)])
 
+        # return nans if yn is empty
         if not yn.size:
             yn = np.array([np.nan, np.nan])
 
@@ -415,22 +416,13 @@ class DirichletPositionDependentLoss(Dirichlet):
         """
         Dirichlet.__init__(self, **waveguide_kwargs)
         dirichlet_kwargs = waveguide_kwargs.copy()
-        self.envelope = []
-        # have a loss potential built from a fixed mode (-: a, +: b)
-        # both switch in the course of the evolution
-        if waveguide_kwargs.get('loop_direction') == '-':
-            dirichlet_init_state = 'b'
-        else:
-            dirichlet_init_state = 'a'
 
         self.eta0 = eta0
         self.sigma = sigma
-        print "test"
-        dirichlet_kwargs.update({#'loop_type': 'Constant',
-                                 'eta': 0.0,
-                                 'loop_direction': '-',
-                                  # 'init_state': 'a'})
-                                 'init_state': dirichlet_init_state})
+
+        dirichlet_kwargs.update({'eta': 0.0,
+                                 'init_state': 'a',
+                                 'init_state_method': 'energy'})
         self.Dirichlet = Dirichlet(**dirichlet_kwargs)
         self.Dirichlet.get_c_eigensystem()
         self.Dirichlet._find_lower_energy_state()
@@ -439,7 +431,9 @@ class DirichletPositionDependentLoss(Dirichlet):
         Gamma = Gamma_Gauss(k=self.k, kF=self.kF, kr=self.kr, W=self.W,
                             sigmax=self.sigma, sigmay=self.sigma)
         n = np.where(np.isclose(t, self.t))[0]
-        b1, b2 = [self.Dirichlet.eVecs_r[n, i, 0] for i in (0, 1)]
+
+        j = 0.
+        b1, b2 = [self.Dirichlet.eVecs_r[n, i, j] for i in (0, 1)]
         self.nodes = self.Dirichlet.get_nodes(b1, b2) #x=x, y=y)
 
         if np.any(np.isnan(self.nodes)):
@@ -499,7 +493,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         Gamma_matrix_const = np.array([[self.kF/self.k0, 0.0],
                                        [0.0, self.kF/self.k1]], dtype=complex)
 
-        H -= 1j*self.eta*Gamma_matrix
+        H -= 1j*self.eta/2.*Gamma_matrix
         H -= 1j*self.eta0/2.*Gamma_matrix_const
 
         if self.verbose:
