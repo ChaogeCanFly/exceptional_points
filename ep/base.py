@@ -11,7 +11,7 @@ from ep.helpers import c_eig, c_trapz, c_cumtrapz, map_trajectory
 class Base:
     """Base class."""
 
-    def __init__(self, T=100, tN=None, x_R0=0.05, y_R0=0.4, loop_type="Circle",
+    def __init__(self, T=100, tN=50, x_R0=0.05, y_R0=0.4, loop_type="Circle",
                  loop_direction='-', init_state='a', init_state_method='gain',
                  init_phase=0.0, calc_adiabatic_state=False, verbose=False):
         """Exceptional Point (EP) base class.
@@ -24,7 +24,7 @@ class Base:
                 T : float, optional
                     Total duration of the loop in parameter space.
                 tN: int, optional
-                    Number if timesteps in the ODE-integration.
+                    Number of timesteps per unit time in the ODE-integration.
                 x_R0 : float, optional
                     x-coordinate of the loop parametrization.
                 y_R0 : float, optional
@@ -60,9 +60,7 @@ class Base:
         self.loop_direction = loop_direction
 
         # number of timesteps in ODE-integration
-        if tN is None:
-            tN = 5e1 * T
-        self.tN = tN
+        self.tN = tN * T
 
         # time-array and step-size
         self.t, self.dt = np.linspace(0, T, self.tN, retstep=True)
