@@ -322,13 +322,13 @@ class Dirichlet(Waveguide):
 
         # sort eigenvectors: always take the first one returned by c_eig,
         # change if the imaginary part switches sign
-        # b1, b2 = evecs[0, 0], evecs[1, 0]
-        # if b1.imag > 0 or b2.imag < 0:
-        #     b1, b2 = evecs[0, 1], evecs[1, 1]
+        b1, b2 = [evecs[i, 0] for i in (0, 1)]
+        if b1.imag > 0 or b2.imag < 0:
+            b1, b2 = [evecs[i, 1] for i in (0, 1)]
 
         # def x0(s):
         #   (2.*pi/kr * (1+s)/2 - 1j/kr *
-        #    np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
+        #     np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
 
         def x0(s):
             """Return x-coordinates in unit cell.  Only valid for boundary
@@ -441,7 +441,13 @@ class DirichletPositionDependentLoss(Dirichlet):
         else:
             G1, G2 = [Gamma.get_matrix(x0, y0) for (x0, y0) in self.nodes]
             G = G1 + G2
-        self.Gamma_matrix = G
+
+        # dyadic product
+        # evals, evecs = c_eig(self.Dirichlet.H(0, x, y))
+        # if evals[0] > evals[1]:
+        #     evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
+        # b1, b2 = [evecs[i, 0] for i in (0, 1)]
+        # G = np.outer(b1, b1.conj())
 
         if self.verbose:
             print "G\n", G
