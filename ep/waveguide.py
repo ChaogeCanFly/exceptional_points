@@ -303,58 +303,60 @@ class Dirichlet(Waveguide):
 
         return eps_prime, delta, theta_prime
 
-    def get_nodes(self, x=None, y=None):
+    def get_nodes(self, x=None, y=None, col=0):
         """Return the nodes of the Bloch-eigenvector in the unit cell."""
 
-        # if not self.loop_type == 'Constant':
-        #     raise Exception("Error: loop_type not 'Constant'!")
+        if not self.loop_type == 'Constant':
+            raise Exception("Error: loop_type not 'Constant'!")
 
         k = self.k
         kr = self.kr
         W = self.W
 
         # get eigenvectors of Hermitian system to find Bloch mode nodes
+        H0_11 = -self.k0
+        H0_12 = self.B0*x
+        H0_21 = self.B0.conj()*x
+        H0_22 = -self.k0 - y
+
+        # H0 = np.array([[H0_11, H0_12],
+        #                [H0_21, H0_22]], dtype=complex)
+        # evals, evecs = c_eig(H0)
+        evals = [-self.k0 - y/2. + 0.5*s*np.sqrt(y**2 + H0_12*H0_21) for s in (1, -1)]
+        evals = np.asarray(evals)
+        evecs = [[H0_12, -0.5*y + 0.5*np.sqrt(y**2 + H0_12*H0_21)],
+                 [H0_12, -0.5*y - 0.5*np.sqrt(y**2 + H0_12*H0_21)]
+        evecs = np.asarray(evecs)
+
         # evals, evecs = c_eig(self.H(0, x, y))
-        evals, evecs = c_eig(self.H(0, x, y))
-
-        # only kill eigenvector for which the eigenvalue is smaller
-        # if evals[0] > evals[1]:
-        #     # evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
-        #     evecs[:, :] = evecs[:, ::-1]
-        # if evals[0] > evals[1]:
-        #     if self.loop_direction == '-':
-        #         b1, b2 = [evecs[i, 0] for i in (0, 1)]
-        #     else:
-        #         b1, b2 = [evecs[i, 0] for i in (0, 1)]
-        # elif evals[0] < evals[1]:
-        #     if self.loop_direction == '-':
-        #         b1, b2 = [evecs[i, 1] for i in (0, 1)]
-        #     else:
-        #         b1, b2 = [evecs[i, 1] for i in (0, 1)]
-
-        # if evals[0] > evals[1] and self.loop_direction == '+':
-        #     b1, b2 = [evecs[i, 1] for i in (0, 1)]
-        # else:
-        #     b1, b2 = [evecs[i, 0] for i in (0, 1)]
-
 
         # sort eigenvectors: always take the first one returned by c_eig,
         # change if the imaginary part switches sign
-        # if self.loop_direction == '+':
+        # if self.loop_direction == '+' and self.init_state == 'a':
         #     j = 1
         #     jj = 0
-        # else:
+        # elif self.loop_direction == '+' and self.init_state == 'b':
         #     j = 0
         #     jj = 1
+        # elif self.loop_direction == '-' and self.init_state == 'a':
+        #     j = 0
+        #     jj = 1
+        # elif self.loop_direction == '-' and self.init_state == 'b':
+        #     j = 1
+        #     jj = 0
         j = 1
         jj = 0
         b1, b2 = [evecs[i, j] for i in (0, 1)]
         if b1.imag > 0 or b2.imag < 0:
             b1, b2 = [evecs[i, jj] for i in (0, 1)]
+            evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
+            evals[0], evals[1] = evals[1], evals[0]
 
         with open("evecs_master_{}_{}.dat".format(self.loop_direction, self.init_state), "a") as f:
+            ev = evals
             e = evecs
-            data = (e[0,0].real, e[0,0].imag, e[1,0].real, e[1,0].imag,
+            data = (ev[0].real, ev[0].imag, ev[1].real, ev[1].imag,
+                    e[0,0].real, e[0,0].imag, e[1,0].real, e[1,0].imag,
                     e[0,1].real, e[0,1].imag, e[1,1].real, e[1,1].imag)
             np.savetxt(f, data, newline="  ", fmt='%.5e')
             f.write("\n")
@@ -446,19 +448,10 @@ class DirichletPositionDependentLoss(Dirichlet):
         Dirichlet.__init__(self, **waveguide_kwargs)
         dirichlet_kwargs = waveguide_kwargs.copy()
 
-        # have a loss potential built from a fixed mode (-: a, +: b)
-        # both switch in the course of the evolution
-        # if waveguide_kwargs.get('loop_direction') == '-':
-        #     dirichlet_init_state = 'b'
-        # else:
-        #     dirichlet_init_state = 'a'
-
         self.eta0 = eta0
         self.sigma = sigma
-        # dirichlet_kwargs.update({'loop_type': 'Constant',
-        dirichlet_kwargs.update({'loop_type': 'Bell',
+        dirichlet_kwargs.update({'loop_type': 'Constant',
                                  'eta': 0.0})
-                                 #'init_state': dirichlet_init_state})
         self.Dirichlet = Dirichlet(**dirichlet_kwargs)
 
     def _get_loss_matrix(self, x=None, y=None):
@@ -515,7 +508,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         Gamma_matrix = self._get_loss_matrix(x=eps, y=delta)
 
         # damping coefficient
-        # eps0 = 0.1*self.x_R0
+        # eps0 = 0.25*self.x_R0
         # envelope = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2
         envelope = eps**2
 
