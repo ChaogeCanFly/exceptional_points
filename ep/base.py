@@ -361,10 +361,9 @@ class Base:
         the first state |0> corresponds to Re(E_0) < Re(E_1) of the second
         state |1> at time t=0."""
 
-        if self.eVals[0, 0] > self.eVals[0, 1]:
-            self.eVals[:,:] = self.eVals[:,::-1]
-            self.eVecs_r[:,:,:] = self.eVecs_r[:,:,::-1]
-            self.eVecs_l[:,:,:] = self.eVecs_l[:,:,::-1]
+        if self.eVals[0, 0].real > self.eVals[0, 1].real:
+            for e in self.eVals, self.eVecs_r, self.eVecs_l:
+                e[..., :] = e[..., ::-1]
 
     def _get_init_state(self):
         """Return the initial state vector at time t=0.
