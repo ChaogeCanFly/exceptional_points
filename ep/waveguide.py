@@ -320,12 +320,47 @@ class Dirichlet(Waveguide):
 
         # only kill eigenvector for which the eigenvalue is smaller
         # if evals[0] > evals[1]:
-        #     evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
+        #     # evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
+        #     evecs[:, :] = evecs[:, ::-1]
+        # if evals[0] > evals[1]:
+        #     if self.loop_direction == '-':
+        #         b1, b2 = [evecs[i, 0] for i in (0, 1)]
+        #     else:
+        #         b1, b2 = [evecs[i, 0] for i in (0, 1)]
+        # elif evals[0] < evals[1]:
+        #     if self.loop_direction == '-':
+        #         b1, b2 = [evecs[i, 1] for i in (0, 1)]
+        #     else:
+        #         b1, b2 = [evecs[i, 1] for i in (0, 1)]
+
+        # if evals[0] > evals[1] and self.loop_direction == '+':
+        #     b1, b2 = [evecs[i, 1] for i in (0, 1)]
+        # else:
+        #     b1, b2 = [evecs[i, 0] for i in (0, 1)]
+
 
         # sort eigenvectors: always take the first one returned by c_eig,
         # change if the imaginary part switches sign
         # if b1.imag > 0 or b2.imag < 0:
         #     b1, b2 = [evecs[i, 1] for i in (0, 1)]
+        # if self.loop_direction == '+':
+        #     j = 1
+        #     jj = 0
+        # else:
+        #     j = 0
+        #     jj = 1
+        j = 1
+        jj = 0
+        b1, b2 = [evecs[i, j] for i in (0, 1)]
+        if b1.imag > 0 or b2.imag < 0:
+            b1, b2 = [evecs[i, jj] for i in (0, 1)]
+
+        with open("evecs_master_{}_{}.dat".format(self.loop_direction, self.init_state), "a") as f:
+            e = evecs
+            data = (e[0,0].real, e[0,0].imag, e[1,0].real, e[1,0].imag,
+                    e[0,1].real, e[0,1].imag, e[1,1].real, e[1,1].imag)
+            np.savetxt(f, data, newline="  ", fmt='%.5e')
+            f.write("\n")
 
         # def x0(s):
         #   (2.*pi/kr * (1+s)/2 - 1j/kr *
@@ -424,6 +459,10 @@ class DirichletPositionDependentLoss(Dirichlet):
         dirichlet_kwargs.update({'eta': 0.0,
                                  'init_state': 'a',
                                  'init_state_method': 'energy'})
+        # dirichlet_kwargs.update({'loop_type': 'Constant',
+        # dirichlet_kwargs.update({'loop_type': 'Bell',
+        #                          'eta': 0.0})
+        #                          #'init_state': dirichlet_init_state})
         self.Dirichlet = Dirichlet(**dirichlet_kwargs)
         self.Dirichlet.get_c_eigensystem()
         self.Dirichlet._find_lower_energy_state()
@@ -446,10 +485,14 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         # dyadic product
         # evals, evecs = c_eig(self.Dirichlet.H(0, x, y))
-        # if evals[0] > evals[1]:
-        #     evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
+        # # if evals[0] > evals[1]:
+        # #     evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
         # b1, b2 = [evecs[i, 0] for i in (0, 1)]
         # G = np.outer(b1, b1.conj())
+        # if self.loop_direction == '-' and self.init_state == 'b':
+        #     G *= 0
+        # if self.loop_direction == '+' and self.init_state == 'a':
+        #     G *= 0
 
         if self.verbose:
             print "G\n", G
