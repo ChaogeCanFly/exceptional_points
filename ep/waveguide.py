@@ -63,7 +63,7 @@ class Waveguide(Base):
             y = self.y_R0*sign*(sign*w*t/pi - 1.) + Delta
         elif self.loop_type == "Circle":
             x = self.x_R0 + self.x_R0*np.cos(w*t + Delta)
-            y = self.y_R0 + self.y_R0*np.sin(w*t + Delta)
+            y = self.y_R0 + self.x_R0*np.sin(w*t + Delta)
         elif self.loop_type == "Varcircle":
             x = self.x_R0/2. * (1. - np.cos(w*t))
             y = self.y_R0 - self.x_R0*np.sin(w*t) + Delta
