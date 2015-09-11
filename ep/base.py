@@ -419,7 +419,7 @@ class Base:
         if self.init_state_method == 'gain':
             self._find_gain_state()
         elif self.init_state_method == 'energy':
-            self._find_lower_energy_state
+            self._find_lower_energy_state()
         self.eVec0 = self._get_init_state()
 
         # create ode object to solve Schroedinger equation (SE)
