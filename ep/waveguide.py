@@ -372,14 +372,16 @@ class Dirichlet(Waveguide):
             evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
             evals[0], evals[1] = evals[1], evals[0]
 
-        with open("evecs_master_{}_{}.dat".format(self.loop_direction, self.init_state), "a") as f:
-            ev = evals
-            e = evecs
-            data = (ev[0].real, ev[0].imag, ev[1].real, ev[1].imag,
-                    e[0,0].real, e[0,0].imag, e[1,0].real, e[1,0].imag,
-                    e[0,1].real, e[0,1].imag, e[1,1].real, e[1,1].imag)
-            np.savetxt(f, data, newline="  ", fmt='%.5e')
-            f.write("\n")
+        # # write eigensystem to file
+        # with open("evecs_{}_{}.dat".format(self.loop_direction,
+        #                                    self.init_state), "a") as f:
+        #     ev = evals
+        #     e = evecs
+        #     data = (ev[0].real, ev[0].imag, ev[1].real, ev[1].imag,
+        #             e[0,0].real, e[0,0].imag, e[1,0].real, e[1,0].imag,
+        #             e[0,1].real, e[0,1].imag, e[1,1].real, e[1,1].imag)
+        #     np.savetxt(f, data, newline="  ", fmt='%.5e')
+        #     f.write("\n")
 
         # def x0(s):
         #   (2.*pi/kr * (1+s)/2 - 1j/kr *
@@ -396,6 +398,13 @@ class Dirichlet(Waveguide):
 
         xn = np.asarray([x0(n) for n in (+1, -1)])
         yn = np.asarray([y0(n) for n in (-1, +1)])
+
+        # # write coordinates to file
+        # with open("coords_{}_{}.dat".format(self.loop_direction,
+        #                                     self.init_state), "a") as f:
+        #     data = (xn[0], yn[0], xn[1], yn[1])
+        #     np.savetxt(f, data, newline="  ", fmt='%.5e')
+        #     f.write("\n")
 
         # mark invalid node coordinates with np.nan
         # -> caught in DirichletPositionDependentLoss._get_EP_coordinates where
