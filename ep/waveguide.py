@@ -334,26 +334,12 @@ class Dirichlet(Waveguide):
         W = self.W
 
         evals, evecs = c_eig(self.H(0, x, y))
-        # sort eigenvectors: always take the first one returned by c_eig,
-        # change if the imaginary part switches sign
-        # if self.loop_direction == '+' and self.init_state == 'a':
-        #     j = 1
-        #     jj = 0
-        # elif self.loop_direction == '+' and self.init_state == 'b':
-        #     j = 0
-        #     jj = 1
-        # elif self.loop_direction == '-' and self.init_state == 'a':
-        #     j = 0
-        #     jj = 1
-        # elif self.loop_direction == '-' and self.init_state == 'b':
-        #     j = 1
-        #     jj = 0
 
-        j = 1
-        jj = 0
-        b1, b2 = [evecs[i, j] for i in (0, 1)]
+        j0 = 0
+        j1 = 1
+        b1, b2 = [evecs[i, j0] for i in (0, 1)]
         if b1.imag > 0 or b2.imag < 0:
-            b1, b2 = [evecs[i, jj] for i in (0, 1)]
+            b1, b2 = [evecs[i, j1] for i in (0, 1)]
             evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
             evals[0], evals[1] = evals[1], evals[0]
 
