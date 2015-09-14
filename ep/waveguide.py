@@ -183,7 +183,8 @@ class Waveguide(Base):
 class Dirichlet(Waveguide):
     """Dirichlet class."""
 
-    def __init__(self, tqd=False, linearized=False, **waveguide_kwargs):
+    def __init__(self, tqd=False, linearized=False, switch_losses_on_off=False,
+                 **waveguide_kwargs):
         """Exceptional Point (EP) waveguide class with Dirichlet boundary
         conditons.
 
@@ -197,12 +198,15 @@ class Dirichlet(Waveguide):
                 linearized: bool
                     Whether to derive the linearized phase (returns phase of
                     sine function in boundary instead of detuning).
+                switch_losses_on_off: bool
+                    Whether to scale the eta variable with epsilon^2.
         """
         Waveguide.__init__(self, **waveguide_kwargs)
 
         self.tqd = tqd
         self.linearized = linearized
         self._tqd_already_calculated = False
+        self.switch_losses_on_off = switch_losses_on_off
 
         k0, k1 = [self.k(n) for n in 1, 2]
         self.k0, self.k1 = k0, k1
@@ -262,10 +266,26 @@ class Dirichlet(Waveguide):
         B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
              self.W**3 / np.sqrt(self.k0*self.k1))
 
-        H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0
+        # def fermi(x, sigma):
+        #     return 1./(1. + np.exp(-x/sigma))
+        # s = 1.0
+        # envelope = fermi(t - 4.*s, s)*fermi(self.L - t - 4.*s, s)
+        # eps0 = 0.1*eps
+        # envelope = 0.5*(np.sign(eps - eps0) + 1.0)
+        # H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0*envelope
+        # H12 = B*eps
+        # H21 = B.conj()*eps
+        # H22 = -self.k0 - delta - 1j*self.eta/2.*self.kF/self.k1*envelope
+
+        if self.switch_losses_on_off:
+            eta = self.eta * eps**2
+        else:
+            eta = self.eta
+
+        H11 = -self.k0 - 1j*eta/2.*self.kF/self.k0
         H12 = B*eps
         H21 = B.conj()*eps
-        H22 = -self.k0 - delta - 1j*self.eta/2.*self.kF/self.k1
+        H22 = -self.k0 - delta - 1j*eta/2.*self.kF/self.k1
 
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
