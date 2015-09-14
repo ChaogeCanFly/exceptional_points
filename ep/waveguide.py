@@ -679,6 +679,8 @@ class Neumann(Waveguide):
         self.k0, self.k1 = k0, k1
         self.kr = k0 - k1
 
+        self.x_EP, self.y_EP = self._get_EP_coordinates()
+
         if self.x_R0 is None or self.y_R0 is None:
             self.x_R0, self.y_R0 = self._get_EP_coordinates()
 
