@@ -323,7 +323,7 @@ class Dirichlet(Waveguide):
 
         return eps_prime, delta, theta_prime
 
-    def get_nodes(self, x=None, y=None, col=0):
+    def get_nodes(self, x=None, y=None):
         """Return the nodes of the Bloch-eigenvector in the unit cell."""
 
         if not self.loop_type == 'Constant':
