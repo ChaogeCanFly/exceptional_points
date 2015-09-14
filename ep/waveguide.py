@@ -333,23 +333,7 @@ class Dirichlet(Waveguide):
         kr = self.kr
         W = self.W
 
-        # get eigenvectors of Hermitian system to find Bloch mode nodes
-        H0_11 = -self.k0
-        H0_12 = self.B0*x
-        H0_21 = self.B0.conj()*x
-        H0_22 = -self.k0 - y
-
-        # H0 = np.array([[H0_11, H0_12],
-        #                [H0_21, H0_22]], dtype=complex)
-        # evals, evecs = c_eig(H0)
-        evals = [-self.k0 - y/2. + 0.5*s*np.sqrt(y**2 + H0_12*H0_21) for s in (1, -1)]
-        evals = np.asarray(evals)
-        evecs = [[H0_12, -0.5*y + 0.5*np.sqrt(y**2 + H0_12*H0_21)],
-                 [H0_12, -0.5*y - 0.5*np.sqrt(y**2 + H0_12*H0_21)]
-        evecs = np.asarray(evecs)
-
-        # evals, evecs = c_eig(self.H(0, x, y))
-
+        evals, evecs = c_eig(self.H(0, x, y))
         # sort eigenvectors: always take the first one returned by c_eig,
         # change if the imaginary part switches sign
         # if self.loop_direction == '+' and self.init_state == 'a':
@@ -364,6 +348,7 @@ class Dirichlet(Waveguide):
         # elif self.loop_direction == '-' and self.init_state == 'b':
         #     j = 1
         #     jj = 0
+
         j = 1
         jj = 0
         b1, b2 = [evecs[i, j] for i in (0, 1)]
