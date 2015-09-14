@@ -278,7 +278,7 @@ class Dirichlet(Waveguide):
         # H22 = -self.k0 - delta - 1j*self.eta/2.*self.kF/self.k1*envelope
 
         if self.switch_losses_on_off:
-            eta = self.eta * eps**2
+            eta = self.eta * (eps/self.x_R0)**2
         else:
             eta = self.eta
 
