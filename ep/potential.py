@@ -101,7 +101,7 @@ class Potential(object):
         wg_kwargs = {'N': self.N,
                      'L': self.L,
                      'W': self.W,
-                     'tN': self.nx,
+                     'tN': self.nx/self.L,
                      'loop_type': self.loop_type,
                      'x_R0': self.x_R0,
                      'y_R0': self.y_R0,
