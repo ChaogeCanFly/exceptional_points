@@ -232,9 +232,9 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
             plt.pcolormesh(X, Y, real, cmap='RdBu_r')
             plt.savefig("real.png")
 
-        np.savetxt("potential_imag.dat", zip(range(len(imag_vector)), imag_vector),
+        np.savetxt("potential_imag.dat", zip(xrange(len(imag_vector)), imag_vector),
                    fmt=["%i", "%.12f"])
-        np.savetxt("potential_real.dat", zip(range(len(real_vector)), real_vector),
+        np.savetxt("potential_real.dat", zip(xrange(len(real_vector)), real_vector),
                    fmt=["%i", "%.12f"])
         if shape != 'science':
             np.savez("potential_imag_xy.npz", X=X, Y=Y, P=imag_vector,
@@ -246,8 +246,8 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
         # set last element to 0 (xi_lower) or W (xi_upper)
         xi_lower[-1] = 0.0
         xi_upper[-1] = W
-        np.savetxt("upper.boundary", zip(range(p.nx), xi_upper))
-        np.savetxt("lower.boundary", zip(range(p.nx), xi_lower))
+        np.savetxt("upper.boundary", zip(xrange(p.nx), xi_upper))
+        np.savetxt("lower.boundary", zip(xrange(p.nx), xi_lower))
         eps, delta = p.WG.get_cycle_parameters()
         np.savetxt("boundary.eps_delta", zip(eps, delta))
     if shape == 'RAP_TQD':
@@ -258,8 +258,8 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
         # set last element to 0 (xi_lower) or W (xi_upper)
         xi_lower[-1] = 0.0
         xi_upper[-1] = W
-        np.savetxt("upper.boundary", zip(range(p.nx), xi_upper))
-        np.savetxt("lower.boundary", zip(range(p.nx), xi_lower))
+        np.savetxt("upper.boundary", zip(xrange(p.nx), xi_upper))
+        np.savetxt("lower.boundary", zip(xrange(p.nx), xi_lower))
         np.savetxt("boundary.eps_delta_theta", zip(eps_prime, delta_prime, theta_prime))
 
 
