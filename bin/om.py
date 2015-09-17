@@ -9,18 +9,24 @@ from ep.helpers import map_trajectory, get_height_profile
 from ep.optomech import OptoMech
 
 
+def get_custom_cmap(clist):
+    cmap = LinearSegmentedColormap.from_list('RdBu_custom', clist, N=256)
+    return cmap(np.arange(256))*255.
+
+
 def plot_riemann_sheets(part=np.real,
                         scale=4.0,  # 3 <- paper plots, #6.5
                         show=False,
                         colorgradient=False,
                         fignum='1c',
-                        wireframe_skip=5.,
                         adiabatic=False,
                         trajectory=True,
                         parallel_projection=False,
                         opacity=1.0,
                         xN=153, yN=152, **kwargs):
     """Plot local Riemann sheet structure of the OM Hamiltonian."""
+
+    wireframe_skip = xN/25.
 
     if part is np.real:
         scale = 4.0
@@ -80,17 +86,11 @@ def plot_riemann_sheets(part=np.real,
     # red = tuple(map(lambda x: x/255., (218, 165, 32)))
     # blue = tuple(map(lambda x: x/255., (0, 135, 189)))
 
-    def get_custom_cmap(clist):
-        cmap = LinearSegmentedColormap.from_list('RdBu_custom', clist, N=256)
-        return cmap(np.arange(256))*255.
-
     RdBu_custom = get_custom_cmap(clist=[red, blue])
     if colorgradient:
         red, blue = None, None
 
     fig = mlab.figure(size=(1400, 1000), bgcolor=(1, 1, 1))
-
-    # opacity=1.0
 
     if trajectory:
         if fignum == 'DP':
@@ -485,8 +485,7 @@ def plot_riemann_sheets(part=np.real,
     if show:
         mlab.show()
     else:
-        # fig.scene.render_window.aa_frames = 16
-        fig.scene.render_window.aa_frames = 32
+        fig.scene.render_window.aa_frames = 20
         if part is np.real:
             str_part = "real"
         else:
@@ -500,7 +499,7 @@ def plot_riemann_sheets(part=np.real,
 def plot_figures(fignum='2a', part='imag', direction='-', show=False,
                  colorgradient=False, T=45., R=0.1, gamma=1., adiabatic=False,
                  opacity=1.0, trajectory=True, init_state='b',
-                 parallel_projection=False):
+                 parallel_projection=False, xN=351, yN=352):
 
     import subprocess
 
