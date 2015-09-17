@@ -372,38 +372,17 @@ def plot_riemann_sheets(part=np.real,
         scene = engine.scenes[0]
         camera_light3 = engine.scenes[0].scene.light_manager.lights[3]
         camera_light3.activate = True
-        camera_light3.intensity = 0.4
+        camera_light3.intensity = 0.5
         camera_light3.azimuth = -100.0
         camera_light3.elevation = 30.0
-        # scene.scene.camera.position = [0.31711523580558498, 1.1642118272307824, 0.20395496351643158]
-        # scene.scene.camera.focal_point = [0.0, 0.5, 0.0]
-        # scene.scene.camera.view_angle = 30.0
-        # scene.scene.camera.view_up = [-0.10288267155095651, -0.2467661383627425, 0.96359827150741528]
-        # scene.scene.camera.clipping_range = [0.40107728370499668, 1.2409037835660328]
-        # scene.scene.camera.compute_view_plane_normal()
-        # scene.scene.render()
-        # scene.scene.camera.position = [-0.51815159271833855, 0.097670913179314714, 0.39113588970821772]
-        # scene.scene.camera.focal_point = [0.0, 0.5, 0.0]
-        # scene.scene.camera.view_angle = 30.0
-        # scene.scene.camera.view_up = [0.38872327316588934, 0.33412016842343056, 0.85863725166795324]
-        # scene.scene.camera.clipping_range = [0.3528091439102139, 1.2715604145934434]
-        # scene.scene.camera.compute_view_plane_normal()
-        # scene.scene.render()
-        # scene.scene.camera.position = [-0.66777984484416308, 0.20460786784526436, 0.22394333755967094]
-        # scene.scene.camera.focal_point = [0.0, 0.5, 0.0]
-        # scene.scene.camera.view_angle = 30.0
-        # scene.scene.camera.view_up = [0.2346378925600564, 0.19200359181842613, 0.95293214874082133]
-        # scene.scene.camera.clipping_range = [0.39729306372221307, 1.2185826095947825]
-        # scene.scene.camera.compute_view_plane_normal()
-        # scene.scene.render()
         scene.scene.camera.position = [-0.58666637486265438, 0.34190933964282821, 0.46278176181631675]
         scene.scene.camera.focal_point = [0.0, 0.5, 0.0]
         scene.scene.camera.view_angle = 30.0
         scene.scene.camera.view_up = [0.54725173023115548, 0.27905704792369884, 0.78907712409061603]
         scene.scene.camera.clipping_range = [0.38983416938417631, 1.231847141331484]
         scene.scene.camera.compute_view_plane_normal()
-        scene.scene.render()
         scene.scene.parallel_projection = parallel_projection
+        scene.scene.render()
     elif fignum == '2a' or fignum == '2b':
         # scale=3.5
         scene = engine.scenes[0]
@@ -512,7 +491,9 @@ def plot_figures(fignum='2a', part='imag', direction='-', show=False,
               "trajectory": trajectory,
               "parallel_projection": parallel_projection,
               "opacity": opacity,
-              "adiabatic": adiabatic}
+              "adiabatic": adiabatic,
+              "xN": xN,
+              "yN": yN}
 
     if fignum == '1c':
         params['R'] = 0.9*R
