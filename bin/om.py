@@ -368,7 +368,7 @@ def plot_riemann_sheets(part=np.real,
             scene.scene.camera.clipping_range = [0.53148188620606163, 1.4791195352031188]
             scene.scene.camera.compute_view_plane_normal()
             scene.scene.render()
-    elif fignum == "wg":
+    elif "wg" in fignum:
         scene = engine.scenes[0]
         camera_light3 = engine.scenes[0].scene.light_manager.lights[3]
         camera_light3.activate = True
@@ -509,6 +509,11 @@ def plot_figures(fignum='2a', part='imag', direction='-', show=False,
         params['R'] = 0.9*R
         settings = {"init_state": init_state,
                     "init_phase": 0.01,
+                    "loop_direction": direction, }
+    elif fignum == 'wg_alt':
+        params['R'] = 0.9*R
+        settings = {"init_state": init_state,
+                    "init_phase": -0.75,
                     "loop_direction": direction, }
     elif fignum == '1c_alt3':
         params['R'] = 0.9*R
