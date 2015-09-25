@@ -515,11 +515,6 @@ def plot_figures(fignum='2a', part='imag', direction='-', show=False,
         settings = {"init_state": init_state,
                     "init_phase": -0.75,
                     "loop_direction": direction, }
-    elif fignum == '1c_alt3':
-        params['R'] = 0.9*R
-        settings = {"init_state": init_state,
-                    "init_phase": pi+0.5,
-                    "loop_direction": direction, }
     elif fignum == '2a':
         settings = {"init_state": 'a',
                     "init_phase": 0,
