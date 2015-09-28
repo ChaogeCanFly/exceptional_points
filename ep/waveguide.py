@@ -184,7 +184,7 @@ class Dirichlet(Waveguide):
     """Dirichlet class."""
 
     def __init__(self, tqd=False, linearized=False, switch_losses_on_off=False,
-                 **waveguide_kwargs):
+                 eta0=0.0, **waveguide_kwargs):
         """Exceptional Point (EP) waveguide class with Dirichlet boundary
         conditons.
 
@@ -207,6 +207,7 @@ class Dirichlet(Waveguide):
         self.linearized = linearized
         self._tqd_already_calculated = False
         self.switch_losses_on_off = switch_losses_on_off
+        self.eta0 = eta0
 
         k0, k1 = [self.k(n) for n in 1, 2]
         self.k0, self.k1 = k0, k1
@@ -278,7 +279,7 @@ class Dirichlet(Waveguide):
         # H22 = -self.k0 - delta - 1j*self.eta/2.*self.kF/self.k1*envelope
 
         if self.switch_losses_on_off:
-            eta = self.eta * (eps/self.x_R0)**2
+            eta = self.eta0 + self.eta * (eps/self.x_R0)**2
         else:
             eta = self.eta
 
