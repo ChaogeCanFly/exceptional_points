@@ -280,6 +280,7 @@ class Dirichlet(Waveguide):
 
         if self.switch_losses_on_off:
             eta = self.eta0 + self.eta * (eps/self.x_R0)**2
+            # eta = self.eta0 + self.eta * np.sin(np.pi/self.L*t)
         else:
             eta = self.eta
 
