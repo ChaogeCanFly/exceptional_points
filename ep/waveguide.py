@@ -264,8 +264,9 @@ class Dirichlet(Waveguide):
         else:
             theta = self.theta
 
-        B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
-             self.W**3 / np.sqrt(self.k0*self.k1))
+        # B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
+        #      self.W**3 / np.sqrt(self.k0*self.k1))
+        B = self.B0
 
         # def fermi(x, sigma):
         #     return 1./(1. + np.exp(-x/sigma))
@@ -429,6 +430,37 @@ class Dirichlet(Waveguide):
         else:
             PHI[np.logical_or(Y > self.W, Y < 0)] = np.nan
         return X, Y, PHI
+
+
+class DirichletReduced(Dirichlet):
+    def __init__(self, **dirichlet_kwargs):
+        Dirichlet.__init__(self, **dirichlet_kwargs)
+
+    def H(self, t, x=None, y=None):
+        if x is None and y is None:
+            eps, delta = self.get_cycle_parameters(t)
+        else:
+            eps, delta = x, y
+
+        theta = self.theta
+
+        B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
+             self.W**3 / np.sqrt(self.k0*self.k1))
+
+        if self.switch_losses_on_off:
+            eta = self.eta0 + self.eta * (eps/self.x_R0)**2
+            # eta = self.eta0 + self.eta * np.sin(np.pi/self.L*t)
+        else:
+            eta = self.eta
+
+        H11 = delta - 1j*eta/2.*self.kF/self.k0
+        H12 = np.abs(B)*eps
+        H21 = np.abs(B)*eps
+        H22 = -1j*eta/2.*self.kF/self.k1
+
+        H = np.array([[H11, H12],
+                      [H21, H22]], dtype=complex)
+        return H
 
 
 class DirichletPositionDependentLoss(Dirichlet):
