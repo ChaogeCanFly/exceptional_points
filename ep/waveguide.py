@@ -546,10 +546,10 @@ class DirichletPositionDependentLoss(Dirichlet):
         # damping coefficient
         # eps0 = 0.25*self.x_R0
         # envelope = 0.5 * (np.sign(eps-eps0) + 1.) * (eps-eps0)**2
-        envelope = eps**2
-
-        Gamma_matrix *= envelope
-        self.Gamma_matrix = Gamma_matrix
+        # envelope = eps**2
+        # envelope = (eps/self.x_R0)**2
+        #
+        # Gamma_matrix *= envelope
 
         H11 = -self.k0
         H12 = self.B0*eps
@@ -576,7 +576,7 @@ class DirichletPositionDependentLoss(Dirichlet):
             print "delta", delta
             print "H\n", H
             print "nodes", self.nodes
-            print "Gamma_matrix\n", self.Gamma_matrix
+            print "Gamma_matrix\n", Gamma_matrix
 
         return H
 
