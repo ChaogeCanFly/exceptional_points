@@ -341,7 +341,8 @@ class Dirichlet(Waveguide):
         j0 = 0
         j1 = 1
         b1, b2 = [evecs[i, j0] for i in (0, 1)]
-        if b1.imag > 0 or b2.imag < 0:
+        # if b1.imag > 0 or b2.imag < 0:
+        if y <= 0:
             b1, b2 = [evecs[i, j1] for i in (0, 1)]
             evecs[:, 0], evecs[:, 1] = evecs[:, 1], evecs[:, 0]
             evals[0], evals[1] = evals[1], evals[0]
@@ -357,14 +358,14 @@ class Dirichlet(Waveguide):
         #     np.savetxt(f, data, newline="  ", fmt='%.5e')
         #     f.write("\n")
 
-        # def x0(s):
-        #   (2.*pi/kr * (1+s)/2 - 1j/kr *
-        #     np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
-
         def x0(s):
-            """Return x-coordinates in unit cell.  Only valid for boundary
-            phase parameter vartheta = 0."""
-            return s*np.pi/(2.*kr) + (1.-s)/2. * 2.*pi/kr
+          return (2.*pi/kr * (1+s)/2 - 1j/kr *
+                  np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
+
+        # def x0(s):
+        #     """Return x-coordinates in unit cell.  Only valid for boundary
+        #     phase parameter vartheta = 0."""
+        #     return s*np.pi/(2.*kr) + (1.-s)/2. * 2.*pi/kr
 
         def y0(s):
             """Return y-coordinates in unit cell."""
@@ -432,7 +433,39 @@ class Dirichlet(Waveguide):
         return X, Y, PHI
 
 
-class DirichletPositionDependentLoss(Dirichlet):
+class DirichletReduced(Dirichlet):
+    def __init__(self, **dirichlet_kwargs):
+        Dirichlet.__init__(self, **dirichlet_kwargs)
+
+    def H(self, t, x=None, y=None):
+        if x is None and y is None:
+            eps, delta = self.get_cycle_parameters(t)
+        else:
+            eps, delta = x, y
+
+        theta = self.theta
+
+        B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
+             self.W**3 / np.sqrt(self.k0*self.k1))
+
+        if self.switch_losses_on_off:
+            eta = self.eta0 + self.eta * (eps/self.x_R0)**2
+            # eta = self.eta0 + self.eta * np.sin(np.pi/self.L*t)
+        else:
+            eta = self.eta
+
+        H11 = delta - 1j*eta/2.*self.kF/self.k0
+        H12 = np.abs(B)*eps
+        H21 = np.abs(B)*eps
+        H22 = -1j*eta/2.*self.kF/self.k1
+
+        H = np.array([[H11, H12],
+                      [H21, H22]], dtype=complex)
+        return H
+
+
+# class DirichletPositionDependentLoss(Dirichlet):
+class DirichletPositionDependentLoss(DirichletReduced):
     """Dirichlet class with position dependent loss."""
 
     def __init__(self, eta0=0.0, sigma=1e-2, switch_losses_on_off=False,
@@ -449,7 +482,8 @@ class DirichletPositionDependentLoss(Dirichlet):
                 sigma: float
                     Standard deviation of the Gaussian loss potential.
         """
-        Dirichlet.__init__(self, **waveguide_kwargs)
+        # Dirichlet.__init__(self, **waveguide_kwargs)
+        DirichletReduced.__init__(self, **waveguide_kwargs)
         dirichlet_kwargs = waveguide_kwargs.copy()
 
         self.eta0 = eta0
@@ -457,7 +491,8 @@ class DirichletPositionDependentLoss(Dirichlet):
         self.switch_losses_on_off = switch_losses_on_off
         dirichlet_kwargs.update({'loop_type': 'Constant',
                                  'eta': 0.0})
-        self.Dirichlet = Dirichlet(**dirichlet_kwargs)
+        # self.Dirichlet = Dirichlet(**dirichlet_kwargs)
+        self.Dirichlet = DirichletReduced(**dirichlet_kwargs)
 
     def _get_loss_matrix(self, x=None, y=None):
         Gamma = Gamma_Gauss(k=self.k, kF=self.kF, kr=self.kr, W=self.W,
@@ -520,10 +555,15 @@ class DirichletPositionDependentLoss(Dirichlet):
         #
         # Gamma_matrix *= envelope
 
-        H11 = -self.k0
-        H12 = self.B0*eps
-        H21 = self.B0.conj()*eps
-        H22 = -self.k0 - delta
+        # H11 = -self.k0
+        # H12 = self.B0*eps
+        # H21 = self.B0.conj()*eps
+        # H22 = -self.k0 - delta
+
+        H11 = delta
+        H12 = np.abs(self.B0)*eps
+        H21 = np.abs(self.B0)*eps
+        H22 = 0
 
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
