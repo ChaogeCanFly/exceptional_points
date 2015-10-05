@@ -264,26 +264,13 @@ class Dirichlet(Waveguide):
         else:
             theta = self.theta
 
-        # B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
-        #      self.W**3 / np.sqrt(self.k0*self.k1))
-        B = self.B0
-
-        # def fermi(x, sigma):
-        #     return 1./(1. + np.exp(-x/sigma))
-        # s = 1.0
-        # envelope = fermi(t - 4.*s, s)*fermi(self.L - t - 4.*s, s)
-        # eps0 = 0.1*eps
-        # envelope = 0.5*(np.sign(eps - eps0) + 1.0)
-        # H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0*envelope
-        # H12 = B*eps
-        # H21 = B.conj()*eps
-        # H22 = -self.k0 - delta - 1j*self.eta/2.*self.kF/self.k1*envelope
-
         if self.switch_losses_on_off:
             eta = self.eta0 + self.eta * (eps/self.x_R0)**2
             # eta = self.eta0 + self.eta * np.sin(np.pi/self.L*t)
         else:
             eta = self.eta
+
+        B = self.B0
 
         H11 = -self.k0 - 1j*eta/2.*self.kF/self.k0
         H12 = B*eps
