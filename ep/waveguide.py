@@ -656,6 +656,10 @@ class Neumann(Waveguide):
         self.k0, self.k1 = k0, k1
         self.kr = k0 - k1
 
+        B = (-1j * (np.exp(1j*self.theta) + 1) *
+             self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
+        self.B0 = B
+
         self.x_EP, self.y_EP = self._get_EP_coordinates()
 
         if self.x_R0 is None or self.y_R0 is None:
@@ -678,9 +682,7 @@ class Neumann(Waveguide):
         else:
             eps, delta = x, y
 
-        B = (-1j * (np.exp(1j*self.theta) + 1) *
-             self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
-        self.B = B
+        B = self.B0
 
         H11 = -self.k0 - 1j*self.eta/2.
         H12 = B*eps
