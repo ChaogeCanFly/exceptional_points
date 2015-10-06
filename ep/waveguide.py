@@ -614,7 +614,7 @@ class DirichletPositionDependentLossReduced(DirichletPositionDependentLoss):
 
     def __init__(self, eta0=0.0, sigma=1e-2, switch_losses_on_off=False,
                  **waveguide_kwargs):
-        DirichletPositionDependentLossReduced.__init__(self, **waveguide_kwargs)
+        DirichletPositionDependentLoss.__init__(self, **waveguide_kwargs)
         dirichlet_kwargs = waveguide_kwargs.copy()
 
         self.eta0 = eta0
