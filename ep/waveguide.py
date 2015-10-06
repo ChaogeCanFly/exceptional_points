@@ -614,7 +614,7 @@ class DirichletPositionDependentLossReduced(DirichletReduced):
         """Exceptional Point (EP) waveguide class with Dirichlet boundary
         conditons and position dependent losses.
 
-        Copies methods and variables from the Dirichlet class.
+        Copies methods and variables from the DirichletReduced class.
 
             Additional parameters:
             ----------------------
@@ -622,6 +622,8 @@ class DirichletPositionDependentLossReduced(DirichletReduced):
                     Constant loss strength.
                 sigma: float
                     Standard deviation of the Gaussian loss potential.
+                switch_losses_on_off: bool
+                    Whether to turn losses on and off.
         """
         DirichletReduced.__init__(self, **waveguide_kwargs)
         dirichlet_kwargs = waveguide_kwargs.copy()
