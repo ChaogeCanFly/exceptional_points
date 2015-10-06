@@ -233,9 +233,16 @@ class Dirichlet(Waveguide):
         W = self.W
         theta = self.theta
 
-        x_EP = eta*kF*kr*W**2/(4*np.pi**2 *
-                               np.sqrt(2*k0*k1*(1.+np.cos(theta))))
-        y_EP = 0.0
+        if not self.eta0:
+            x_EP = eta*kF*kr*W**2/(4*np.pi**2 *
+                                    np.sqrt(2*k0*k1*(1.+np.cos(theta))))
+            y_EP = 0.0
+        else:
+            p = (4./self.eta * self.x_R0**2 * abs(self.B0) *
+                 self.k0 * self.k1/(self.kr * self.kF))
+            q = self.x_R0**2 * self.eta0 / self.eta
+            x_EP = [p/2. + s*np.sqrt((p/2.)**2 - q) for s in (-1,+1)]
+            y_EP = [0.0]*2
 
         return x_EP, y_EP
 
@@ -264,26 +271,13 @@ class Dirichlet(Waveguide):
         else:
             theta = self.theta
 
-        # B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
-        #      self.W**3 / np.sqrt(self.k0*self.k1))
-        B = self.B0
-
-        # def fermi(x, sigma):
-        #     return 1./(1. + np.exp(-x/sigma))
-        # s = 1.0
-        # envelope = fermi(t - 4.*s, s)*fermi(self.L - t - 4.*s, s)
-        # eps0 = 0.1*eps
-        # envelope = 0.5*(np.sign(eps - eps0) + 1.0)
-        # H11 = -self.k0 - 1j*self.eta/2.*self.kF/self.k0*envelope
-        # H12 = B*eps
-        # H21 = B.conj()*eps
-        # H22 = -self.k0 - delta - 1j*self.eta/2.*self.kF/self.k1*envelope
-
         if self.switch_losses_on_off:
             eta = self.eta0 + self.eta * (eps/self.x_R0)**2
             # eta = self.eta0 + self.eta * np.sin(np.pi/self.L*t)
         else:
             eta = self.eta
+
+        B = self.B0
 
         H11 = -self.k0 - 1j*eta/2.*self.kF/self.k0
         H12 = B*eps
@@ -709,6 +703,10 @@ class Neumann(Waveguide):
         self.k0, self.k1 = k0, k1
         self.kr = k0 - k1
 
+        B = (-1j * (np.exp(1j*self.theta) + 1) *
+             self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
+        self.B0 = B
+
         self.x_EP, self.y_EP = self._get_EP_coordinates()
 
         if self.x_R0 is None or self.y_R0 is None:
@@ -731,9 +729,7 @@ class Neumann(Waveguide):
         else:
             eps, delta = x, y
 
-        B = (-1j * (np.exp(1j*self.theta) + 1) *
-             self.kr/2. * np.sqrt(self.k0/(2.*self.k1)))
-        self.B = B
+        B = self.B0
 
         H11 = -self.k0 - 1j*self.eta/2.
         H12 = B*eps
