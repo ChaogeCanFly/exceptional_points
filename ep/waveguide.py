@@ -233,9 +233,16 @@ class Dirichlet(Waveguide):
         W = self.W
         theta = self.theta
 
-        x_EP = eta*kF*kr*W**2/(4*np.pi**2 *
-                               np.sqrt(2*k0*k1*(1.+np.cos(theta))))
-        y_EP = 0.0
+        if not self.eta0:
+            x_EP = eta*kF*kr*W**2/(4*np.pi**2 *
+                                    np.sqrt(2*k0*k1*(1.+np.cos(theta))))
+            y_EP = 0.0
+        else:
+            p = (4./self.eta * self.x_R0**2 * abs(self.B0) *
+                 self.k0 * self.k1/(self.kr * self.kF))
+            q = self.x_R0**2 * self.eta0 / self.eta
+            x_EP = [p/2. + s*np.sqrt((p/2.)**2 - q) for s in (-1,+1)]
+            y_E= = [0.0]*2
 
         return x_EP, y_EP
 
