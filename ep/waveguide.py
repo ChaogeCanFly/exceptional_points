@@ -235,13 +235,13 @@ class Dirichlet(Waveguide):
 
         if not self.eta0:
             x_EP = eta*kF*kr*W**2/(4*np.pi**2 *
-                                    np.sqrt(2*k0*k1*(1.+np.cos(theta))))
+                                   np.sqrt(2*k0*k1*(1.+np.cos(theta))))
             y_EP = 0.0
         else:
             p = (4./self.eta * self.x_R0**2 * abs(self.B0) *
                  self.k0 * self.k1/(self.kr * self.kF))
             q = self.x_R0**2 * self.eta0 / self.eta
-            x_EP = [p/2. + s*np.sqrt((p/2.)**2 - q) for s in (-1,+1)]
+            x_EP = [p/2. + s*np.sqrt((p/2.)**2 - q) for s in (-1, +1)]
             y_EP = [0.0]*2
 
         return x_EP, y_EP
@@ -353,10 +353,10 @@ class Dirichlet(Waveguide):
         #     f.write("\n")
 
         def x0(s):
-          """Return x-coordinates in unit cell.  Only valid for boundary
-             phase parameter vartheta = 0."""
-          return (2.*pi/kr * (1+s)/2 - 1j/kr *
-                  np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
+            """Return x-coordinates in unit cell.  Only valid for boundary
+            phase parameter vartheta = 0."""
+            return (2.*pi/kr * (1+s)/2 - 1j/kr *
+                    np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
 
         # def x0(s):
         #     """Return x-coordinates in unit cell.  Only valid for boundary
@@ -614,7 +614,7 @@ class DirichletPositionDependentLossReduced(DirichletPositionDependentLoss):
 
     def __init__(self, eta0=0.0, sigma=1e-2, switch_losses_on_off=False,
                  **waveguide_kwargs):
-        DirichletReduced.__init__(self, **waveguide_kwargs)
+        DirichletPositionDependentLossReduced.__init__(self, **waveguide_kwargs)
         dirichlet_kwargs = waveguide_kwargs.copy()
 
         self.eta0 = eta0
@@ -696,11 +696,13 @@ class DirichletNumericPotential(Dirichlet):
 
     def _get_EP_position(self, tn):
         prefactor = lambda n, m: (1./(2.*pi*self.W) * self.kF * self.kr / np.sqrt(self.k(n)*self.k(m)))
+
         def Gamma(y, x, n, m, part=np.real):
             G = self.numeric_potential(x, y)
             G *= prefactor(n, m)*np.sin(n*pi/self.W*y)*np.sin(m*pi/self.W*y)
             G *= np.exp(1j*(self.k(n)-self.k(m)*x))
             return part(G)
+
         G = lambda n, m: (integrate.quad(Gamma, 0, self.W, args=(tn, n, m, np.real))[0] +
                            1j*integrate.quad(Gamma, 0, self.W, args=(tn, n, m, np.imag))[0])
 
