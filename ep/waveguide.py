@@ -242,7 +242,7 @@ class Dirichlet(Waveguide):
                  self.k0 * self.k1/(self.kr * self.kF))
             q = self.x_R0**2 * self.eta0 / self.eta
             x_EP = [p/2. + s*np.sqrt((p/2.)**2 - q) for s in (-1,+1)]
-            y_E= = [0.0]*2
+            y_EP = [0.0]*2
 
         return x_EP, y_EP
 
