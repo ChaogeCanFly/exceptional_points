@@ -353,6 +353,8 @@ class Dirichlet(Waveguide):
         #     f.write("\n")
 
         def x0(s):
+          """Return x-coordinates in unit cell.  Only valid for boundary
+             phase parameter vartheta = 0."""
           return (2.*pi/kr * (1+s)/2 - 1j/kr *
                   np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
 
@@ -455,6 +457,7 @@ class DirichletReduced(Dirichlet):
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
         return H
+
 
 class DirichletPositionDependentLoss(Dirichlet):
     """Dirichlet class with position dependent loss."""
