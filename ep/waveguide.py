@@ -233,16 +233,17 @@ class Dirichlet(Waveguide):
         W = self.W
         theta = self.theta
 
-        if not self.eta0:
+        if not self.switch_losses_on_off:
             x_EP = eta*kF*kr*W**2/(4*np.pi**2 *
                                    np.sqrt(2*k0*k1*(1.+np.cos(theta))))
             y_EP = 0.0
         else:
-            p = (4./self.eta * self.x_R0**2 * abs(self.B0) *
-                 self.k0 * self.k1/(self.kr * self.kF))
-            q = self.x_R0**2 * self.eta0 / self.eta
-            x_EP = [p/2. + s*np.sqrt((p/2.)**2 - q) for s in (-1, +1)]
-            y_EP = [0.0]*2
+            y_EP = 0.0
+            t_EP = self.L*0.5*((y_EP - self.init_phase)/self.y_R0 + 1.)
+            f, _ = self.get_cycle_parameters(t_EP)
+            f = (f/self.x_R0)**2
+            x_EP = ((eta*f + self.eta0)*kF*0.25*
+                    np.abs(1./self.k0 - 1./self.k1)/np.abs(self.B0))
 
         return x_EP, y_EP
 
@@ -272,8 +273,9 @@ class Dirichlet(Waveguide):
             theta = self.theta
 
         if self.switch_losses_on_off:
-            eta = self.eta0 + self.eta * (eps/self.x_R0)**2
+            # eta = self.eta0 + self.eta * (eps/self.x_R0)**2
             # eta = self.eta0 + self.eta * np.sin(np.pi/self.L*t)
+            eta = self.eta0 + self.eta * (0.5*(1.-np.cos(2.*np.pi/self.L*t)))**2
         else:
             eta = self.eta
 
