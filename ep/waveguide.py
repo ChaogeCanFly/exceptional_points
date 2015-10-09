@@ -441,20 +441,15 @@ class DirichletReduced(Dirichlet):
         else:
             eps, delta = x, y
 
-        theta = self.theta
-
-        B = (-1j * (np.exp(1j*theta) + 1) * np.pi**2 /
-             self.W**3 / np.sqrt(self.k0*self.k1))
-
         if self.switch_losses_on_off:
             eta = self.eta0 + self.eta * (eps/self.x_R0)**2
         else:
             eta = self.eta
 
-        H11 = delta - 1j*eta/2.*self.kF/self.k0
-        H12 = np.abs(B)*eps
-        H21 = np.abs(B)*eps
-        H22 = -1j*eta/2.*self.kF/self.k1
+        H11 = delta - 1j*eta/2. * self.kF/self.k0
+        H12 = np.abs(self.B0)*eps
+        H21 = H12
+        H22 = -1j*eta/2. * self.kF/self.k1
 
         H = np.array([[H11, H12],
                       [H21, H22]], dtype=complex)
