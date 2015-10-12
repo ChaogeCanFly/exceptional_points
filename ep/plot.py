@@ -80,7 +80,7 @@ def get_defaults():
     matplotlib.rc('axes', **axes)
 
     tick = {'labelsize': 12,
-            'major.width': 0.5}
+            'major.width': 0.75}
     matplotlib.rc('xtick', **tick)
     matplotlib.rc('ytick', **tick)
 
