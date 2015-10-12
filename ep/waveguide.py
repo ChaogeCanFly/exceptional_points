@@ -399,7 +399,7 @@ class Dirichlet(Waveguide):
         if not return_evecs:
             return np.asarray(zip(xn, yn))
         else:
-            return np.asarray(b1, b2)
+            return evecs
 
     def wavefunction(self, evecs=False, with_boundary=False):
         """Return the wavefunction Psi(x,y)."""
@@ -667,6 +667,28 @@ class DirichletPositionDependentLossReduced(DirichletPositionDependentLoss):
             print "Gamma_matrix\n", Gamma_matrix
 
         return H
+
+
+class DirichletDyadicReduced(DirichletPositionDependentLossReduced):
+    """Dirichlet class with position dependent loss."""
+
+    def _get_loss_matrix(self, x=None, y=None):
+
+        # dyadic product
+        evals, evecs = c_eig(self.Dirichlet.H(0, x, y))
+        v1, v2 = [evecs[:, n] for n in (0, 1)]
+        if y >= 0:
+            v = v2
+        else:
+            v = v1
+        G = np.outer(v, v.conj())
+
+        if self.verbose:
+            print "G\n", G
+
+        return G
+
+
 
 
 class DirichletNumericPotential(Dirichlet):
