@@ -325,7 +325,7 @@ class Dirichlet(Waveguide):
 
         return eps_prime, delta, theta_prime
 
-    def get_nodes(self, x=None, y=None):
+    def get_nodes(self, x=None, y=None, return_evecs=False):
         """Return the nodes of the Bloch-eigenvector in the unit cell."""
 
         if not self.loop_type == 'Constant':
@@ -396,7 +396,10 @@ class Dirichlet(Waveguide):
             print "node xn", xn
             print "node yn", yn
 
-        return np.asarray(zip(xn, yn))
+        if not return_evecs:
+            return np.asarray(zip(xn, yn))
+        else:
+            return np.asarray(b1, b2)
 
     def wavefunction(self, evecs=False, with_boundary=False):
         """Return the wavefunction Psi(x,y)."""
