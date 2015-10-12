@@ -240,9 +240,12 @@ class Dirichlet(Waveguide):
         else:
             y_EP = 0.0
             self.x_from_delta = lambda x: self.L*0.5*((x - self.init_phase)/self.y_R0 + 1.)
-            self.eta_scaling = lambda x: 0.5*(1. - np.cos(2.*np.pi/self.L*x))
+            # heaviside = lambda x: 0.5*(np.sign(x) + 1.)
+            # self.eta_scaling = lambda x: (((0.5*(1. - np.cos(2.*np.pi/self.L*x)))**1 - 0.15) *
+            #                               heaviside(0.5*(1. - np.cos(2.*np.pi/self.L*x)) - 0.15))
+            self.eta_scaling = lambda x: (0.5*(1. - np.cos(2.*np.pi/self.L*x)))**2
             f = self.eta_scaling(self.x_from_delta(y_EP))
-            x_EP = ((eta*f**2 + self.eta0)*kF*0.25*
+            x_EP = ((eta*f + self.eta0) * kF * 0.25 *
                     np.abs(1./self.k0 - 1./self.k1)/np.abs(self.B0))
 
         return x_EP, y_EP
@@ -250,7 +253,7 @@ class Dirichlet(Waveguide):
     def H(self, t, x=None, y=None):
         """Return the Dirichlet Hamiltoninan.
 
-            Paramters:
+            Parameters:
             ----------
                 t: float
                     Time at which to evaluate the Hamiltonian.
