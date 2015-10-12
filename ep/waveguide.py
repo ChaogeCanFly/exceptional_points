@@ -275,7 +275,7 @@ class Dirichlet(Waveguide):
         if self.switch_losses_on_off:
             # eta = self.eta0 + self.eta * (eps/self.x_R0)**2
             # eta = self.eta0 + self.eta * np.sin(np.pi/self.L*t)
-            eta = self.eta0 + self.eta * self.eta_scaling(self.x_from_delta(delta))**2
+            eta = self.eta0 + self.eta * self.eta_scaling(self.x_from_delta(delta))
         else:
             eta = self.eta
 
@@ -442,7 +442,7 @@ class DirichletReduced(Dirichlet):
             eps, delta = x, y
 
         if self.switch_losses_on_off:
-            eta = self.eta0 + self.eta * (eps/self.x_R0)**2
+            eta = self.eta0 + self.eta * self.eta_scaling(self.x_from_delta(delta))
         else:
             eta = self.eta
 
@@ -482,6 +482,7 @@ class DirichletPositionDependentLoss(Dirichlet):
         dirichlet_kwargs.update({'loop_type': 'Constant',
                                  'eta': 0.0})
         self.Dirichlet = Dirichlet(**dirichlet_kwargs)
+        self._get_EP_coordinates()
 
     def _get_loss_matrix(self, x=None, y=None):
         Gamma = Gamma_Gauss(k=self.k, kF=self.kF, kr=self.kr, W=self.W,
@@ -510,8 +511,8 @@ class DirichletPositionDependentLoss(Dirichlet):
 
         return G
 
-    def _get_EP_coordinates(self, x=None, y=None):
-        return x, y
+    # def _get_EP_coordinates(self, x=None, y=None):
+    #     return x, y
         # merge with DirichletNumericPotential?
 
         # kF = self.kF
@@ -556,7 +557,8 @@ class DirichletPositionDependentLoss(Dirichlet):
                                        [0.0, self.kF/self.k1]], dtype=complex)
 
         if self.switch_losses_on_off:
-            eta = self.eta * (eps/self.x_R0)**2
+            # eta = self.eta * (eps/self.x_R0)**2
+            eta = self.eta0 + self.eta * self.eta_scaling(self.x_from_delta(delta))
         else:
             eta = self.eta
 
@@ -620,6 +622,7 @@ class DirichletPositionDependentLossReduced(DirichletPositionDependentLoss):
         dirichlet_kwargs.update({'loop_type': 'Constant',
                                  'eta': 0.0})
         self.Dirichlet = DirichletReduced(**dirichlet_kwargs)
+        self._get_EP_coordinates()
 
     def H(self, t, x=None, y=None):
         if x is None and y is None:
@@ -641,7 +644,8 @@ class DirichletPositionDependentLossReduced(DirichletPositionDependentLoss):
                                        [0.0, self.kF/self.k1]], dtype=complex)
 
         if self.switch_losses_on_off:
-            eta = self.eta * (eps/self.x_R0)**2
+            # eta = self.eta * (eps/self.x_R0)**2
+            eta = self.eta0 + self.eta * self.eta_scaling(self.x_from_delta(delta))
         else:
             eta = self.eta
 
