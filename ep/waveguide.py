@@ -649,14 +649,18 @@ class DirichletPositionDependentLossReduced(DirichletPositionDependentLoss):
         Gamma_matrix_const = np.array([[self.kF/self.k0, 0.0],
                                        [0.0, self.kF/self.k1]], dtype=complex)
 
-        if self.switch_losses_on_off:
-            # eta = self.eta * (eps/self.x_R0)**2
-            eta = self.eta0 + self.eta * self.eta_scaling(self.x_from_delta(delta))
-        else:
-            eta = self.eta
+        # if self.switch_losses_on_off:
+        #     # eta = self.eta * (eps/self.x_R0)**2
+        #     eta = self.eta0 + self.eta * self.eta_scaling(self.x_from_delta(delta))
+        # else:
+        #     eta = self.eta
 
-        H -= 1j*eta/2.*Gamma_matrix
-        H -= 1j*self.eta0/2.*Gamma_matrix_const
+        f_delta = 0.5*(1. + np.cos(np.pi*(delta - self.init_phase)/self.y_R0))
+        f_eps = eps/self.x_R0
+        f_diff = f_delta - f_eps
+
+        H -= 1j*self.eta/2. * Gamma_matrix_const * f_diff
+        H -= 1j*self.eta0/2. * Gamma_matrix * (1. - f_diff) * f_eps
 
         if self.verbose:
             print "t", t
