@@ -657,10 +657,13 @@ class DirichletPositionDependentLossReduced(DirichletPositionDependentLoss):
 
         f_delta = 0.5*(1. + np.cos(np.pi*(delta - self.init_phase)/self.y_R0))
         f_eps = eps/self.x_R0
+        f_delta, f_eps = [u**2 for u in (f_delta, f_eps)]
         f_diff = f_delta - f_eps
 
-        H -= 1j*self.eta/2. * Gamma_matrix_const * f_diff
-        H -= 1j*self.eta0/2. * Gamma_matrix * (1. - f_diff) * f_eps
+        H -= 1j*self.eta0/2. * Gamma_matrix_const * f_diff
+        H -= 1j*self.eta/2. * Gamma_matrix * (1. - f_diff) * f_eps
+        # the last f_eps is needed to ensure that at final points of the loop
+        # the absorption is switched off
 
         if self.verbose:
             print "t", t
