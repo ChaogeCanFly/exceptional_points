@@ -82,6 +82,8 @@ def plot_spectrum(eps_min=-0.01, eps_max=0.11, eps_N=101, delta_N=101,
 
     idx = np.argmin(Z0)
     x_EP, y_EP = [u.ravel()[idx] for u in (x,y)]
+    print "x_EP", x_EP
+    print "y_EP", y_EP
 
     dot_kwargs = dict(ms=6.0, mec='w', clip_on=False, zorder=10)
     for ax in (ax1, ax2):
