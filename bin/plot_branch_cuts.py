@@ -116,7 +116,7 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
     ax1.set_ylabel(r'Amplitude $\varepsilon$')
     fig.text(0.45, 0.0, r'Detuning $\delta$', va='center')
     fig.text(-0.00, 0.915, 'a', weight='bold', size=14, color='black')
-    fig.text(-0.00, 0.475, 'b', weight='bold', size=14, color='black')
+    fig.text(-0.00, 0.45, 'b', weight='bold', size=14, color='black')
 
     # for (ax, text) in zip((ax1, ax2), ('a', 'b')):
     #     ax.annotate(text, (-0.90, 0.08), textcoords='data',
