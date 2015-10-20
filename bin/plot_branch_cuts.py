@@ -133,8 +133,10 @@ def build_composite_plot(eps_min=-0.01, eps_max=0.11, eps_N=101, delta_N=101,
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2,
                                                sharex=False, sharey=True,
                                                figsize=(6.2, 10./3.), dpi=220)
-    ax1, ax2 = plot_spectrum(fig=f, ax1=ax1, ax2=ax2, pos_dep=True, **plot_kwargs)
-    ax3, ax4 = plot_spectrum(fig=f, ax1=ax3, ax2=ax4, pos_dep=True, **plot_kwargs)
+    ax1, ax2 = plot_spectrum(fig=f, ax1=ax1, ax2=ax2,
+                             pos_dep=False, **plot_kwargs)
+    ax3, ax4 = plot_spectrum(fig=f, ax1=ax3, ax2=ax4,
+                             pos_dep=True, **plot_kwargs)
     plt.tight_layout()
     plt.subplots_adjust(wspace=0.2)
     if show:
