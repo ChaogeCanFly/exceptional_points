@@ -8,6 +8,7 @@ from matplotlib.ticker import FormatStrFormatter, MultipleLocator, MaxNLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mayavi import mlab
 import numpy as np
+from scipy.interpolate import splprep, splev
 
 import argh
 
@@ -19,7 +20,8 @@ get_defaults()
 
 
 def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
-                  eps_min=None, eps_max=None, eps_N=None, delta_N=None):
+                  eps_min=None, eps_max=None, eps_N=None, delta_N=None,
+                  interpolate=False):
 
     wg_kwargs = dict(N=2.05,
                      x_R0=0.1,
@@ -88,7 +90,11 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
         if pos_dep:
             ax.scatter(y_EP, x_EP, color="w")
             ax.xaxis.set_major_locator(MultipleLocator(1.00))
-            ax.annotate('EP', (-0.35, 0.005), textcoords='data',
+            # eps^1 scaling
+            # ax.annotate('EP', (-0.35, 0.005), textcoords='data',
+            #             weight='bold', size=14, color='white')
+            # eps^2 scaling
+            ax.annotate('EP', (-0.325, 0.0175), textcoords='data',
                         weight='bold', size=14, color='white')
         else:
             ax.scatter(D.y_EP, D.x_EP, color="w")
@@ -103,12 +109,57 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
         ax.xaxis.set_major_formatter(FormatStrFormatter("%.1f"))
 
     if pos_dep:
-        datay = [y_EP, -0.278, -0.234, -0.188, -0.140, -0.072, -0.048, -0.024, -0.007, 0.000, 0.0]
-        datax = [x_EP,  0.033,  0.034,  0.034,  0.033,  0.028,  0.025,  0.021,  0.015, 0.008, -0.1]
-        ax1.plot(datay, datax, "w--", lw=0.5, dashes=[4, 3])
-        datay = [y_EP, -0.352, -0.416, -0.506, -0.596, -0.650, -0.684, -0.736, -0.791, -0.827, -0.901, -0.972, -1.058, -1.145]
-        datax = [x_EP,  0.030,  0.026,  0.018,  0.011,  0.007,  0.005,  0.002,  0.000,  0.000,  0.000,  0.003,  0.008,  0.015]
-        ax2.plot(datay, datax, "w--", lw=0.5, dashes=[4, 3])
+        # eps^1 scaling
+        # datay = [y_EP, -0.278, -0.234, -0.188, -0.140, -0.072, -0.048, -0.024, -0.007, 0.000, 0.0]
+        # datax = [x_EP,  0.033,  0.034,  0.034,  0.033,  0.028,  0.025,  0.021,  0.015, 0.008, -0.1]
+        # eps^2 scaling
+        data = np.asarray([
+            # [-0.242,0.046],
+            # [-0.175,0.049],
+            # [-0.121,0.049],
+            # [-0.070,0.047],
+            # [-0.037,0.041],
+            # [-0.016,0.030],
+            # [-0.010,0.021],
+            # [-0.003,0.001],
+            # [0.000,-0.009],
+            [-0.242,0.046],
+            [-0.175,0.049],
+            [-0.121,0.049],
+            [-0.070,0.047],
+            [-0.035,0.041],
+            [-0.016,0.032],
+            [-0.010,0.021],
+            [-0.003,0.001],
+            [0.000,-0.009],
+            ])
+        datay, datax = data.T
+
+        if interpolate:
+            tck, _ = splprep([datay, datax], s=0.0001, k=3)
+            datay, datax = splev(np.linspace(0, 1, 10), tck)
+            np.savetxt("interpolate_coordinates.dat", np.vstack([datay, datax]).T,
+                    fmt="[%.3f,%.3f],",
+                    delimiter=",", header="[", footer="]",
+                    comments='')
+        ax1.plot(datay, datax, "w--", ms=1, lw=0.5, dashes=[4, 3])
+        # eps^1 scaling
+        # datay = [y_EP, -0.352, -0.416, -0.506, -0.596, -0.650, -0.684, -0.736, -0.791, -0.827, -0.901, -0.972, -1.058, -1.145]
+        # datax = [x_EP,  0.030,  0.026,  0.018,  0.011,  0.007,  0.005,  0.002,  0.000,  0.000,  0.000,  0.003,  0.008,  0.015]
+        # eps^2 scaling
+        datay, datax = np.asarray([
+            [-0.240,0.046],
+            [-0.390,0.032],
+            [-0.513,0.021],
+            [-0.603,0.013],
+            [-0.675,0.007],
+            [-0.766,0.002],
+            [-0.853,-0.001],
+            [-0.954,0.003],
+            [-1.024,0.006],
+            [-1.096,0.011],
+            ]).T
+        ax2.plot(datay, datax, "w--", ms=1, lw=0.5, dashes=[4, 3])
     else:
         ax1.plot([0, D.y_EP], [-10, D.x_EP], "w--", lw=0.5, dashes=[4, 3])
         ax2.plot([0, D.y_EP], [10, D.x_EP], "w--", lw=0.5, dashes=[4, 3])
@@ -149,7 +200,7 @@ def on_pick(event, event_coordinates, ax):
 
 
 def build_composite_plot(eps_min=-0.01, eps_max=0.11, eps_N=101, delta_N=101,
-                         show=False, interactive=False):
+                         show=False, interactive=False, interpolate=False):
     plot_kwargs = locals()
     plot_kwargs.pop('show')
     plot_kwargs.pop('interactive')
@@ -166,7 +217,7 @@ def build_composite_plot(eps_min=-0.01, eps_max=0.11, eps_N=101, delta_N=101,
     if show:
         if interactive:
             event_coordinates = []
-            on_pick_lambda = lambda e: on_pick(e, event_coordinates, ax3)
+            on_pick_lambda = lambda e: on_pick(e, event_coordinates, ax4)
             f.canvas.mpl_connect('button_press_event', on_pick_lambda)
         plt.show()
     else:
