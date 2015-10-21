@@ -125,11 +125,34 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
     return ax1, ax2
 
 
+def on_pick(event, event_coordinates, ax):
+    """Record (x, y) coordinates at each click and print to file."""
+    xmouse, ymouse = event.xdata, event.ydata
+
+    if event.button == 1:
+        print "x, y:", xmouse, ymouse
+        event_coordinates.append([xmouse, ymouse])
+        x, y = np.asarray(event_coordinates).T
+        ax.scatter(x, y, s=1e1, c="k", edgecolors=None)
+    elif event.button == 3:
+        x, y = np.asarray(event_coordinates).T
+        x_close = np.isclose(x, xmouse, rtol=1e-2)
+        y_close = np.isclose(y, ymouse, rtol=1e-2)
+        try:
+            idx = np.where(x_close & y_close)[0][0]
+            ax.scatter(x[idx], y[idx], s=1e1, c="red", marker="x")
+            del event_coordinates[idx]
+        except:
+            print "No point found near ({}, {}).".format(xmouse, ymouse)
+
+    ax.get_figure().canvas.draw()
+
 
 def build_composite_plot(eps_min=-0.01, eps_max=0.11, eps_N=101, delta_N=101,
-                         show=False):
+                         show=False, interactive=False):
     plot_kwargs = locals()
     plot_kwargs.pop('show')
+    plot_kwargs.pop('interactive')
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2,
                                                sharex=False, sharey=True,
                                                figsize=(6.2, 10./3.), dpi=220)
@@ -139,10 +162,20 @@ def build_composite_plot(eps_min=-0.01, eps_max=0.11, eps_N=101, delta_N=101,
                              pos_dep=True, **plot_kwargs)
     plt.tight_layout()
     plt.subplots_adjust(wspace=0.2)
+
     if show:
+        if interactive:
+            event_coordinates = []
+            on_pick_lambda = lambda e: on_pick(e, event_coordinates, ax3)
+            f.canvas.mpl_connect('button_press_event', on_pick_lambda)
         plt.show()
     else:
         plt.savefig("branch_cuts.pdf", bbox_inches='tight')
+
+    if interactive:
+        np.savetxt("interactive_coordinates.dat", np.asarray(event_coordinates),
+                   fmt="[%.3f,%.3f],", delimiter=",", header="[", footer="]",
+                   comments='')
 
 if __name__ == '__main__':
     argh.dispatch_command(build_composite_plot)
