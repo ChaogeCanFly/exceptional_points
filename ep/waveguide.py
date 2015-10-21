@@ -657,8 +657,8 @@ class DirichletPositionDependentLossReduced(DirichletPositionDependentLoss):
 
         f_delta = 0.5*(1. + np.cos(np.pi*(delta - self.init_phase)/self.y_R0))
         f_eps = eps/self.x_R0
-        # f_delta, f_eps = [u**2 for u in (f_delta, f_eps)]
-        f_delta, f_eps = [u**1 for u in (f_delta, f_eps)]
+        f_delta, f_eps = [u**2 for u in (f_delta, f_eps)]
+        # f_delta, f_eps = [u**1 for u in (f_delta, f_eps)]
         f_diff = f_delta - f_eps
 
         H -= 1j*self.eta0/2. * Gamma_matrix_const * f_diff
