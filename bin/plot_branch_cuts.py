@@ -2,17 +2,16 @@
 
 from __future__ import division
 
-from matplotlib.colors import LogNorm
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter, MultipleLocator, MaxNLocator
+from matplotlib.ticker import FormatStrFormatter, MultipleLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from mayavi import mlab
 import numpy as np
 from scipy.interpolate import splprep, splev
 
 import argh
 
-from ep.waveguide import DirichletReduced, DirichletPositionDependentLossReduced
+from ep.waveguide import DirichletReduced
+from ep.waveguide import DirichletPositionDependentLossReduced
 from ep.plot import get_colors, get_defaults
 
 colors, cmap, _ = get_colors()
@@ -45,7 +44,7 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
     limits = (eps_min, eps_max, eps_N,
               delta_min, delta_max, delta_N)
     x, y, z = D.sample_H(*limits)
-    z_diff = z[...,0] - z[...,1]
+    z_diff = z[..., 0] - z[..., 1]
     Z0 = np.sqrt(z_diff.real**2 + (z_diff.imag)**2)
 
     if pos_dep:
@@ -76,7 +75,7 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
         cb.solids.set_edgecolor('face')
 
     idx = np.argmin(Z0)
-    x_EP, y_EP = [u.ravel()[idx] for u in (x,y)]
+    x_EP, y_EP = [u.ravel()[idx] for u in (x, y)]
     print "x_EP", x_EP
     print "y_EP", y_EP
 
@@ -114,24 +113,15 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
         # datax = [x_EP,  0.033,  0.034,  0.034,  0.033,  0.028,  0.025,  0.021,  0.015, 0.008, -0.1]
         # eps^2 scaling
         data = np.asarray([
-            # [-0.242,0.046],
-            # [-0.175,0.049],
-            # [-0.121,0.049],
-            # [-0.070,0.047],
-            # [-0.037,0.041],
-            # [-0.016,0.030],
-            # [-0.010,0.021],
-            # [-0.003,0.001],
-            # [0.000,-0.009],
-            [-0.242,0.046],
-            [-0.175,0.049],
-            [-0.121,0.049],
-            [-0.070,0.047],
-            [-0.035,0.041],
-            [-0.016,0.032],
-            [-0.010,0.021],
-            [-0.003,0.001],
-            [0.000,-0.009],
+            [-0.242, 0.046],
+            [-0.175, 0.049],
+            [-0.121, 0.049],
+            [-0.070, 0.047],
+            [-0.035, 0.041],
+            [-0.016, 0.032],
+            [-0.010, 0.021],
+            [-0.003, 0.001],
+            [0.000, -0.009],
             ])
         datay, datax = data.T
 
@@ -139,26 +129,26 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
             tck, _ = splprep([datay, datax], s=0.0001, k=3)
             datay, datax = splev(np.linspace(0, 1, 10), tck)
             np.savetxt("interpolate_coordinates.dat", np.vstack([datay, datax]).T,
-                    fmt="[%.3f,%.3f],",
-                    delimiter=",", header="[", footer="]",
-                    comments='')
+                       fmt="[%.3f,%.3f],", delimiter=",", header="[", footer="]",
+                       comments='')
         ax1.plot(datay, datax, "w--", ms=1, lw=0.5, dashes=[4, 3])
         # eps^1 scaling
         # datay = [y_EP, -0.352, -0.416, -0.506, -0.596, -0.650, -0.684, -0.736, -0.791, -0.827, -0.901, -0.972, -1.058, -1.145]
         # datax = [x_EP,  0.030,  0.026,  0.018,  0.011,  0.007,  0.005,  0.002,  0.000,  0.000,  0.000,  0.003,  0.008,  0.015]
         # eps^2 scaling
-        datay, datax = np.asarray([
-            [-0.240,0.046],
-            [-0.390,0.032],
-            [-0.513,0.021],
-            [-0.603,0.013],
-            [-0.675,0.007],
-            [-0.766,0.002],
-            [-0.853,-0.001],
-            [-0.954,0.003],
-            [-1.024,0.006],
-            [-1.096,0.011],
+        data = np.asarray([
+            [-0.240, 0.046],
+            [-0.390, 0.032],
+            [-0.513, 0.021],
+            [-0.603, 0.013],
+            [-0.675, 0.007],
+            [-0.766, 0.002],
+            [-0.853, -0.001],
+            [-0.954, 0.003],
+            [-1.024, 0.006],
+            [-1.096, 0.011],
             ]).T
+        datay, datax = data
         ax2.plot(datay, datax, "w--", ms=1, lw=0.5, dashes=[4, 3])
     else:
         ax1.plot([0, D.y_EP], [-10, D.x_EP], "w--", lw=0.5, dashes=[4, 3])
