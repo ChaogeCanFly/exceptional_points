@@ -5,7 +5,7 @@ from __future__ import division
 from collections import namedtuple
 import copy
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter
+from matplotlib.ticker import FormatStrFormatter, FuncFormatter, LogFormatterMathtext
 import numpy as np
 
 from ep.helpers import map_trajectory
@@ -27,7 +27,8 @@ legend_kwargs = {'frameon': False,
         'ncol': 4}
 
 
-def get_trajectories(ax1=None, ax2=None, wg_list=None):
+def get_trajectories(ax1=None, ax2=None, wg_list=None, y_range_trajectory=None,
+                     y_axis_step_length=5):
     WGam, WGbm, WGap, WGbp = wg_list
     x = WGam.x
     L = WGam.D.L
@@ -44,8 +45,30 @@ def get_trajectories(ax1=None, ax2=None, wg_list=None):
     ax2.semilogy(L - x, abs(WGap.c1*s)**2, "--", color=colors[0], label=r"$|c_1|^2$")
     ax2.semilogy(L - x, abs(WGap.c0*s)**2, "--", color=colors[1], label=r"$|c_2|^2$")
 
+    for ax in (ax1, ax2):
+        ax.set_yticks(10.**np.arange(0, -31, -y_axis_step_length))
+        ax.tick_params(axis='y', which='minor', left='off', right='off')
+        if y_range_trajectory:
+            ax.set_ylim(*y_range_trajectory)
 
-def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5, fs='none'):
+    # def custom_formatter_function(x, pos):
+    #     if np.log(x) == 0:
+    #         return "1  "
+    #     else:
+    #         return  r"$10^{}$".format(x)
+    #
+    # ax1.get_yaxis().set_major_formatter(FuncFormatter)
+
+    # import ipdb; ipdb.set_trace()
+    # labels = [label.get_text() for label in ax1.get_yticklabels()]
+    # labels = ax1.get_yticks().tolist()
+    # labels[0] = '1  '
+    # ax1.set_yticklabels(labels)
+
+
+def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
+                      fs='none', y_range_real_spectrum=None,
+                      y_ticklabels_real_spectrum=None):
     WGam, WGbm, WGap, WGbp = wg_list
     x = WGam.x
     L = WGam.D.L
@@ -79,8 +102,16 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5, fs='non
 
     ax1.get_yaxis().set_tick_params(pad=2)
 
+    for ax in (ax1, ax2):
+        if y_range_real_spectrum:
+            ax.set_ylim(*y_range_real_spectrum)
+        if y_ticklabels_real_spectrum:
+            ax.locator_params(axis='y', nbins=y_ticklabels_real_spectrum)
 
-def get_imag_spectrum(ax1=None, ax2=None, wg_list=None):
+
+def get_imag_spectrum(ax1=None, ax2=None, wg_list=None,
+                      y_range_imag_spectrum=None,
+                      y_ticklabels_imag_spectrum=None):
     WGam, WGbm, WGap, WGbp = wg_list
     x = WGam.x
     L = WGam.D.L
@@ -99,6 +130,13 @@ def get_imag_spectrum(ax1=None, ax2=None, wg_list=None):
                           'bbox_to_anchor': (0.02, -0.075)})
     ax1.legend(loc="lower left", **energy_legend)
     ax2.legend(loc="lower left", **energy_legend)
+
+    for ax in (ax1, ax2):
+        if y_range_imag_spectrum:
+            ax.set_ylim(*y_range_imag_spectrum)
+        ax.locator_params(axis='y', nbins=4)
+        if y_ticklabels_imag_spectrum:
+            ax.locator_params(axis='y', nbins=y_ticklabels_imag_spectrum)
 
 
 def plot_parameter_trajectory(figname=None, wg_kwargs=None, ep_coordinates=None,
@@ -149,9 +187,9 @@ def plot_parameter_trajectory(figname=None, wg_kwargs=None, ep_coordinates=None,
 
 
 def get_plot(D, wg_kwargs_am=None, fig_name_trajectories=None,
-        y_range_trajectory=None, y_range_imag_spectrum=None, y_range_real_spectrum=None,
-        y_axis_step_length=5, y_ticklabels_real_spectrum=None, y_ticklabels_imag_spectrum=None,
-        ep_coordinates=None, pos_dep=False):
+             y_range_trajectory=None, y_range_imag_spectrum=None,
+             y_range_real_spectrum=None, y_axis_step_length=5,
+             y_ticklabels_real_spectrum=None, y_ticklabels_imag_spectrum=None):
 
     wg_kwargs_bm = copy.deepcopy(wg_kwargs_am)
     wg_kwargs_bm.update({'loop_direction': '-',
@@ -181,29 +219,35 @@ def get_plot(D, wg_kwargs_am=None, fig_name_trajectories=None,
                   adiabatic, nstep) for wg in wg_list]
     WGam, WGbm, WGap, WGbp = wg_list
 
-    # settings
-    x = WGam.x
-    L = WGam.D.L
+    print
+    print abs(WGam.c0[-1]/WGam.c1[-1])**-2
+    print abs(WGap.c0[-1]/WGap.c1[-1])**2
+    print abs(WGbm.c0[-1]/WGbm.c1[-1])**-2
+    print abs(WGbp.c0[-1]/WGbp.c1[-1])**2
+    print
+    print abs(WGam.c0[-1]/WGam.c1[-1])**2
+    print abs(WGap.c0[-1]/WGap.c1[-1])**-2
+    print abs(WGbm.c0[-1]/WGbm.c1[-1])**2
+    print abs(WGbp.c0[-1]/WGbp.c1[-1])**-2
 
     f, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(ncols=2, nrows=3,
                                                            figsize=(6.2, 5.0), dpi=220,
                                                            sharex=True, sharey=False)
-    get_trajectories(ax1=ax1, ax2=ax2, wg_list=wg_list)
-    get_real_spectrum(ax1=ax3, ax2=ax4, wg_list=wg_list)
-    get_imag_spectrum(ax1=ax5, ax2=ax6, wg_list=wg_list)
-
-    for ax in (ax1, ax2):
-        ax.set_yticks(10.**np.arange(0, -31, -y_axis_step_length))
-        ax.tick_params(axis='y', which='minor', left='off', right='off')
-
-    for ax in (ax3, ax4):
-        ax.locator_params(axis='y', nbins=3)
+    get_trajectories(ax1=ax1, ax2=ax2, wg_list=wg_list,
+                     y_range_trajectory=y_range_trajectory,
+                     y_axis_step_length=y_axis_step_length)
+    get_real_spectrum(ax1=ax3, ax2=ax4, wg_list=wg_list,
+                      y_range_real_spectrum=y_range_real_spectrum,
+                      y_ticklabels_real_spectrum=y_ticklabels_real_spectrum)
+    get_imag_spectrum(ax1=ax5, ax2=ax6, wg_list=wg_list,
+                      y_range_imag_spectrum=y_range_imag_spectrum,
+                      y_ticklabels_imag_spectrum=y_ticklabels_imag_spectrum)
 
     for ax in (ax3, ax5):
         ax.yaxis.set_major_formatter(FormatStrFormatter("%.1f"))
 
     for ax in (ax5, ax6):
-        ax.set_xticks([0, L/2, L])
+        ax.set_xticks([0, WGam.D.L/2, WGam.D.L])
         ax.set_xticklabels([r"0", r"L/2", r"L"])
 
     for ax in (ax1, ax3, ax5):
@@ -225,50 +269,15 @@ def get_plot(D, wg_kwargs_am=None, fig_name_trajectories=None,
         ax.tick_params(axis='both', which='minor', bottom='off',
                        left='off', right='off', top='off')
 
-    plt.tight_layout(w_pad=0.8, h_pad=0.2)
-
-    labels = [item.get_text() for item in ax1.get_yticklabels()]
-    labels[0] = '1      '
-    labels[0] = '1  '
-    ax1.set_yticklabels(labels)
-    for ax in (ax1, ax2):
-        ax.tick_params(axis='y', which='minor', left='off', right='off')
-
-    if y_range_trajectory:
-        for ax in (ax1, ax2):
-            ax.set_ylim(*y_range_trajectory)
-
-    if y_range_real_spectrum:
-        for ax in (ax3, ax4):
-            ax.set_ylim(*y_range_real_spectrum)
-
-    if y_ticklabels_real_spectrum:
-        ax3.locator_params(axis='y', nbins=y_ticklabels_real_spectrum)
-
-    if y_range_imag_spectrum:
-        for ax in (ax5, ax6):
-            ax.set_ylim(*y_range_imag_spectrum)
-
-    if y_ticklabels_imag_spectrum:
-        ax5.locator_params(axis='y', nbins=y_ticklabels_imag_spectrum)
-
     f.text(0.5, -0., 'Spatial coordinate x', ha='center')
     f.text(-0.01, 0.94, 'a', weight='bold', size=14)
     f.text(-0.01, 0.64, 'b', weight='bold', size=14)
     f.text(-0.01, 0.34, 'c', weight='bold', size=14)
 
-    plt.savefig(fig_name_trajectories, bbox_inches='tight')
+    plt.tight_layout(w_pad=0.8, h_pad=0.2)
+    plt.subplots_adjust(hspace=0.2)
 
-    print
-    print abs(WGam.c0[-1]/WGam.c1[-1])**-2
-    print abs(WGap.c0[-1]/WGap.c1[-1])**2
-    print abs(WGbm.c0[-1]/WGbm.c1[-1])**-2
-    print abs(WGbp.c0[-1]/WGbp.c1[-1])**2
-    print
-    print abs(WGam.c0[-1]/WGam.c1[-1])**2
-    print abs(WGap.c0[-1]/WGap.c1[-1])**-2
-    print abs(WGbm.c0[-1]/WGbm.c1[-1])**2
-    print abs(WGbp.c0[-1]/WGbp.c1[-1])**-2
+    plt.savefig(fig_name_trajectories, bbox_inches='tight')
 
 
 if __name__ == '__main__':
