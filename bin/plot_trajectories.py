@@ -185,11 +185,87 @@ def plot_parameter_trajectory(figname=None, wg_kwargs=None, ep_coordinates=None,
 
     plt.savefig(figname, bbox_inches='tight')
 
+def get_spectrum(D, wg_kwargs_am=None, fig_name_spectrum=None,
+                 y_range_imag_spectrum=None, y_range_real_spectrum=None,
+                 y_axis_step_length=5, y_ticklabels_real_spectrum=None,
+                 y_ticklabels_imag_spectrum=None):
+
+    wg_kwargs_bm = copy.deepcopy(wg_kwargs_am)
+    wg_kwargs_bm.update({'loop_direction': '-',
+                         'init_state': 'b'})
+    wg_kwargs_ap = copy.deepcopy(wg_kwargs_am)
+    wg_kwargs_ap.update({'loop_direction': '+',
+                         'init_state': 'a'})
+    wg_kwargs_bp = copy.deepcopy(wg_kwargs_am)
+    wg_kwargs_bp.update({'loop_direction': '+',
+                         'init_state': 'b'})
+
+    wg_kwarg_list = (wg_kwargs_am, wg_kwargs_bm, wg_kwargs_ap, wg_kwargs_bp)
+    wg_list = [D(**wg_kwargs) for wg_kwargs in wg_kwarg_list]
+    WGam, WGbm, WGap, WGbp = wg_list
+
+    for w in wg_list:
+        w.solve_ODE()
+        print "...done."
+
+    WG = namedtuple('WG', 'D x c0 c1 E0 E1 adiabatic nstep')
+    adiabatic = WGam.Psi_adiabatic[:, 0]**(-1)
+    if np.all(np.isnan(adiabatic)):
+        adiabatic = 1.
+    nstep = WGam.tN/10
+    wg_list = [WG(wg, wg.t, wg.phi_a, wg.phi_b,
+                  wg.eVals[:, 0], wg.eVals[:, 1],
+                  adiabatic, nstep) for wg in wg_list]
+    WGam, WGbm, WGap, WGbp = wg_list
+
+    f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(ncols=2, nrows=2,
+                                               figsize=(6.2, 5.0/3.*2.), dpi=220,
+                                               sharex=True, sharey=False)
+    get_real_spectrum(ax1=ax1, ax2=ax2, wg_list=wg_list,
+                      y_range_real_spectrum=y_range_real_spectrum,
+                      y_ticklabels_real_spectrum=y_ticklabels_real_spectrum)
+    get_imag_spectrum(ax1=ax3, ax2=ax4, wg_list=wg_list,
+                      y_range_imag_spectrum=y_range_imag_spectrum,
+                      y_ticklabels_imag_spectrum=y_ticklabels_imag_spectrum)
+
+    for ax in (ax1, ax3):
+        ax.yaxis.set_major_formatter(FormatStrFormatter("%.1f"))
+
+    for ax in (ax3, ax4):
+        ax.set_xticks([0, WGam.D.L/2, WGam.D.L])
+        ax.set_xticklabels([r"0", r"L/2", r"L"])
+
+    for ax in (ax1, ax3):
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+
+    for ax in (ax2, ax4):
+        ax.spines['left'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('right')
+        ax.set_yticklabels([])
+
+    for n, ax in enumerate(f.get_axes()):
+        ax.get_xaxis().set_tick_params(direction='out')
+        ax.get_yaxis().set_tick_params(direction='out')
+        ax.tick_params(axis='both', which='minor', bottom='off',
+                       left='off', right='off', top='off')
+
+    f.text(0.5, -0., 'Spatial coordinate x', ha='center')
+    f.text(-0.01, 0.94, 'a', weight='bold', size=14)
+    f.text(-0.01, 0.49, 'b', weight='bold', size=14)
+
+    plt.tight_layout(w_pad=0.8, h_pad=0.2)
+    plt.subplots_adjust(hspace=0.2)
+
+    plt.savefig(fig_name_spectrum, bbox_inches='tight')
+
 
 def get_plot(D, wg_kwargs_am=None, fig_name_trajectories=None,
-             y_range_trajectory=None, y_range_imag_spectrum=None,
-             y_range_real_spectrum=None, y_axis_step_length=5,
-             y_ticklabels_real_spectrum=None, y_ticklabels_imag_spectrum=None):
+             y_range_trajectory=None, y_axis_step_length=5):
 
     wg_kwargs_bm = copy.deepcopy(wg_kwargs_am)
     wg_kwargs_bm.update({'loop_direction': '-',
@@ -230,33 +306,24 @@ def get_plot(D, wg_kwargs_am=None, fig_name_trajectories=None,
     print abs(WGbm.c0[-1]/WGbm.c1[-1])**2
     print abs(WGbp.c0[-1]/WGbp.c1[-1])**-2
 
-    f, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(ncols=2, nrows=3,
-                                                           figsize=(6.2, 5.0), dpi=220,
-                                                           sharex=True, sharey=False)
+    f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(ncols=2, nrows=2,
+                                               figsize=(6.2, 5.0/3.*2.), dpi=220,
+                                               sharex=True, sharey=False)
     get_trajectories(ax1=ax1, ax2=ax2, wg_list=wg_list,
                      y_range_trajectory=y_range_trajectory,
                      y_axis_step_length=y_axis_step_length)
-    get_real_spectrum(ax1=ax3, ax2=ax4, wg_list=wg_list,
-                      y_range_real_spectrum=y_range_real_spectrum,
-                      y_ticklabels_real_spectrum=y_ticklabels_real_spectrum)
-    get_imag_spectrum(ax1=ax5, ax2=ax6, wg_list=wg_list,
-                      y_range_imag_spectrum=y_range_imag_spectrum,
-                      y_ticklabels_imag_spectrum=y_ticklabels_imag_spectrum)
 
-    for ax in (ax3, ax5):
-        ax.yaxis.set_major_formatter(FormatStrFormatter("%.1f"))
-
-    for ax in (ax5, ax6):
+    for ax in (ax3, ax4):
         ax.set_xticks([0, WGam.D.L/2, WGam.D.L])
         ax.set_xticklabels([r"0", r"L/2", r"L"])
 
-    for ax in (ax1, ax3, ax5):
+    for ax in (ax1, ax3):
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
 
-    for ax in (ax2, ax4, ax6):
+    for ax in (ax2, ax4):
         ax.spines['left'].set_visible(False)
         ax.spines['top'].set_visible(False)
         ax.xaxis.set_ticks_position('bottom')
@@ -271,8 +338,7 @@ def get_plot(D, wg_kwargs_am=None, fig_name_trajectories=None,
 
     f.text(0.5, -0., 'Spatial coordinate x', ha='center')
     f.text(-0.01, 0.94, 'a', weight='bold', size=14)
-    f.text(-0.01, 0.64, 'b', weight='bold', size=14)
-    f.text(-0.01, 0.34, 'c', weight='bold', size=14)
+    f.text(-0.01, 0.49, 'b', weight='bold', size=14)
 
     plt.tight_layout(w_pad=0.8, h_pad=0.2)
     plt.subplots_adjust(hspace=0.2)
@@ -290,7 +356,7 @@ if __name__ == '__main__':
             'init_state': 'a',
             'init_state_method': 'energy',
             'W': 1,
-            'L': 100,
+            'L': 1,
             'eta':  0.6,
             'eta0': 0.0,
             'x_R0': 0.1,
@@ -299,13 +365,16 @@ if __name__ == '__main__':
             'switch_losses_on_off': True
             }
     get_plot(DirichletReduced, wg_kwargs_am,
-             "constant_cn_vs_x_reduced_test.pdf",
+             "constant_cn_vs_x_reduced_trajectory.pdf",
              y_axis_step_length=10,
-             y_range_trajectory=[5e-34, 1e2],
-             y_range_real_spectrum=[-1.2, 1.2],
-             y_ticklabels_real_spectrum=3,
-             y_ticklabels_imag_spectrum=5,
-             y_range_imag_spectrum=[-1.6, 0.1])
+             y_range_trajectory=[5e-34, 1e2])
+
+    get_spectrum(DirichletReduced, wg_kwargs_am,
+                 "constant_cn_vs_x_reduced_spectrum.pdf",
+                 y_range_real_spectrum=[-1.2, 1.2],
+                 y_ticklabels_real_spectrum=3,
+                 y_ticklabels_imag_spectrum=5,
+                 y_range_imag_spectrum=[-1.6, 0.1])
 
     plot_parameter_trajectory(wg_kwargs=wg_kwargs_am,
                               figname="constant_parameter_space_reduced_test.pdf")
