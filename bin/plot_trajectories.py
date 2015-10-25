@@ -139,13 +139,13 @@ def get_imag_spectrum(ax1=None, ax2=None, wg_list=None,
             ax.locator_params(axis='y', nbins=y_ticklabels_imag_spectrum)
 
 
-def plot_parameter_trajectory(figname=None, wg_kwargs=None, ep_coordinates=None,
+def plot_parameter_trajectory(figname=None, wg=None, ep_coordinates=None,
                               pos_dep=False):
+    WGam = wg
+    eps, delta = WGam.get_cycle_parameters()
+
     f = plt.figure(figsize=(3.1, 3.1/3), dpi=220)
     ax = plt.gca()
-
-    WGam = DirichletReduced(**wg_kwargs_am)
-    eps, delta = WGam.get_cycle_parameters()
     ax.plot(delta, eps, color="k", lw=2.5, clip_on=False)
     if not ep_coordinates:
         x_EP, y_EP = WGam.x_EP, WGam.y_EP
@@ -185,37 +185,11 @@ def plot_parameter_trajectory(figname=None, wg_kwargs=None, ep_coordinates=None,
 
     plt.savefig(figname, bbox_inches='tight')
 
-def get_spectrum(D, wg_kwargs_am=None, fig_name_spectrum=None,
+def plot_spectrum(wg_list=None, fig_name_spectrum=None,
                  y_range_imag_spectrum=None, y_range_real_spectrum=None,
                  y_axis_step_length=5, y_ticklabels_real_spectrum=None,
                  y_ticklabels_imag_spectrum=None):
 
-    wg_kwargs_bm = copy.deepcopy(wg_kwargs_am)
-    wg_kwargs_bm.update({'loop_direction': '-',
-                         'init_state': 'b'})
-    wg_kwargs_ap = copy.deepcopy(wg_kwargs_am)
-    wg_kwargs_ap.update({'loop_direction': '+',
-                         'init_state': 'a'})
-    wg_kwargs_bp = copy.deepcopy(wg_kwargs_am)
-    wg_kwargs_bp.update({'loop_direction': '+',
-                         'init_state': 'b'})
-
-    wg_kwarg_list = (wg_kwargs_am, wg_kwargs_bm, wg_kwargs_ap, wg_kwargs_bp)
-    wg_list = [D(**wg_kwargs) for wg_kwargs in wg_kwarg_list]
-    WGam, WGbm, WGap, WGbp = wg_list
-
-    for w in wg_list:
-        w.solve_ODE()
-        print "...done."
-
-    WG = namedtuple('WG', 'D x c0 c1 E0 E1 adiabatic nstep')
-    adiabatic = WGam.Psi_adiabatic[:, 0]**(-1)
-    if np.all(np.isnan(adiabatic)):
-        adiabatic = 1.
-    nstep = WGam.tN/10
-    wg_list = [WG(wg, wg.t, wg.phi_a, wg.phi_b,
-                  wg.eVals[:, 0], wg.eVals[:, 1],
-                  adiabatic, nstep) for wg in wg_list]
     WGam, WGbm, WGap, WGbp = wg_list
 
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(ncols=2, nrows=2,
@@ -264,35 +238,9 @@ def get_spectrum(D, wg_kwargs_am=None, fig_name_spectrum=None,
     plt.savefig(fig_name_spectrum, bbox_inches='tight')
 
 
-def get_plot(D, wg_kwargs_am=None, fig_name_trajectories=None,
+def plot_dynamics(wg_list, fig_name_trajectories=None,
              y_range_trajectory=None, y_axis_step_length=5):
 
-    wg_kwargs_bm = copy.deepcopy(wg_kwargs_am)
-    wg_kwargs_bm.update({'loop_direction': '-',
-                         'init_state': 'b'})
-    wg_kwargs_ap = copy.deepcopy(wg_kwargs_am)
-    wg_kwargs_ap.update({'loop_direction': '+',
-                         'init_state': 'a'})
-    wg_kwargs_bp = copy.deepcopy(wg_kwargs_am)
-    wg_kwargs_bp.update({'loop_direction': '+',
-                         'init_state': 'b'})
-
-    wg_kwarg_list = (wg_kwargs_am, wg_kwargs_bm, wg_kwargs_ap, wg_kwargs_bp)
-    wg_list = [D(**wg_kwargs) for wg_kwargs in wg_kwarg_list]
-    WGam, WGbm, WGap, WGbp = wg_list
-
-    for w in wg_list:
-        w.solve_ODE()
-        print "...done."
-
-    WG = namedtuple('WG', 'D x c0 c1 E0 E1 adiabatic nstep')
-    adiabatic = WGam.Psi_adiabatic[:, 0]**(-1)
-    if np.all(np.isnan(adiabatic)):
-        adiabatic = 1.
-    nstep = WGam.tN/10
-    wg_list = [WG(wg, wg.t, wg.phi_a, wg.phi_b,
-                  wg.eVals[:, 0], wg.eVals[:, 1],
-                  adiabatic, nstep) for wg in wg_list]
     WGam, WGbm, WGap, WGbp = wg_list
 
     print
@@ -346,36 +294,69 @@ def get_plot(D, wg_kwargs_am=None, fig_name_trajectories=None,
     plt.savefig(fig_name_trajectories, bbox_inches='tight')
 
 
-if __name__ == '__main__':
+def plot_uniform():
     wg_kwargs_am = {
-            # pos. dep. loss configuration/ works for (approx.) uniform loss (scaled with eps^2)
-            # use N=2.05 to fit simulation setup
-            'N': 2.05,
-            'loop_type': 'Bell',
-            'loop_direction': '-',
-            'init_state': 'a',
-            'init_state_method': 'energy',
-            'W': 1,
-            'L': 1,
-            'eta':  0.6,
-            'eta0': 0.0,
-            'x_R0': 0.1,
-            'y_R0': 0.85,
-            'init_phase': 0.3,
-            'switch_losses_on_off': True
-            }
-    get_plot(DirichletReduced, wg_kwargs_am,
-             "constant_cn_vs_x_reduced_trajectory.pdf",
-             y_axis_step_length=10,
-             y_range_trajectory=[5e-34, 1e2])
+        # pos. dep. loss configuration/ works for (approx.) uniform loss
+        # (scaled with eps^2)
+        # use N=2.05 to fit simulation setup
+        'N': 2.05,
+        'loop_type': 'Bell',
+        'loop_direction': '-',
+        'init_state': 'a',
+        'init_state_method': 'energy',
+        'W': 1,
+        'L': 1,
+        'eta':  0.6,
+        'eta0': 0.0,
+        'x_R0': 0.1,
+        'y_R0': 0.85,
+        'init_phase': 0.3,
+        'switch_losses_on_off': True
+    }
 
-    get_spectrum(DirichletReduced, wg_kwargs_am,
-                 "constant_cn_vs_x_reduced_spectrum.pdf",
+    wg_kwargs_bm = copy.deepcopy(wg_kwargs_am)
+    wg_kwargs_bm.update({'loop_direction': '-',
+                         'init_state': 'b'})
+    wg_kwargs_ap = copy.deepcopy(wg_kwargs_am)
+    wg_kwargs_ap.update({'loop_direction': '+',
+                         'init_state': 'a'})
+    wg_kwargs_bp = copy.deepcopy(wg_kwargs_am)
+    wg_kwargs_bp.update({'loop_direction': '+',
+                         'init_state': 'b'})
+
+    wg_kwarg_list = (wg_kwargs_am, wg_kwargs_bm, wg_kwargs_ap, wg_kwargs_bp)
+    wg_list = [DirichletReduced(**wg_kwargs) for wg_kwargs in wg_kwarg_list]
+    WGam, WGbm, WGap, WGbp = wg_list
+
+    for w in wg_list:
+        w.solve_ODE()
+        print "...done."
+
+    WG = namedtuple('WG', 'D x c0 c1 E0 E1 adiabatic nstep')
+    adiabatic = WGam.Psi_adiabatic[:, 0]**(-1)
+    if np.all(np.isnan(adiabatic)):
+        adiabatic = 1.
+    nstep = WGam.tN/10
+
+    wg_list = [WG(wg, wg.t, wg.phi_a, wg.phi_b,
+                  wg.eVals[:, 0], wg.eVals[:, 1],
+                  adiabatic, nstep) for wg in wg_list]
+
+    plot_dynamics(wg_list,
+                 fig_name_trajectories="constant_cn_vs_x_reduced_trajectory.pdf",
+                 y_axis_step_length=10,
+                 y_range_trajectory=[5e-34, 1e2])
+
+    plot_spectrum(wg_list,
+                 fig_name_spectrum="constant_cn_vs_x_reduced_spectrum.pdf",
                  y_range_real_spectrum=[-1.2, 1.2],
                  y_ticklabels_real_spectrum=3,
                  y_ticklabels_imag_spectrum=5,
                  y_range_imag_spectrum=[-1.6, 0.1])
 
-    plot_parameter_trajectory(wg_kwargs=wg_kwargs_am,
+    plot_parameter_trajectory(wg=WGam,
                               figname="constant_parameter_space_reduced_test.pdf")
 
+
+if __name__ == '__main__':
+    plot_uniform()
