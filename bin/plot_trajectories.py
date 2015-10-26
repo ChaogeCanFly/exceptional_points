@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter, FuncFormatter, LogFormatterMathtext
 import numpy as np
 
+from PIL import Image
+
 from ep.helpers import map_trajectory
 import ep.plot
 from ep.waveguide import DirichletReduced, DirichletPositionDependentLossReduced
@@ -22,34 +24,98 @@ legend_kwargs = {'frameon': False,
         #'handletextpad': -0.1,
         #'handlelength': 1.5,
         #'bbox_to_anchor': (0.0, 1.3, 1.0, 0.13),
-        'bbox_to_anchor': (0.08, 0.87, 2., 0.087),
+        # 'bbox_to_anchor': (0.08, 0.87, 2., 0.087),
+        'bbox_to_anchor': (0.08, 0.87, 2.0, 0.087),
         'mode': 'expand',
         'ncol': 4}
 
 
-def get_trajectories(ax1=None, ax2=None, wg_list=None, y_range_trajectory=None,
+def plot_png(fig=None):
+    img_1, img_2 = [Image.open(png) for png in ('waveguide_arrow.001_resize.png', 'waveguide_arrow.002_resize.png')]
+    img_1, img_2 = [np.array(img).astype(np.float)/255. for img in (img_1, img_2)]
+    fig.figimage(img_1, 115, 315, zorder=20, cmap='Greys_r')
+    fig.figimage(img_2, 425, 315, zorder=20, cmap='Greys_r')
+    plt.subplots_adjust(top=0.9)
+
+
+def get_trajectories(ax1=None, ax2=None, ax3=None, ax4=None,
+                     wg_list=None, y_range_trajectory=None,
                      y_axis_step_length=5):
     WGam, WGbm, WGap, WGbp = wg_list
     x = WGam.x
     L = WGam.D.L
     s = WGam.adiabatic
 
-    ax1.semilogy(x, abs(WGam.c0*s)**2, "-", color=colors[0], label=r"$|c_1|^2$")
-    ax1.semilogy(x, abs(WGam.c1*s)**2, "-", color=colors[1], label=r"$|c_2|^2$")
-    ax1.semilogy(x, abs(WGbm.c0*s)**2, "--", color=colors[0], label=r"$|c_1|^2$")
-    ax1.semilogy(x, abs(WGbm.c1*s)**2, "--", color=colors[1], label=r"$|c_2|^2$")
-    ax1.legend(loc="lower left", **legend_kwargs)
+    # ax1.semilogy(x, abs(WGam.c0*s)**2, "-", color=colors[0], label=r"$|c_1|^2$")
+    # ax1.semilogy(x, abs(WGam.c1*s)**2, "-", color=colors[1], label=r"$|c_2|^2$")
+    # ax3.semilogy(x, abs(WGbm.c0*s)**2, "-", color=colors[0], label=r"$|c_1|^2$")
+    # ax3.semilogy(x, abs(WGbm.c1*s)**2, "-", color=colors[1], label=r"$|c_2|^2$")
+    ax1.semilogy(x, abs(WGam.c0*s)**2, "-", color=colors[0])
+    ax1.semilogy(x, abs(WGam.c1*s)**2, "-", color=colors[1])
+    ax3.semilogy(x, abs(WGbm.c0*s)**2, "-", color=colors[0])
+    ax3.semilogy(x, abs(WGbm.c1*s)**2, "-", color=colors[1])
+    # ax1.annotate(r'$c_1(0) = 1$', (L*0.05, 1e-23), textcoords='data')
+    # ax1.annotate(r'$c_2(0) = 0$', (L*0.05, 1e-30), textcoords='data')
+    # ax3.annotate(r'$c_1(0) = 0$', (L*0.05, 1e-23), textcoords='data')
+    # ax3.annotate(r'$c_2(0) = 1$', (L*0.05, 1e-30), textcoords='data')
+    # ax1.legend(loc="lower left", **legend_kwargs)
+    ax1.legend(loc="lower left")
+    ax3.legend(loc="lower left")
 
     ax2.semilogy(L - x, abs(WGbp.c1*s)**2, "-", color=colors[0], label=r"$|c_1|^2$")
     ax2.semilogy(L - x, abs(WGbp.c0*s)**2, "-", color=colors[1], label=r"$|c_2|^2$")
-    ax2.semilogy(L - x, abs(WGap.c1*s)**2, "--", color=colors[0], label=r"$|c_1|^2$")
-    ax2.semilogy(L - x, abs(WGap.c0*s)**2, "--", color=colors[1], label=r"$|c_2|^2$")
+    ax4.semilogy(L - x, abs(WGap.c1*s)**2, "-", color=colors[0], label=r"$|c_1|^2$")
+    ax4.semilogy(L - x, abs(WGap.c0*s)**2, "-", color=colors[1], label=r"$|c_2|^2$")
 
-    for ax in (ax1, ax2):
+    for ax in (ax1, ax2, ax3, ax4):
         ax.set_yticks(10.**np.arange(0, -31, -y_axis_step_length))
         ax.tick_params(axis='y', which='minor', left='off', right='off')
         if y_range_trajectory:
             ax.set_ylim(*y_range_trajectory)
+
+    # am_total = (abs(WGam.c0*s)**2 + abs(WGam.c1*s)**2)
+    # am_r1 = abs(WGam.c0*s)**2/am_total
+    # am_r2 = abs(WGam.c1*s)**2/am_total
+    # am_r = am_r1/am_r2
+    #
+    # bm_total = (abs(WGbm.c0*s)**2 + abs(WGbm.c1*s)**2)
+    # bm_r1 = abs(WGbm.c0*s)**2/bm_total
+    # bm_r2 = abs(WGbm.c1*s)**2/bm_total
+    # bm_r = bm_r1/bm_r2
+    #
+    # ax1.plot(x, am_r1, "-", color=colors[0], label=r"$|c_1|^2$")
+    # ax1.plot(x, am_r2, "-", color=colors[1], label=r"$|c_2|^2$")
+    # ax3.plot(x, bm_r1, "--", color=colors[0], label=r"$|c_1|^2$")
+    # ax3.plot(x, bm_r2, "--", color=colors[1], label=r"$|c_2|^2$")
+    # # ax1.plot(x, am_r, "-", color=colors[0], label=r"$|c_1|^2$")
+    # # ax3.plot(x, bm_r, "--", color=colors[0], label=r"$|c_1|^2$")
+    # ax1.legend(loc="lower left", **legend_kwargs)
+    # ax1.set_ylim(-0.05, 1.05)
+    # ax3.set_ylim(-0.05, 1.05)
+    #
+    # bp_total = (abs(WGbp.c0*s)**2 + abs(WGbp.c1*s)**2)
+    # bp_r1 = abs(WGbp.c0*s)**2/bp_total
+    # bp_r2 = abs(WGbp.c1*s)**2/bp_total
+    #
+    # ap_total = (abs(WGap.c0*s)**2 + abs(WGap.c1*s)**2)
+    # ap_r1 = abs(WGap.c0*s)**2/am_total
+    # ap_r2 = abs(WGap.c1*s)**2/am_total
+    #
+    # ax2.plot(L - x, bp_r2, "-", color=colors[0], label=r"$|c_1|^2$")
+    # ax2.plot(L - x, bp_r1, "-", color=colors[1], label=r"$|c_2|^2$")
+    # # ax5 = ax4.twiny()
+    # ax4.plot(L - x, ap_r2, "--", color=colors[0], label=r"$|c_1|^2$")
+    # ax4.plot(L - x, ap_r1, "--", color=colors[1], label=r"$|c_2|^2$")
+    # # ax4.semilogy(L - x, ap_r2, "--", color=colors[0], label=r"$|c_1|^2$")
+    # # ax4.semilogy(L - x, ap_r1, "--", color=colors[1], label=r"$|c_2|^2$")
+    # ax2.set_ylim(-0.05, 1.05)
+    # ax4.set_ylim(-0.05, 1.05)
+
+    # for ax in (ax1, ax2, ax3, ax4):
+    #     ax.set_yticks(10.**np.arange(0, -31, -y_axis_step_length))
+    #     ax.tick_params(axis='y', which='minor', left='off', right='off')
+    #     if y_range_trajectory:
+    #         ax.set_ylim(*y_range_trajectory)
 
     # def custom_formatter_function(x, pos):
     #     if np.log(x) == 0:
@@ -72,7 +138,6 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
     WGam, WGbm, WGap, WGbp = wg_list
     x = WGam.x
     L = WGam.D.L
-    s = WGam.adiabatic
     nstep = WGam.nstep
 
     ax1.plot(x, WGam.E0.real, "-", color=colors[0], label=r"Re $E_1$")
@@ -115,7 +180,6 @@ def get_imag_spectrum(ax1=None, ax2=None, wg_list=None,
     WGam, WGbm, WGap, WGbp = wg_list
     x = WGam.x
     L = WGam.D.L
-    s = WGam.adiabatic
 
     ax1.plot(x, WGam.E0.imag, "-", color=colors[0], label=r"Im $E_1$")
     ax1.plot(x, WGam.E1.imag, "-", color=colors[1], label=r"Im $E_2$")
@@ -185,10 +249,11 @@ def plot_parameter_trajectory(figname=None, wg=None, ep_coordinates=None,
 
     plt.savefig(figname, bbox_inches='tight')
 
-def plot_spectrum(wg_list=None, fig_name_spectrum=None,
-                 y_range_imag_spectrum=None, y_range_real_spectrum=None,
-                 y_axis_step_length=5, y_ticklabels_real_spectrum=None,
-                 y_ticklabels_imag_spectrum=None):
+
+def plot_spectrum(wg_list=None, figname=None,
+                  y_range_imag_spectrum=None, y_range_real_spectrum=None,
+                  y_axis_step_length=5, y_ticklabels_real_spectrum=None,
+                  y_ticklabels_imag_spectrum=None):
 
     WGam, WGbm, WGap, WGbp = wg_list
 
@@ -235,11 +300,13 @@ def plot_spectrum(wg_list=None, fig_name_spectrum=None,
     plt.tight_layout(w_pad=0.8, h_pad=0.2)
     plt.subplots_adjust(hspace=0.2)
 
-    plt.savefig(fig_name_spectrum, bbox_inches='tight')
+    plot_png(fig=f)
+
+    plt.savefig(figname, bbox_inches='tight')
 
 
-def plot_dynamics(wg_list, fig_name_trajectories=None,
-             y_range_trajectory=None, y_axis_step_length=5):
+def plot_dynamics(wg_list, figname=None, y_range_trajectory=None,
+                  y_axis_step_length=5):
 
     WGam, WGbm, WGap, WGbp = wg_list
 
@@ -257,7 +324,7 @@ def plot_dynamics(wg_list, fig_name_trajectories=None,
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(ncols=2, nrows=2,
                                                figsize=(6.2, 5.0/3.*2.), dpi=220,
                                                sharex=True, sharey=False)
-    get_trajectories(ax1=ax1, ax2=ax2, wg_list=wg_list,
+    get_trajectories(ax1=ax1, ax2=ax2, ax3=ax3, ax4=ax4, wg_list=wg_list,
                      y_range_trajectory=y_range_trajectory,
                      y_axis_step_length=y_axis_step_length)
 
@@ -291,7 +358,9 @@ def plot_dynamics(wg_list, fig_name_trajectories=None,
     plt.tight_layout(w_pad=0.8, h_pad=0.2)
     plt.subplots_adjust(hspace=0.2)
 
-    plt.savefig(fig_name_trajectories, bbox_inches='tight')
+    plot_png(fig=f)
+
+    plt.savefig(figname, bbox_inches='tight')
 
 
 def plot_uniform():
@@ -305,13 +374,14 @@ def plot_uniform():
         'init_state': 'a',
         'init_state_method': 'energy',
         'W': 1,
-        'L': 1,
+        'L': 100,
         'eta':  0.6,
         'eta0': 0.0,
         'x_R0': 0.1,
         'y_R0': 0.85,
         'init_phase': 0.3,
-        'switch_losses_on_off': True
+        'switch_losses_on_off': True,
+        # 'calc_adiabatic_state': True
     }
 
     wg_kwargs_bm = copy.deepcopy(wg_kwargs_am)
@@ -343,19 +413,18 @@ def plot_uniform():
                   adiabatic, nstep) for wg in wg_list]
 
     plot_dynamics(wg_list,
-                 fig_name_trajectories="constant_cn_vs_x_reduced_trajectory.pdf",
-                 y_axis_step_length=10,
-                 y_range_trajectory=[5e-34, 1e2])
+                  figname="uniform_reduced_trajectory.pdf",
+                  y_axis_step_length=10,
+                  y_range_trajectory=[5e-34, 1e2])
 
     plot_spectrum(wg_list,
-                 fig_name_spectrum="constant_cn_vs_x_reduced_spectrum.pdf",
-                 y_range_real_spectrum=[-1.2, 1.2],
-                 y_ticklabels_real_spectrum=3,
-                 y_ticklabels_imag_spectrum=5,
-                 y_range_imag_spectrum=[-1.6, 0.1])
+                  figname="uniform_reduced_spectrum.pdf",
+                  y_range_real_spectrum=[-1.2, 1.2],
+                  y_ticklabels_real_spectrum=3,
+                  y_ticklabels_imag_spectrum=5,
+                  y_range_imag_spectrum=[-1.6, 0.1])
 
-    plot_parameter_trajectory(wg=WGam,
-                              figname="constant_parameter_space_reduced_test.pdf")
+    plot_parameter_trajectory(wg=WGam, figname="uniform_path.pdf")
 
 
 if __name__ == '__main__':
