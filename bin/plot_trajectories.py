@@ -140,6 +140,16 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
     L = WGam.D.L
     nstep = WGam.nstep
 
+    # _, delta = WGam.D.get_cycle_parameters()
+    # G = WGam.D.kr + delta
+    # print "G, G/2", G, G/2.
+    # E1_fold, E2_fold = [np.mod(e, G) for e in (WGam.E0.real, WGam.E1.real)]
+    # for E in (E1_fold, E2_fold):
+    #     E[E > G/2.] -= G
+    #     E[E < G/2.] += G
+
+    # ax1.plot(x, E1_fold, "-", color=colors[0], label=r"Re $E_1$")
+    # ax1.plot(x, E2_fold, "-", color=colors[1], label=r"Re $E_2$")
     ax1.plot(x, WGam.E0.real, "-", color=colors[0], label=r"Re $E_1$")
     ax1.plot(x, WGam.E1.real, "-", color=colors[1], label=r"Re $E_2$")
     ax1.plot(x[::nstep], map_trajectory(WGam.c0, WGam.c1,
@@ -149,6 +159,8 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
              WGam.E0.real, WGam.E1.real)[nstep/2::nstep], "ks",
              ms=ms, mew=mew, fillstyle=fs)
 
+    # ax2.plot(L - x, WGap.E0.real % G, "-", color=colors[1], label=r"Re $E_1$")
+    # ax2.plot(L - x, WGap.E1.real % G, "-", color=colors[0], label=r"Re $E_2$")
     ax2.plot(L - x, WGap.E0.real, "-", color=colors[1], label=r"Re $E_1$")
     ax2.plot(L - x, WGap.E1.real, "-", color=colors[0], label=r"Re $E_2$")
     ax2.plot((L - x)[::nstep], map_trajectory(WGap.c0, WGap.c1,
@@ -301,6 +313,7 @@ def plot_spectrum(wg_list=None, figname=None,
     plt.subplots_adjust(hspace=0.2)
 
     plot_png(fig=f)
+    # plt.show()
 
     plt.savefig(figname, bbox_inches='tight')
 
@@ -383,6 +396,25 @@ def plot_uniform():
         'switch_losses_on_off': True,
         # 'calc_adiabatic_state': True
     }
+    # wg_kwargs_am = {
+    #     # pos. dep. loss configuration/ works for (approx.) uniform loss
+    #     # (scaled with eps^2)
+    #     # use N=2.05 to fit simulation setup
+    #     'N': 2.05,
+    #     'loop_type': 'Bell',
+    #     'loop_direction': '-',
+    #     'init_state': 'a',
+    #     'init_state_method': 'energy',
+    #     'W': 0.5,
+    #     'L': 100*0.5,
+    #     'eta':  0.6/0.5,
+    #     'eta0': 0.0,
+    #     'x_R0': 0.1*0.5,
+    #     'y_R0': 0.85/0.5,
+    #     'init_phase': 0.3/0.5,
+    #     'switch_losses_on_off': True,
+    #     # 'calc_adiabatic_state': True
+    # }
 
     wg_kwargs_bm = copy.deepcopy(wg_kwargs_am)
     wg_kwargs_bm.update({'loop_direction': '-',
