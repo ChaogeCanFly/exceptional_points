@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter, FuncFormatter, LogFormatterMathtext
 import numpy as np
 
+import argh
 from PIL import Image
 
 from ep.helpers import map_trajectory
