@@ -34,8 +34,9 @@ legend_kwargs = {'frameon': False,
 def plot_png(fig=None):
     img_1, img_2 = [Image.open(png) for png in ('waveguide_arrow.001_resize.png', 'waveguide_arrow.002_resize.png')]
     img_1, img_2 = [np.array(img).astype(np.float)/255. for img in (img_1, img_2)]
-    fig.figimage(img_1, 115, 315, zorder=20, cmap='Greys_r')
-    fig.figimage(img_2, 425, 315, zorder=20, cmap='Greys_r')
+    fig
+    fig.figimage(img_1, 130, 375, zorder=20, cmap='Greys_r')
+    fig.figimage(img_2, 425, 375, zorder=20, cmap='Greys_r')
     plt.subplots_adjust(top=0.9)
 
 
@@ -73,6 +74,9 @@ def get_trajectories(ax1=None, ax2=None, ax3=None, ax4=None,
         ax.tick_params(axis='y', which='minor', left='off', right='off')
         if y_range_trajectory:
             ax.set_ylim(*y_range_trajectory)
+
+    ax1.set_ylabel(r"Populations $|c_i|^2$")
+    ax3.set_ylabel(r"Populations $|c_i|^2$")
 
     # am_total = (abs(WGam.c0*s)**2 + abs(WGam.c1*s)**2)
     # am_r1 = abs(WGam.c0*s)**2/am_total
@@ -151,32 +155,34 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
 
     # ax1.plot(x, E1_fold, "-", color=colors[0], label=r"Re $E_1$")
     # ax1.plot(x, E2_fold, "-", color=colors[1], label=r"Re $E_2$")
-    ax1.plot(x, WGam.E0.real, "-", color=colors[0], label=r"Re $E_1$")
-    ax1.plot(x, WGam.E1.real, "-", color=colors[1], label=r"Re $E_2$")
+    ax1.plot(x, WGam.E0.real, "-", color=colors[0]) #, label=r"Re $E_1$")
+    ax1.plot(x, WGam.E1.real, "-", color=colors[1]) #, label=r"Re $E_2$")
     ax1.plot(x[::nstep], map_trajectory(WGam.c0, WGam.c1,
              WGam.E0.real, WGam.E1.real)[::nstep], "k^",
              ms=ms)
     ax1.plot(x[nstep/2::nstep], map_trajectory(WGbm.c0, WGbm.c1,
              WGam.E0.real, WGam.E1.real)[nstep/2::nstep], "ks",
              ms=ms, mew=mew, fillstyle=fs)
+    # ax1.set_ylabel(r"Real spectrum $\mathrm{Re} E_n$")
+    ax1.set_ylabel(r"Real spectrum")
 
     # ax2.plot(L - x, WGap.E0.real % G, "-", color=colors[1], label=r"Re $E_1$")
     # ax2.plot(L - x, WGap.E1.real % G, "-", color=colors[0], label=r"Re $E_2$")
-    ax2.plot(L - x, WGap.E0.real, "-", color=colors[1], label=r"Re $E_1$")
-    ax2.plot(L - x, WGap.E1.real, "-", color=colors[0], label=r"Re $E_2$")
+    ax2.plot(L - x, WGap.E0.real, "-", color=colors[1]) #, label=r"Re $E_1$")
+    ax2.plot(L - x, WGap.E1.real, "-", color=colors[0]) #, label=r"Re $E_2$")
     ax2.plot((L - x)[::nstep], map_trajectory(WGap.c0, WGap.c1,
              WGap.E0.real, WGap.E1.real)[::nstep], "ks",
              ms=ms, mew=mew, fillstyle=fs)
     ax2.plot((L - x)[nstep/2::nstep], map_trajectory(WGbp.c0, WGbp.c1,
              WGap.E0.real, WGap.E1.real)[nstep/2::nstep], "k^",
              ms=ms)
-    energy_legend = copy.deepcopy(legend_kwargs)
-    energy_legend.pop('mode')
-    energy_legend.update({'ncol': 2,
-                          'columnspacing': 0.75,
-                          'bbox_to_anchor': (0.5, -0.075)})
-    ax1.legend(loc="lower center", **energy_legend)
-    ax2.legend(loc="lower center", **energy_legend)
+    # energy_legend = copy.deepcopy(legend_kwargs)
+    # energy_legend.pop('mode')
+    # energy_legend.update({'ncol': 2,
+    #                       'columnspacing': 0.75,
+    #                       'bbox_to_anchor': (0.5, -0.075)})
+    # ax1.legend(loc="lower center", **energy_legend)
+    # ax2.legend(loc="lower center", **energy_legend)
 
     ax1.get_yaxis().set_tick_params(pad=2)
 
@@ -194,19 +200,21 @@ def get_imag_spectrum(ax1=None, ax2=None, wg_list=None,
     x = WGam.x
     L = WGam.D.L
 
-    ax1.plot(x, WGam.E0.imag, "-", color=colors[0], label=r"Im $E_1$")
-    ax1.plot(x, WGam.E1.imag, "-", color=colors[1], label=r"Im $E_2$")
+    ax1.plot(x, WGam.E0.imag, "-", color=colors[0]) #, label=r"Im $E_1$")
+    ax1.plot(x, WGam.E1.imag, "-", color=colors[1]) #, label=r"Im $E_2$")
+    # ax1.set_ylabel(r"Imaginary spectrum $\mathrm{Im} E_n$")
+    ax1.set_ylabel(r"Imaginary spectrum")
 
-    ax2.plot(L - x, WGap.E0.imag, "-", color=colors[1], label=r"Im $E_1$")
-    ax2.plot(L - x, WGap.E1.imag, "-", color=colors[0], label=r"Im $E_2$")
+    ax2.plot(L - x, WGap.E0.imag, "-", color=colors[1]) #, label=r"Im $E_1$")
+    ax2.plot(L - x, WGap.E1.imag, "-", color=colors[0]) #, label=r"Im $E_2$")
 
-    energy_legend = copy.deepcopy(legend_kwargs)
-    energy_legend.pop('mode')
-    energy_legend.update({'ncol': 2,
-                          'columnspacing': 0.75,
-                          'bbox_to_anchor': (0.02, -0.075)})
-    ax1.legend(loc="lower left", **energy_legend)
-    ax2.legend(loc="lower left", **energy_legend)
+    # energy_legend = copy.deepcopy(legend_kwargs)
+    # energy_legend.pop('mode')
+    # energy_legend.update({'ncol': 2,
+    #                       'columnspacing': 0.75,
+    #                       'bbox_to_anchor': (0.02, -0.075)})
+    # ax1.legend(loc="lower left", **energy_legend)
+    # ax2.legend(loc="lower left", **energy_legend)
 
     for ax in (ax1, ax2):
         if y_range_imag_spectrum:
@@ -221,7 +229,7 @@ def plot_parameter_trajectory(figname=None, wg=None, ep_coordinates=None,
     WGam = wg
     eps, delta = WGam.get_cycle_parameters()
 
-    f = plt.figure(figsize=(3.1, 3.1/3), dpi=220)
+    f = plt.figure(figsize=(3.1, 3.1/2.5), dpi=220)
     ax = plt.gca()
     ax.plot(delta, eps, color="k", lw=2.5, clip_on=False)
     if not ep_coordinates:
@@ -237,7 +245,7 @@ def plot_parameter_trajectory(figname=None, wg=None, ep_coordinates=None,
         datax = [x_EP,  0.030,  0.026,  0.018,  0.011,  0.007,  0.005,  0.002,  0.000,  0.000,  0.000,  0.003,  0.008,  0.015]
         ax.plot(datay, datax, "k--", lw=0.75, dashes=[1, 2])
         ax.annotate('EP', (-0.29, 0.041), textcoords='data',
-                    weight='bold', size=14, color='black')
+                    weight='bold', size=12, color='black')
         ax.set_xlim(-1.1, 1.1)
         ax.set_ylim(0, eps.max())
     else:
@@ -245,7 +253,7 @@ def plot_parameter_trajectory(figname=None, wg=None, ep_coordinates=None,
         ax.plot([0, y_EP], [0.1, x_EP], "k--", lw=0.75, dashes=[1, 2])
         ax.plot(y_EP, x_EP, "o", color=colors[4], ms=7.5, mec='none', clip_on=False)
         ax.annotate('EP', (0.1, 0.04), textcoords='data',
-                    weight='bold', size=14, color='black')
+                    weight='bold', size=12, color='black')
 
     ax.plot(delta[0], eps[0], "ko", ms=7.5, clip_on=False)
     ax.plot(delta[-1], eps[-1], "ko", ms=7.5, clip_on=False)
@@ -271,7 +279,7 @@ def plot_spectrum(wg_list=None, figname=None,
     WGam, WGbm, WGap, WGbp = wg_list
 
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(ncols=2, nrows=2,
-                                               figsize=(6.2, 5.0/3.*2.), dpi=220,
+                                               figsize=(6.2, 5.0/2.5*2.), dpi=220,
                                                sharex=True, sharey=False)
     get_real_spectrum(ax1=ax1, ax2=ax2, wg_list=wg_list,
                       y_range_real_spectrum=y_range_real_spectrum,
@@ -307,8 +315,8 @@ def plot_spectrum(wg_list=None, figname=None,
                        left='off', right='off', top='off')
 
     f.text(0.5, -0., 'Spatial coordinate x', ha='center')
-    f.text(-0.01, 0.94, 'a', weight='bold', size=14)
-    f.text(-0.01, 0.49, 'b', weight='bold', size=14)
+    f.text(-0.01, 0.94, 'a', weight='bold', size=12)
+    f.text(-0.01, 0.49, 'b', weight='bold', size=12)
 
     plt.tight_layout(w_pad=0.8, h_pad=0.2)
     plt.subplots_adjust(hspace=0.2)
@@ -336,7 +344,7 @@ def plot_dynamics(wg_list, figname=None, y_range_trajectory=None,
     print abs(WGbp.c0[-1]/WGbp.c1[-1])**-2
 
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(ncols=2, nrows=2,
-                                               figsize=(6.2, 5.0/3.*2.), dpi=220,
+                                               figsize=(6.2, 5.0/2.5*2.), dpi=220,
                                                sharex=True, sharey=False)
     get_trajectories(ax1=ax1, ax2=ax2, ax3=ax3, ax4=ax4, wg_list=wg_list,
                      y_range_trajectory=y_range_trajectory,
@@ -366,8 +374,8 @@ def plot_dynamics(wg_list, figname=None, y_range_trajectory=None,
                        left='off', right='off', top='off')
 
     f.text(0.5, -0., 'Spatial coordinate x', ha='center')
-    f.text(-0.01, 0.94, 'a', weight='bold', size=14)
-    f.text(-0.01, 0.49, 'b', weight='bold', size=14)
+    f.text(-0.01, 0.94, 'a', weight='bold', size=12)
+    f.text(-0.01, 0.49, 'b', weight='bold', size=12)
 
     plt.tight_layout(w_pad=0.8, h_pad=0.2)
     plt.subplots_adjust(hspace=0.2)
@@ -454,8 +462,9 @@ def plot_uniform():
                   figname="uniform_reduced_spectrum.pdf",
                   y_range_real_spectrum=[-1.2, 1.2],
                   y_ticklabels_real_spectrum=3,
-                  y_ticklabels_imag_spectrum=5,
-                  y_range_imag_spectrum=[-1.6, 0.1])
+                  # y_range_imag_spectrum=[-1.6, 0.1],
+                  y_range_imag_spectrum=[-1.1, 0.1],
+                  y_ticklabels_imag_spectrum=5)
 
     plot_parameter_trajectory(wg=WGam, figname="uniform_path.pdf")
 
@@ -518,10 +527,11 @@ def plot_position_dependent():
                   figname="pos_dep_reduced_spectrum.pdf",
                   y_range_real_spectrum=[-1.5, 1.2],
                   y_ticklabels_real_spectrum=3,
-                  y_range_imag_spectrum=[-4.0, 0.2],
-                  y_ticklabels_imag_spectrum=3)
+                  # y_range_imag_spectrum=[-4.0, 0.2],
+                  y_range_imag_spectrum=[-3.2, 0.2],
+                  y_ticklabels_imag_spectrum=4)
 
-    plot_parameter_trajectory(wg=WGam, figname="uniform_path.pdf")
+    plot_parameter_trajectory(wg=WGam, figname="pos_dep_path.pdf")
 
 
 def selector(pos_dep=False):
