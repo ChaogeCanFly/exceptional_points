@@ -459,5 +459,68 @@ def plot_uniform():
     plot_parameter_trajectory(wg=WGam, figname="uniform_path.pdf")
 
 
+def plot_position_dependent():
+    wg_kwargs_am = {
+        # pos. dep. loss configuration
+        # (scaled with eps^2)
+        # use N=2.05 to fit simulation setup
+        'N': 2.6,
+        'loop_type': 'Bell',
+        'loop_direction': '-',
+        'init_state': 'a',
+        'init_state_method': 'energy',
+        'W': 1,
+        'L': 100,
+        'eta':  1.0,
+        'eta0': 0.0,
+        'x_R0': 0.1,
+        'y_R0': 0.85,
+        'init_phase': 0.3,
+        'switch_losses_on_off': True,
+    }
+
+    wg_kwargs_bm = copy.deepcopy(wg_kwargs_am)
+    wg_kwargs_bm.update({'loop_direction': '-',
+                         'init_state': 'b'})
+    wg_kwargs_ap = copy.deepcopy(wg_kwargs_am)
+    wg_kwargs_ap.update({'loop_direction': '+',
+                         'init_state': 'a'})
+    wg_kwargs_bp = copy.deepcopy(wg_kwargs_am)
+    wg_kwargs_bp.update({'loop_direction': '+',
+                         'init_state': 'b'})
+
+    wg_kwarg_list = (wg_kwargs_am, wg_kwargs_bm, wg_kwargs_ap, wg_kwargs_bp)
+    wg_list = [DirichletPositionDependentLoss(**kw) for kw in wg_kwarg_list]
+    WGam, WGbm, WGap, WGbp = wg_list
+
+    for w in wg_list:
+        w.solve_ODE()
+        print "...done."
+
+    WG = namedtuple('WG', 'D x c0 c1 E0 E1 adiabatic nstep')
+    adiabatic = WGam.Psi_adiabatic[:, 0]**(-1)
+    if np.all(np.isnan(adiabatic)):
+        adiabatic = 1.
+    nstep = WGam.tN/10
+
+    wg_list = [WG(wg, wg.t, wg.phi_a, wg.phi_b,
+                  wg.eVals[:, 0], wg.eVals[:, 1],
+                  adiabatic, nstep) for wg in wg_list]
+
+    plot_dynamics(wg_list,
+                  figname="uniform_reduced_trajectory.pdf",
+                  y_axis_step_length=10,
+                  y_range_trajectory=[5e-34, 1e2])
+
+    plot_spectrum(wg_list,
+                  figname="uniform_reduced_spectrum.pdf",
+                  y_range_real_spectrum=[-1.2, 1.2],
+                  y_ticklabels_real_spectrum=3,
+                  y_ticklabels_imag_spectrum=5,
+                  y_range_imag_spectrum=[-1.6, 0.1])
+
+    plot_parameter_trajectory(wg=WGam, figname="uniform_path.pdf")
+
+
 if __name__ == '__main__':
     plot_uniform()
