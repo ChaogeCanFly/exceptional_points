@@ -464,7 +464,7 @@ def plot_position_dependent():
         # pos. dep. loss configuration
         # (scaled with eps^2)
         # use N=2.05 to fit simulation setup
-        'N': 2.6,
+        'N': 2.05,
         'loop_type': 'Bell',
         'loop_direction': '-',
         'init_state': 'a',
@@ -475,8 +475,9 @@ def plot_position_dependent():
         'eta0': 0.0,
         'x_R0': 0.1,
         'y_R0': 0.85,
-        'init_phase': 0.3,
+        'init_phase': 0.0,
         'switch_losses_on_off': True,
+        'sigma': 1e-3
     }
 
     wg_kwargs_bm = copy.deepcopy(wg_kwargs_am)
@@ -490,7 +491,7 @@ def plot_position_dependent():
                          'init_state': 'b'})
 
     wg_kwarg_list = (wg_kwargs_am, wg_kwargs_bm, wg_kwargs_ap, wg_kwargs_bp)
-    wg_list = [DirichletPositionDependentLoss(**kw) for kw in wg_kwarg_list]
+    wg_list = [DirichletPositionDependentLossReduced(**kw) for kw in wg_kwarg_list]
     WGam, WGbm, WGap, WGbp = wg_list
 
     for w in wg_list:
@@ -508,19 +509,20 @@ def plot_position_dependent():
                   adiabatic, nstep) for wg in wg_list]
 
     plot_dynamics(wg_list,
-                  figname="uniform_reduced_trajectory.pdf",
-                  y_axis_step_length=10,
-                  y_range_trajectory=[5e-34, 1e2])
+                  figname="pos_dep_reduced_trajectory.pdf",
+                  y_axis_step_length=5,
+                  y_range_trajectory=[1e-11, 1e1])
 
     plot_spectrum(wg_list,
-                  figname="uniform_reduced_spectrum.pdf",
-                  y_range_real_spectrum=[-1.2, 1.2],
+                  figname="pos_dep_reduced_spectrum.pdf",
+                  y_range_real_spectrum=[-1.5, 1.2],
                   y_ticklabels_real_spectrum=3,
-                  y_ticklabels_imag_spectrum=5,
-                  y_range_imag_spectrum=[-1.6, 0.1])
+                  y_range_imag_spectrum=[-4.0, 0.2],
+                  y_ticklabels_imag_spectrum=3)
 
     plot_parameter_trajectory(wg=WGam, figname="uniform_path.pdf")
 
 
 if __name__ == '__main__':
-    plot_uniform()
+    # plot_uniform()
+    plot_position_dependent()
