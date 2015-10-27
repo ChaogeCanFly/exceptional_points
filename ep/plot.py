@@ -72,20 +72,22 @@ def get_colors():
 
 def get_defaults():
     """Set better font sizes, label sizes and line widths."""
-    font = {'size': 12,
+    font_size = 11
+
+    font = {'size': font_size,
             # 'family': 'Arial'}
             'family': 'Helvetica'}
     matplotlib.rc('font', **font)
 
-    axes = {'labelsize': 12}
+    axes = {'labelsize': font_size}
     matplotlib.rc('axes', **axes)
 
-    tick = {'labelsize': 12,
+    tick = {'labelsize': font_size,
             'major.width': 0.75}
     matplotlib.rc('xtick', **tick)
     matplotlib.rc('ytick', **tick)
 
-    legend = {'fontsize': 12}
+    legend = {'fontsize': font_size}
     matplotlib.rc('legend', **legend)
 
     lines = {'linewidth': 2.25}
