@@ -523,6 +523,12 @@ def plot_position_dependent():
     plot_parameter_trajectory(wg=WGam, figname="uniform_path.pdf")
 
 
+def selector(pos_dep=False):
+    if pos_dep:
+        plot_position_dependent()
+    else:
+        plot_uniform()
+
+
 if __name__ == '__main__':
-    # plot_uniform()
-    plot_position_dependent()
+    argh.dispatch_command(selector)
