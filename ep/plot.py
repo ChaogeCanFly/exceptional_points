@@ -73,7 +73,8 @@ def get_colors():
 def get_defaults():
     """Set better font sizes, label sizes and line widths."""
     font = {'size': 12,
-            'family': 'Arial'}
+            # 'family': 'Arial'}
+            'family': 'Helvetica'}
     matplotlib.rc('font', **font)
 
     axes = {'labelsize': 12}
