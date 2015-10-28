@@ -139,7 +139,7 @@ def get_trajectories(ax1=None, ax2=None, ax3=None, ax4=None,
 
 def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
                       fs='none', y_range_real_spectrum=None,
-                      y_ticklabels_real_spectrum=None):
+                      y_ticklabels_real_spectrum=None, projection=False):
     WGam, WGbm, WGap, WGbp = wg_list
     x = WGam.x
     L = WGam.D.L
@@ -157,12 +157,13 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
     # ax1.plot(x, E2_fold, "-", color=colors[1], label=r"Re $E_2$")
     ax1.plot(x, WGam.E0.real, "-", color=colors[0]) #, label=r"Re $E_1$")
     ax1.plot(x, WGam.E1.real, "-", color=colors[1]) #, label=r"Re $E_2$")
-    ax1.plot(x[::nstep], map_trajectory(WGam.c0, WGam.c1,
-             WGam.E0.real, WGam.E1.real)[::nstep], "k^",
-             ms=ms)
-    ax1.plot(x[nstep/2::nstep], map_trajectory(WGbm.c0, WGbm.c1,
-             WGam.E0.real, WGam.E1.real)[nstep/2::nstep], "ks",
-             ms=ms, mew=mew, fillstyle=fs)
+    if project:
+        ax1.plot(x[::nstep], map_trajectory(WGam.c0, WGam.c1,
+                WGam.E0.real, WGam.E1.real)[::nstep], "k^",
+                ms=ms)
+        ax1.plot(x[nstep/2::nstep], map_trajectory(WGbm.c0, WGbm.c1,
+                WGam.E0.real, WGam.E1.real)[nstep/2::nstep], "ks",
+                ms=ms, mew=mew, fillstyle=fs)
     # ax1.set_ylabel(r"Real spectrum $\mathrm{Re} E_n$")
     ax1.set_ylabel(r"Real spectrum")
 
@@ -170,12 +171,13 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
     # ax2.plot(L - x, WGap.E1.real % G, "-", color=colors[0], label=r"Re $E_2$")
     ax2.plot(L - x, WGap.E0.real, "-", color=colors[1]) #, label=r"Re $E_1$")
     ax2.plot(L - x, WGap.E1.real, "-", color=colors[0]) #, label=r"Re $E_2$")
-    ax2.plot((L - x)[::nstep], map_trajectory(WGap.c0, WGap.c1,
-             WGap.E0.real, WGap.E1.real)[::nstep], "ks",
-             ms=ms, mew=mew, fillstyle=fs)
-    ax2.plot((L - x)[nstep/2::nstep], map_trajectory(WGbp.c0, WGbp.c1,
-             WGap.E0.real, WGap.E1.real)[nstep/2::nstep], "k^",
-             ms=ms)
+    if projection:
+        ax2.plot((L - x)[::nstep], map_trajectory(WGap.c0, WGap.c1,
+                WGap.E0.real, WGap.E1.real)[::nstep], "ks",
+                ms=ms, mew=mew, fillstyle=fs)
+        ax2.plot((L - x)[nstep/2::nstep], map_trajectory(WGbp.c0, WGbp.c1,
+                WGap.E0.real, WGap.E1.real)[nstep/2::nstep], "k^",
+                ms=ms)
     # energy_legend = copy.deepcopy(legend_kwargs)
     # energy_legend.pop('mode')
     # energy_legend.update({'ncol': 2,
@@ -274,7 +276,7 @@ def plot_parameter_trajectory(figname=None, wg=None, ep_coordinates=None,
 def plot_spectrum(wg_list=None, figname=None,
                   y_range_imag_spectrum=None, y_range_real_spectrum=None,
                   y_axis_step_length=5, y_ticklabels_real_spectrum=None,
-                  y_ticklabels_imag_spectrum=None):
+                  y_ticklabels_imag_spectrum=None, projection=False):
 
     WGam, WGbm, WGap, WGbp = wg_list
 
@@ -283,7 +285,8 @@ def plot_spectrum(wg_list=None, figname=None,
                                                sharex=True, sharey=False)
     get_real_spectrum(ax1=ax1, ax2=ax2, wg_list=wg_list,
                       y_range_real_spectrum=y_range_real_spectrum,
-                      y_ticklabels_real_spectrum=y_ticklabels_real_spectrum)
+                      y_ticklabels_real_spectrum=y_ticklabels_real_spectrum,
+                      projection=projection)
     get_imag_spectrum(ax1=ax3, ax2=ax4, wg_list=wg_list,
                       y_range_imag_spectrum=y_range_imag_spectrum,
                       y_ticklabels_imag_spectrum=y_ticklabels_imag_spectrum)
