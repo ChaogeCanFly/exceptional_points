@@ -48,26 +48,15 @@ def get_trajectories(ax1=None, ax2=None, ax3=None, ax4=None,
     L = WGam.D.L
     s = WGam.adiabatic
 
-    # ax1.semilogy(x, abs(WGam.c0*s)**2, "-", color=colors[0], label=r"$|c_1|^2$")
-    # ax1.semilogy(x, abs(WGam.c1*s)**2, "-", color=colors[1], label=r"$|c_2|^2$")
-    # ax3.semilogy(x, abs(WGbm.c0*s)**2, "-", color=colors[0], label=r"$|c_1|^2$")
-    # ax3.semilogy(x, abs(WGbm.c1*s)**2, "-", color=colors[1], label=r"$|c_2|^2$")
     ax1.semilogy(x, abs(WGam.c0*s)**2, "-", color=colors[0])
     ax1.semilogy(x, abs(WGam.c1*s)**2, "-", color=colors[1])
     ax3.semilogy(x, abs(WGbm.c0*s)**2, "-", color=colors[0])
     ax3.semilogy(x, abs(WGbm.c1*s)**2, "-", color=colors[1])
-    # ax1.annotate(r'$c_1(0) = 1$', (L*0.05, 1e-23), textcoords='data')
-    # ax1.annotate(r'$c_2(0) = 0$', (L*0.05, 1e-30), textcoords='data')
-    # ax3.annotate(r'$c_1(0) = 0$', (L*0.05, 1e-23), textcoords='data')
-    # ax3.annotate(r'$c_2(0) = 1$', (L*0.05, 1e-30), textcoords='data')
-    # ax1.legend(loc="lower left", **legend_kwargs)
-    ax1.legend(loc="lower left")
-    ax3.legend(loc="lower left")
 
-    ax2.semilogy(L - x, abs(WGbp.c1*s)**2, "-", color=colors[0], label=r"$|c_1|^2$")
-    ax2.semilogy(L - x, abs(WGbp.c0*s)**2, "-", color=colors[1], label=r"$|c_2|^2$")
-    ax4.semilogy(L - x, abs(WGap.c1*s)**2, "-", color=colors[0], label=r"$|c_1|^2$")
-    ax4.semilogy(L - x, abs(WGap.c0*s)**2, "-", color=colors[1], label=r"$|c_2|^2$")
+    ax2.semilogy(L - x, abs(WGbp.c1*s)**2, "-", color=colors[0])
+    ax2.semilogy(L - x, abs(WGbp.c0*s)**2, "-", color=colors[1])
+    ax4.semilogy(L - x, abs(WGap.c1*s)**2, "-", color=colors[0])
+    ax4.semilogy(L - x, abs(WGap.c0*s)**2, "-", color=colors[1])
 
     for ax in (ax1, ax2, ax3, ax4):
         ax.set_yticks(10.**np.arange(0, -31, -y_axis_step_length))
@@ -77,50 +66,6 @@ def get_trajectories(ax1=None, ax2=None, ax3=None, ax4=None,
 
     ax1.set_ylabel(r"Populations $|c_i|^2$")
     ax3.set_ylabel(r"Populations $|c_i|^2$")
-
-    # am_total = (abs(WGam.c0*s)**2 + abs(WGam.c1*s)**2)
-    # am_r1 = abs(WGam.c0*s)**2/am_total
-    # am_r2 = abs(WGam.c1*s)**2/am_total
-    # am_r = am_r1/am_r2
-    #
-    # bm_total = (abs(WGbm.c0*s)**2 + abs(WGbm.c1*s)**2)
-    # bm_r1 = abs(WGbm.c0*s)**2/bm_total
-    # bm_r2 = abs(WGbm.c1*s)**2/bm_total
-    # bm_r = bm_r1/bm_r2
-    #
-    # ax1.plot(x, am_r1, "-", color=colors[0], label=r"$|c_1|^2$")
-    # ax1.plot(x, am_r2, "-", color=colors[1], label=r"$|c_2|^2$")
-    # ax3.plot(x, bm_r1, "--", color=colors[0], label=r"$|c_1|^2$")
-    # ax3.plot(x, bm_r2, "--", color=colors[1], label=r"$|c_2|^2$")
-    # # ax1.plot(x, am_r, "-", color=colors[0], label=r"$|c_1|^2$")
-    # # ax3.plot(x, bm_r, "--", color=colors[0], label=r"$|c_1|^2$")
-    # ax1.legend(loc="lower left", **legend_kwargs)
-    # ax1.set_ylim(-0.05, 1.05)
-    # ax3.set_ylim(-0.05, 1.05)
-    #
-    # bp_total = (abs(WGbp.c0*s)**2 + abs(WGbp.c1*s)**2)
-    # bp_r1 = abs(WGbp.c0*s)**2/bp_total
-    # bp_r2 = abs(WGbp.c1*s)**2/bp_total
-    #
-    # ap_total = (abs(WGap.c0*s)**2 + abs(WGap.c1*s)**2)
-    # ap_r1 = abs(WGap.c0*s)**2/am_total
-    # ap_r2 = abs(WGap.c1*s)**2/am_total
-    #
-    # ax2.plot(L - x, bp_r2, "-", color=colors[0], label=r"$|c_1|^2$")
-    # ax2.plot(L - x, bp_r1, "-", color=colors[1], label=r"$|c_2|^2$")
-    # # ax5 = ax4.twiny()
-    # ax4.plot(L - x, ap_r2, "--", color=colors[0], label=r"$|c_1|^2$")
-    # ax4.plot(L - x, ap_r1, "--", color=colors[1], label=r"$|c_2|^2$")
-    # # ax4.semilogy(L - x, ap_r2, "--", color=colors[0], label=r"$|c_1|^2$")
-    # # ax4.semilogy(L - x, ap_r1, "--", color=colors[1], label=r"$|c_2|^2$")
-    # ax2.set_ylim(-0.05, 1.05)
-    # ax4.set_ylim(-0.05, 1.05)
-
-    # for ax in (ax1, ax2, ax3, ax4):
-    #     ax.set_yticks(10.**np.arange(0, -31, -y_axis_step_length))
-    #     ax.tick_params(axis='y', which='minor', left='off', right='off')
-    #     if y_range_trajectory:
-    #         ax.set_ylim(*y_range_trajectory)
 
     # def custom_formatter_function(x, pos):
     #     if np.log(x) == 0:
@@ -135,6 +80,33 @@ def get_trajectories(ax1=None, ax2=None, ax3=None, ax4=None,
     # labels = ax1.get_yticks().tolist()
     # labels[0] = '1  '
     # ax1.set_yticklabels(labels)
+
+
+def get_trajectories_new(ax1=None, ax2=None,
+                         wg_list=None, y_range_trajectory=None,
+                         y_axis_step_length=5):
+    WGam, WGbm, WGap, WGbp = wg_list
+    x = WGam.x
+    L = WGam.D.L
+    s = WGam.adiabatic
+
+    norm_1 = abs(WGam.c0*s)**2 + abs(WGam.c1*s)**2
+    norm_2 = abs(WGbm.c0*s)**2 + abs(WGbm.c1*s)**2
+    norm_3 = abs(WGbp.c0*s)**2 + abs(WGbp.c1*s)**2
+    norm_4 = abs(WGap.c0*s)**2 + abs(WGap.c1*s)**2
+
+    ax1.semilogy(x, norm_1, "--", color=colors[0])
+    ax1.semilogy(x, norm_2, "--", color=colors[1])
+    ax2.semilogy(L - x, norm_3, "--", color=colors[0])
+    ax2.semilogy(L - x, norm_4, "--", color=colors[1])
+
+    for ax in (ax1, ax2):
+        ax.set_yticks(10.**np.arange(0, -31, -y_axis_step_length))
+        ax.tick_params(axis='y', which='minor', left='off', right='off')
+        if y_range_trajectory:
+            ax.set_ylim(*y_range_trajectory)
+
+    ax1.set_ylabel(r"Norm") # $|c_1|^2 + |c_2|^2$")
 
 
 def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
@@ -157,7 +129,7 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
     # ax1.plot(x, E2_fold, "-", color=colors[1], label=r"Re $E_2$")
     ax1.plot(x, WGam.E0.real, "-", color=colors[0]) #, label=r"Re $E_1$")
     ax1.plot(x, WGam.E1.real, "-", color=colors[1]) #, label=r"Re $E_2$")
-    if project:
+    if projection:
         ax1.plot(x[::nstep], map_trajectory(WGam.c0, WGam.c1,
                 WGam.E0.real, WGam.E1.real)[::nstep], "k^",
                 ms=ms)
@@ -169,8 +141,8 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
 
     # ax2.plot(L - x, WGap.E0.real % G, "-", color=colors[1], label=r"Re $E_1$")
     # ax2.plot(L - x, WGap.E1.real % G, "-", color=colors[0], label=r"Re $E_2$")
-    ax2.plot(L - x, WGap.E0.real, "-", color=colors[1]) #, label=r"Re $E_1$")
-    ax2.plot(L - x, WGap.E1.real, "-", color=colors[0]) #, label=r"Re $E_2$")
+    ax2.plot(L - x, WGap.E0.real, "-", color=colors[1])
+    ax2.plot(L - x, WGap.E1.real, "-", color=colors[0])
     if projection:
         ax2.plot((L - x)[::nstep], map_trajectory(WGap.c0, WGap.c1,
                 WGap.E0.real, WGap.E1.real)[::nstep], "ks",
@@ -178,15 +150,47 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
         ax2.plot((L - x)[nstep/2::nstep], map_trajectory(WGbp.c0, WGbp.c1,
                 WGap.E0.real, WGap.E1.real)[nstep/2::nstep], "k^",
                 ms=ms)
-    # energy_legend = copy.deepcopy(legend_kwargs)
-    # energy_legend.pop('mode')
-    # energy_legend.update({'ncol': 2,
-    #                       'columnspacing': 0.75,
-    #                       'bbox_to_anchor': (0.5, -0.075)})
-    # ax1.legend(loc="lower center", **energy_legend)
-    # ax2.legend(loc="lower center", **energy_legend)
 
     ax1.get_yaxis().set_tick_params(pad=2)
+
+    for ax in (ax1, ax2):
+        if y_range_real_spectrum:
+            ax.set_ylim(*y_range_real_spectrum)
+        if y_ticklabels_real_spectrum:
+            ax.locator_params(axis='y', nbins=y_ticklabels_real_spectrum)
+
+
+def get_real_spectrum_new(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
+                          fs='none', y_range_real_spectrum=None,
+                          y_ticklabels_real_spectrum=None, projection=False):
+    WGam, WGbm, WGap, WGbp = wg_list
+    x = WGam.x
+    L = WGam.D.L
+    nstep = WGam.nstep
+
+    lw = 0.75
+
+    ax1.plot(x, WGam.E0.real, "k-", lw=lw)
+    ax1.plot(x, WGam.E1.real, "k-", lw=lw)
+    if projection:
+        ax1.plot(x, map_trajectory(WGam.c0, WGam.c1,
+                WGam.E0.real, WGam.E1.real), "--", color=colors[0],
+                ms=ms)
+        ax1.plot(x, map_trajectory(WGbm.c0, WGbm.c1,
+                WGam.E0.real, WGam.E1.real), "--", color=colors[1],
+                ms=ms, mew=mew, fillstyle=fs)
+    ax1.set_ylabel(r"Real spectrum")
+    ax1.get_yaxis().set_tick_params(pad=2)
+
+    ax2.plot(L - x, WGap.E0.real, "k-", lw=lw)
+    ax2.plot(L - x, WGap.E1.real, "k-", lw=lw)
+    if projection:
+        ax2.plot((L - x), map_trajectory(WGap.c0, WGap.c1,
+                WGap.E0.real, WGap.E1.real), "--", color=colors[1],
+                ms=ms, mew=mew, fillstyle=fs)
+        ax2.plot((L - x), map_trajectory(WGbp.c0, WGbp.c1,
+                WGap.E0.real, WGap.E1.real), "--", color=colors[0],
+                ms=ms)
 
     for ax in (ax1, ax2):
         if y_range_real_spectrum:
@@ -202,21 +206,13 @@ def get_imag_spectrum(ax1=None, ax2=None, wg_list=None,
     x = WGam.x
     L = WGam.D.L
 
-    ax1.plot(x, WGam.E0.imag, "-", color=colors[0]) #, label=r"Im $E_1$")
-    ax1.plot(x, WGam.E1.imag, "-", color=colors[1]) #, label=r"Im $E_2$")
+    ax1.plot(x, WGam.E0.imag, "-", color=colors[0])
+    ax1.plot(x, WGam.E1.imag, "-", color=colors[1])
     # ax1.set_ylabel(r"Imaginary spectrum $\mathrm{Im} E_n$")
     ax1.set_ylabel(r"Imaginary spectrum")
 
-    ax2.plot(L - x, WGap.E0.imag, "-", color=colors[1]) #, label=r"Im $E_1$")
-    ax2.plot(L - x, WGap.E1.imag, "-", color=colors[0]) #, label=r"Im $E_2$")
-
-    # energy_legend = copy.deepcopy(legend_kwargs)
-    # energy_legend.pop('mode')
-    # energy_legend.update({'ncol': 2,
-    #                       'columnspacing': 0.75,
-    #                       'bbox_to_anchor': (0.02, -0.075)})
-    # ax1.legend(loc="lower left", **energy_legend)
-    # ax2.legend(loc="lower left", **energy_legend)
+    ax2.plot(L - x, WGap.E0.imag, "-", color=colors[1])
+    ax2.plot(L - x, WGap.E1.imag, "-", color=colors[0])
 
     for ax in (ax1, ax2):
         if y_range_imag_spectrum:
@@ -349,9 +345,10 @@ def plot_dynamics(wg_list, figname=None, y_range_trajectory=None,
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(ncols=2, nrows=2,
                                                figsize=(6.2, 5.0/2.5*2.), dpi=220,
                                                sharex=True, sharey=False)
-    get_trajectories(ax1=ax1, ax2=ax2, ax3=ax3, ax4=ax4, wg_list=wg_list,
-                     y_range_trajectory=y_range_trajectory,
-                     y_axis_step_length=y_axis_step_length)
+    get_real_spectrum_new(ax1=ax1, ax2=ax2, wg_list=wg_list, projection=True)
+    get_trajectories_new(ax1=ax3, ax2=ax4, wg_list=wg_list,
+                         y_range_trajectory=y_range_trajectory,
+                         y_axis_step_length=y_axis_step_length)
 
     for ax in (ax3, ax4):
         ax.set_xticks([0, WGam.D.L/2, WGam.D.L])
@@ -523,8 +520,10 @@ def plot_position_dependent():
 
     plot_dynamics(wg_list,
                   figname="pos_dep_reduced_trajectory.pdf",
-                  y_axis_step_length=5,
-                  y_range_trajectory=[1e-11, 1e1])
+                  # y_axis_step_length=5,
+                  y_axis_step_length=2,
+                  # y_range_trajectory=[1e-11, 1e1])
+                  y_range_trajectory=[1e-6, 1e1])
 
     plot_spectrum(wg_list,
                   figname="pos_dep_reduced_spectrum.pdf",
