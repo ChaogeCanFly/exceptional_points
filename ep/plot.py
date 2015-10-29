@@ -72,7 +72,7 @@ def get_colors():
 
 def get_defaults():
     """Set better font sizes, label sizes and line widths."""
-    font_size = 11
+    font_size = 10
 
     font = {'size': font_size,
             # 'family': 'Arial'}
