@@ -137,27 +137,45 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
                 WGam.E0.real, WGam.E1.real)[nstep/2::nstep], "ks",
                 ms=ms, mew=mew, fillstyle=fs)
     # ax1.set_ylabel(r"Real spectrum $\mathrm{Re} E_n$")
-    ax1.set_ylabel(r"Real spectrum", labelpad=8)
+    ax1.set_ylabel(r"Real spectrum", labelpad=0)
 
     # ax2.plot(L - x, WGap.E0.real % G, "-", color=colors[1], label=r"Re $E_1$")
     # ax2.plot(L - x, WGap.E1.real % G, "-", color=colors[0], label=r"Re $E_2$")
-    ax2.plot(L - x, WGap.E0.real, "-", color=colors[1])
-    ax2.plot(L - x, WGap.E1.real, "-", color=colors[0])
-    if projection:
-        ax2.plot((L - x)[::nstep], map_trajectory(WGap.c0, WGap.c1,
-                WGap.E0.real, WGap.E1.real)[::nstep], "ks",
-                ms=ms, mew=mew, fillstyle=fs)
-        ax2.plot((L - x)[nstep/2::nstep], map_trajectory(WGbp.c0, WGbp.c1,
-                WGap.E0.real, WGap.E1.real)[nstep/2::nstep], "k^",
-                ms=ms)
+    if ax2:
+        ax2.plot(L - x, WGap.E0.real, "-", color=colors[1])
+        ax2.plot(L - x, WGap.E1.real, "-", color=colors[0])
+        if projection:
+            ax2.plot((L - x)[::nstep], map_trajectory(WGap.c0, WGap.c1,
+                    WGap.E0.real, WGap.E1.real)[::nstep], "ks",
+                    ms=ms, mew=mew, fillstyle=fs)
+            ax2.plot((L - x)[nstep/2::nstep], map_trajectory(WGbp.c0, WGbp.c1,
+                    WGap.E0.real, WGap.E1.real)[nstep/2::nstep], "k^",
+                    ms=ms)
+
+    _, delta = WGam.D.get_cycle_parameters()
+    k1 = WGam.D.k0
+    kb = WGam.D.kr + delta
+    # z1 = WGap.E0.real[-1] + 0*x + (kb[-1] - kb[0])
+    z1 = WGap.E0.real[-1] + 0*x + (delta[-1] - delta[0])
+    z2 = WGap.E0.real[-1] + 0*x
+    ax1.plot(x, z1, "k--", lw=0.75)
+    ax1.plot(x, z2, "k--", lw=0.75)
+    print z1[0]
+    print z2[0]
+    ax1.annotate('', xy=(L*0.95, z2[0]*1.10), xycoords='data',
+                 xytext=(L*0.95, z1[0]*1.05), textcoords='data',
+                 arrowprops={'arrowstyle': '<->'})
+    ax1.annotate(r'$k_b(L) - k_b(0)$', xy=(0.28*L, 0.25*abs(kb[0] - kb[-1])/2.),
+                 xycoords='data', xytext=(5, 0), textcoords='offset points')
 
     # ax1.get_yaxis().set_tick_params(pad=2)
 
     for ax in (ax1, ax2):
-        if y_range_real_spectrum:
-            ax.set_ylim(*y_range_real_spectrum)
-        if y_ticklabels_real_spectrum:
-            ax.locator_params(axis='y', nbins=y_ticklabels_real_spectrum)
+        if ax:
+            if y_range_real_spectrum:
+                ax.set_ylim(*y_range_real_spectrum)
+            if y_ticklabels_real_spectrum:
+                ax.locator_params(axis='y', nbins=y_ticklabels_real_spectrum)
 
 
 def get_real_K(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
@@ -168,23 +186,39 @@ def get_real_K(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
     L = WGam.D.L
     nstep = WGam.nstep
     k1 = WGam.D.k0
+    k2 = WGam.D.k1
 
     eps, delta = WGam.D.get_cycle_parameters()
     kb = WGam.D.kr + delta
 
     ax1.plot(x, (k1 + delta - WGam.E0.real) % kb, "-", color=colors[0])
     ax1.plot(x, (k1 + delta - WGam.E1.real) % kb, "-", color=colors[1])
-    ax1.set_ylabel(r"Real Bloch wavenumber", labelpad=13)
+    ax1.set_ylabel(r"Real Bloch wavenumber")
     # ax1.get_yaxis().set_tick_params(pad=2)
 
-    ax2.plot(L - x, (k1 + delta - WGap.E0.real) % kb, "-", color=colors[1])
-    ax2.plot(L - x, (k1 + delta - WGap.E1.real) % kb, "-", color=colors[0])
+    # ax1.plot(x, 0*x + k1, "k-")
+    # ax1.plot(x, 0*x + k2, "k--")
+    # ax1.plot(x, 0*x + ((k1 + delta - WGam.E0.real) % kb)[0], "k-")
+    # ax1.plot(x, 0*x + ((k1 + delta - WGam.E0.real) % kb)[-1], "k--")
+    # ax1.plot(x, 0*x + ((k1 + delta - WGam.E1.real) % kb)[-1], "k-.")
+    ax1.plot(x, k1 - kb[-1] + 0*x, "k--", lw=0.75)
+    ax1.plot(x, k1 - kb[0] + 0*x, "k--", lw=0.75)
+    ax1.annotate('', xy=(L*0.95, (k1 - kb[-1])*0.825), xycoords='data',
+                 xytext=(L*0.95, (k1 - kb[0])*1.025), textcoords='data',
+                 arrowprops={'arrowstyle': '<->'})
+    ax1.annotate(r'$k_b(L) - k_b(0)$', xy=(0.28*L, 1.25*abs(kb[0] - kb[-1])/2.),
+                 xycoords='data', xytext=(5, 0), textcoords='offset points')
+
+    if ax2:
+        ax2.plot(L - x, (k1 + delta - WGap.E0.real) % kb, "-", color=colors[1])
+        ax2.plot(L - x, (k1 + delta - WGap.E1.real) % kb, "-", color=colors[0])
 
     for ax in (ax1, ax2):
-        if y_range_real_spectrum:
-            ax.set_ylim(*y_range_real_spectrum)
-        if y_ticklabels_real_spectrum:
-            ax.locator_params(axis='y', nbins=y_ticklabels_real_spectrum)
+        if ax:
+            if y_range_real_spectrum:
+                ax.set_ylim(*y_range_real_spectrum)
+            if y_ticklabels_real_spectrum:
+                ax.locator_params(axis='y', nbins=y_ticklabels_real_spectrum)
 
 
 def get_real_spectrum_new(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
@@ -209,21 +243,23 @@ def get_real_spectrum_new(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
     ax1.set_ylabel(r"Real spectrum")
     # ax1.get_yaxis().set_tick_params(pad=5)
 
-    ax2.plot(L - x, WGap.E0.real, "k-", lw=lw)
-    ax2.plot(L - x, WGap.E1.real, "k-", lw=lw)
-    if projection:
-        ax2.plot((L - x), map_trajectory(WGap.c0, WGap.c1,
-                WGap.E0.real, WGap.E1.real), "--", color=colors[1],
-                ms=ms, mew=mew, fillstyle=fs)
-        ax2.plot((L - x), map_trajectory(WGbp.c0, WGbp.c1,
-                WGap.E0.real, WGap.E1.real), "--", color=colors[0],
-                ms=ms)
+    if ax2:
+        ax2.plot(L - x, WGap.E0.real, "k-", lw=lw)
+        ax2.plot(L - x, WGap.E1.real, "k-", lw=lw)
+        if projection:
+            ax2.plot((L - x), map_trajectory(WGap.c0, WGap.c1,
+                    WGap.E0.real, WGap.E1.real), "--", color=colors[1],
+                    ms=ms, mew=mew, fillstyle=fs)
+            ax2.plot((L - x), map_trajectory(WGbp.c0, WGbp.c1,
+                    WGap.E0.real, WGap.E1.real), "--", color=colors[0],
+                    ms=ms)
 
     for ax in (ax1, ax2):
-        if y_range_real_spectrum:
-            ax.set_ylim(*y_range_real_spectrum)
-        if y_ticklabels_real_spectrum:
-            ax.locator_params(axis='y', nbins=y_ticklabels_real_spectrum)
+        if ax:
+            if y_range_real_spectrum:
+                ax.set_ylim(*y_range_real_spectrum)
+            if y_ticklabels_real_spectrum:
+                ax.locator_params(axis='y', nbins=y_ticklabels_real_spectrum)
 
 
 def get_imag_spectrum(ax1=None, ax2=None, wg_list=None,
@@ -238,15 +274,17 @@ def get_imag_spectrum(ax1=None, ax2=None, wg_list=None,
     # ax1.set_ylabel(r"Imaginary spectrum $\mathrm{Im} E_n$")
     ax1.set_ylabel(r"Imaginary spectrum")
 
-    ax2.plot(L - x, WGap.E0.imag, "-", color=colors[1])
-    ax2.plot(L - x, WGap.E1.imag, "-", color=colors[0])
+    if ax2:
+        ax2.plot(L - x, WGap.E0.imag, "-", color=colors[1])
+        ax2.plot(L - x, WGap.E1.imag, "-", color=colors[0])
 
     for ax in (ax1, ax2):
-        if y_range_imag_spectrum:
-            ax.set_ylim(*y_range_imag_spectrum)
-        ax.locator_params(axis='y', nbins=4)
-        if y_ticklabels_imag_spectrum:
-            ax.locator_params(axis='y', nbins=y_ticklabels_imag_spectrum)
+        if ax:
+            if y_range_imag_spectrum:
+                ax.set_ylim(*y_range_imag_spectrum)
+            ax.locator_params(axis='y', nbins=4)
+            if y_ticklabels_imag_spectrum:
+                ax.locator_params(axis='y', nbins=y_ticklabels_imag_spectrum)
 
 
 def plot_parameter_trajectory(figname=None, wg=None, ep_coordinates=None,
@@ -303,43 +341,43 @@ def plot_spectrum(wg_list=None, figname=None,
 
     WGam, WGbm, WGap, WGbp = wg_list
 
-    f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(ncols=2, nrows=2,
-    # f, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(ncols=2, nrows=3,
-                                               figsize=(6.2, 5.0/2.5*2.), dpi=220,
-                                               sharex=True, sharey=False)
-    get_real_spectrum(ax1=ax1, ax2=ax2, wg_list=wg_list,
-                      y_range_real_spectrum=y_range_real_spectrum,
-                      y_ticklabels_real_spectrum=y_ticklabels_real_spectrum,
+    f, (ax1, ax2, ax3) = plt.subplots(ncols=3, nrows=1,
+                                      figsize=(6.2, 5.0/2.5*1.), dpi=220,
+                                      sharex=True, sharey=False)
+    get_real_spectrum(ax1=ax1, ax2=None, wg_list=wg_list,
+                      # y_range_real_spectrum=y_range_real_spectrum,
+                      y_range_real_spectrum=[-0.65, 1.2],
+                      # y_ticklabels_real_spectrum=y_ticklabels_real_spectrum,
+                      y_ticklabels_real_spectrum=5,
                       projection=projection)
-    get_imag_spectrum(ax1=ax3, ax2=ax4, wg_list=wg_list,
+    get_imag_spectrum(ax1=ax2, ax2=None, wg_list=wg_list,
                       y_range_imag_spectrum=y_range_imag_spectrum,
                       y_ticklabels_imag_spectrum=y_ticklabels_imag_spectrum)
-    # get_real_K(ax1=ax3, ax2=ax4, wg_list=wg_list,
-    #            y_range_real_spectrum=[-0.1, 2.1],
-    #            y_ticklabels_real_spectrum=y_ticklabels_real_spectrum,
-    #            projection=projection)
+    get_real_K(ax1=ax3, ax2=None, wg_list=wg_list,
+               y_range_real_spectrum=[0.15, 2.1],
+               # y_ticklabels_real_spectrum=y_ticklabels_real_spectrum,
+               y_ticklabels_real_spectrum=5,
+               projection=projection)
 
-    for ax in (ax1, ax3):
+    for ax in (ax1, ax2, ax3):
         ax.yaxis.set_major_formatter(FormatStrFormatter("%.1f"))
 
-    for ax in (ax3, ax4):
+    for ax in (ax1, ax2, ax3):
         ax.set_xticks([0, WGam.D.L/2, WGam.D.L])
         ax.set_xticklabels([r"0", r"L/2", r"L"])
 
-    for ax in (ax1, ax3):
-    # for ax in (ax1, ax3, ax5):
+    for ax in (ax1, ax2, ax3):
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
 
-    for ax in (ax2, ax4):
     # for ax in (ax2, ax4, ax6):
-        ax.spines['left'].set_visible(False)
-        ax.spines['top'].set_visible(False)
-        ax.xaxis.set_ticks_position('bottom')
-        ax.yaxis.set_ticks_position('right')
-        ax.set_yticklabels([])
+    #     ax.spines['left'].set_visible(False)
+    #     ax.spines['top'].set_visible(False)
+    #     ax.xaxis.set_ticks_position('bottom')
+    #     ax.yaxis.set_ticks_position('right')
+    #     ax.set_yticklabels([])
 
     for n, ax in enumerate(f.get_axes()):
         ax.get_xaxis().set_tick_params(direction='out')
@@ -348,16 +386,15 @@ def plot_spectrum(wg_list=None, figname=None,
                        left='off', right='off', top='off')
 
     f.text(0.5, -0., 'Spatial coordinate x', ha='center')
-    f.text(-0.01, 0.94, 'a', weight='bold', size=12)
-    f.text(-0.01, 0.49, 'b', weight='bold', size=12)
-    # f.text(-0.01, 0.94, 'a', weight='bold', size=12)
-    # f.text(-0.01, 0.55, 'b', weight='bold', size=12)
-    # f.text(-0.01, 0.35, 'c', weight='bold', size=12)
+    f.text(-0.01, 0.99, 'a', weight='bold', size=12)
+    f.text(0.33, 0.99, 'b', weight='bold', size=12)
+    f.text(0.65, 0.99, 'c', weight='bold', size=12)
 
-    plt.tight_layout(w_pad=0.8, h_pad=0.2)
-    plt.subplots_adjust(hspace=0.2)
+    plt.tight_layout(w_pad=1.0)
+    # plt.tight_layout(w_pad=0.8, h_pad=0.2)
+    # plt.subplots_adjust(hspace=0.2)
 
-    plot_png(fig=f)
+    # plot_png(fig=f)
     # plt.show()
 
     plt.savefig(figname, bbox_inches='tight')
