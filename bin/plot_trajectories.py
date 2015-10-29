@@ -137,7 +137,7 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
                 WGam.E0.real, WGam.E1.real)[nstep/2::nstep], "ks",
                 ms=ms, mew=mew, fillstyle=fs)
     # ax1.set_ylabel(r"Real spectrum $\mathrm{Re} E_n$")
-    ax1.set_ylabel(r"Real spectrum")
+    ax1.set_ylabel(r"Real spectrum", labelpad=8)
 
     # ax2.plot(L - x, WGap.E0.real % G, "-", color=colors[1], label=r"Re $E_1$")
     # ax2.plot(L - x, WGap.E1.real % G, "-", color=colors[0], label=r"Re $E_2$")
@@ -151,7 +151,34 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
                 WGap.E0.real, WGap.E1.real)[nstep/2::nstep], "k^",
                 ms=ms)
 
-    ax1.get_yaxis().set_tick_params(pad=2)
+    # ax1.get_yaxis().set_tick_params(pad=2)
+
+    for ax in (ax1, ax2):
+        if y_range_real_spectrum:
+            ax.set_ylim(*y_range_real_spectrum)
+        if y_ticklabels_real_spectrum:
+            ax.locator_params(axis='y', nbins=y_ticklabels_real_spectrum)
+
+
+def get_real_K(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
+               fs='none', y_range_real_spectrum=None,
+               y_ticklabels_real_spectrum=None, projection=False):
+    WGam, WGbm, WGap, WGbp = wg_list
+    x = WGam.x
+    L = WGam.D.L
+    nstep = WGam.nstep
+    k1 = WGam.D.k0
+
+    eps, delta = WGam.D.get_cycle_parameters()
+    kb = WGam.D.kr + delta
+
+    ax1.plot(x, (k1 + delta - WGam.E0.real) % kb, "-", color=colors[0])
+    ax1.plot(x, (k1 + delta - WGam.E1.real) % kb, "-", color=colors[1])
+    ax1.set_ylabel(r"Real Bloch wavenumber", labelpad=13)
+    # ax1.get_yaxis().set_tick_params(pad=2)
+
+    ax2.plot(L - x, (k1 + delta - WGap.E0.real) % kb, "-", color=colors[1])
+    ax2.plot(L - x, (k1 + delta - WGap.E1.real) % kb, "-", color=colors[0])
 
     for ax in (ax1, ax2):
         if y_range_real_spectrum:
@@ -180,7 +207,7 @@ def get_real_spectrum_new(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
                 WGam.E0.real, WGam.E1.real), "--", color=colors[1],
                 ms=ms, mew=mew, fillstyle=fs)
     ax1.set_ylabel(r"Real spectrum")
-    ax1.get_yaxis().set_tick_params(pad=2)
+    # ax1.get_yaxis().set_tick_params(pad=5)
 
     ax2.plot(L - x, WGap.E0.real, "k-", lw=lw)
     ax2.plot(L - x, WGap.E1.real, "k-", lw=lw)
@@ -277,6 +304,7 @@ def plot_spectrum(wg_list=None, figname=None,
     WGam, WGbm, WGap, WGbp = wg_list
 
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(ncols=2, nrows=2,
+    # f, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(ncols=2, nrows=3,
                                                figsize=(6.2, 5.0/2.5*2.), dpi=220,
                                                sharex=True, sharey=False)
     get_real_spectrum(ax1=ax1, ax2=ax2, wg_list=wg_list,
@@ -286,6 +314,10 @@ def plot_spectrum(wg_list=None, figname=None,
     get_imag_spectrum(ax1=ax3, ax2=ax4, wg_list=wg_list,
                       y_range_imag_spectrum=y_range_imag_spectrum,
                       y_ticklabels_imag_spectrum=y_ticklabels_imag_spectrum)
+    # get_real_K(ax1=ax3, ax2=ax4, wg_list=wg_list,
+    #            y_range_real_spectrum=[-0.1, 2.1],
+    #            y_ticklabels_real_spectrum=y_ticklabels_real_spectrum,
+    #            projection=projection)
 
     for ax in (ax1, ax3):
         ax.yaxis.set_major_formatter(FormatStrFormatter("%.1f"))
@@ -295,12 +327,14 @@ def plot_spectrum(wg_list=None, figname=None,
         ax.set_xticklabels([r"0", r"L/2", r"L"])
 
     for ax in (ax1, ax3):
+    # for ax in (ax1, ax3, ax5):
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
 
     for ax in (ax2, ax4):
+    # for ax in (ax2, ax4, ax6):
         ax.spines['left'].set_visible(False)
         ax.spines['top'].set_visible(False)
         ax.xaxis.set_ticks_position('bottom')
@@ -316,6 +350,9 @@ def plot_spectrum(wg_list=None, figname=None,
     f.text(0.5, -0., 'Spatial coordinate x', ha='center')
     f.text(-0.01, 0.94, 'a', weight='bold', size=12)
     f.text(-0.01, 0.49, 'b', weight='bold', size=12)
+    # f.text(-0.01, 0.94, 'a', weight='bold', size=12)
+    # f.text(-0.01, 0.55, 'b', weight='bold', size=12)
+    # f.text(-0.01, 0.35, 'c', weight='bold', size=12)
 
     plt.tight_layout(w_pad=0.8, h_pad=0.2)
     plt.subplots_adjust(hspace=0.2)
@@ -396,7 +433,7 @@ def plot_uniform():
         'init_state': 'a',
         'init_state_method': 'energy',
         'W': 1,
-        'L': 100,
+        'L': 1,
         'eta':  0.6,
         'eta0': 0.0,
         'x_R0': 0.1,
