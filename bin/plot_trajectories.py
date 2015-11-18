@@ -295,8 +295,11 @@ def plot_parameter_trajectory(figname=None, wg=None, ep_coordinates=None,
         ax.set_xlim(-1.1, 1.1)
         ax.set_ylim(0, eps.max())
     else:
+        xline = np.linspace(x_EP, 0.099, 16)
+        yline = 0.*xline
         ax.plot([0, y_EP], [0.0, x_EP], "k--", lw=0.75, dashes=[3, 3])
-        ax.plot([0, y_EP], [0.1, x_EP], "k--", lw=0.75, dashes=[1, 2])
+        # ax.plot([0, y_EP], [0.1, x_EP], "k--", lw=0.75, dashes=[1, 1])
+        ax.plot(yline, xline, "ko", ms=0.5, lw=0.75)
         ax.plot(y_EP, x_EP, "o", color=colors[4], ms=7.5, mec='none', clip_on=False)
         ax.annotate('EP', (0.1, 0.04), textcoords='data',
                     weight='bold', size=12, color='black')
