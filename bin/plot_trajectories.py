@@ -158,8 +158,8 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
     ax1.annotate('', xy=(L*0.99, z2[0]*1.10), xycoords='data',
                  xytext=(L*0.99, z1[0]*1.05), textcoords='data',
                  arrowprops={'arrowstyle': '<->'}, annotation_clip=False)
-    ax1.annotate(r'$k_b(L) - k_b(0)$', (1.01*L, 0.75*abs(kb[0] - kb[-1])/2.),
-                 textcoords='data', rotation=90, annotation_clip=False)
+    ax1.annotate(r'$k_b(L) - k_b(0)$', (1.01, 0.675),
+                 textcoords='axes fraction', rotation=90, annotation_clip=False)
 
     # ax1.get_yaxis().set_tick_params(pad=2)
 
