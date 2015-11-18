@@ -391,13 +391,14 @@ def plot_dynamics(wg_list, figname=None, y_range_trajectory=None,
 
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(ncols=2, nrows=2,
                                                figsize=(6.2, 5.0/2.5*2.), dpi=220,
-                                               sharex=True, sharey=False)
+                                               sharex=False, sharey=False)
     get_real_spectrum_new(ax1=ax1, ax2=ax2, wg_list=wg_list, projection=True)
     get_trajectories_new(ax1=ax3, ax2=ax4, wg_list=wg_list,
                          y_range_trajectory=y_range_trajectory,
                          y_axis_step_length=y_axis_step_length)
 
-    for ax in (ax3, ax4):
+    # for ax in (ax3, ax4):
+    for ax in (ax1, ax2, ax3, ax4):
         ax.set_xticks([0, WGam.D.L/2, WGam.D.L])
         ax.set_xticklabels([r"0", r"L/2", r"L"])
 
@@ -421,13 +422,15 @@ def plot_dynamics(wg_list, figname=None, y_range_trajectory=None,
                        left='off', right='off', top='off')
 
     f.text(0.5, -0., 'Spatial coordinate x', ha='center')
-    f.text(-0.01, 0.94, 'a', weight='bold', size=12)
-    f.text(-0.01, 0.49, 'b', weight='bold', size=12)
+    # f.text(-0.01, 0.94, 'a', weight='bold', size=12)
+    # f.text(-0.01, 0.49, 'b', weight='bold', size=12)
+    f.text(-0.01, 1.00, 'a', weight='bold', size=12)
+    f.text(-0.01, 0.50, 'b', weight='bold', size=12)
 
-    plt.tight_layout(w_pad=0.8, h_pad=0.2)
+    plt.tight_layout(w_pad=0.8, h_pad=0.25)
     plt.subplots_adjust(hspace=0.2)
 
-    plot_png(fig=f)
+    # plot_png(fig=f)
 
     plt.savefig(figname, bbox_inches='tight')
 
