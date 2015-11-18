@@ -150,11 +150,16 @@ def get_real_spectrum(ax1=None, ax2=None, wg_list=None, ms=5.0, mew=1.5,
     ax1.plot(x, 0*z2, "k--", lw=0.75)
     print z1[0]
     print z2[0]
-    ax1.annotate('', xy=(L*0.95, z2[0]*1.10), xycoords='data',
-                 xytext=(L*0.95, z1[0]*1.05), textcoords='data',
-                 arrowprops={'arrowstyle': '<->'})
-    ax1.annotate(r'$k_b(L) - k_b(0)$', (0.575*L, 0.25*abs(kb[0] - kb[-1])/2.),
-                 textcoords='data')
+    # ax1.annotate('', xy=(L*0.95, z2[0]*1.10), xycoords='data',
+    #              xytext=(L*0.95, z1[0]*1.05), textcoords='data',
+    #              arrowprops={'arrowstyle': '<->'})
+    # ax1.annotate(r'$k_b(L) - k_b(0)$', (0.575*L, 0.25*abs(kb[0] - kb[-1])/2.),
+    #              textcoords='data')
+    ax1.annotate('', xy=(L*1.01, z2[0]*1.10), xycoords='data',
+                 xytext=(L*1.01, z1[0]*1.05), textcoords='data',
+                 arrowprops={'arrowstyle': '<->'}, annotation_clip=False)
+    ax1.annotate(r'$k_b(L) - k_b(0)$', (1.025*L, 0.75*abs(kb[0] - kb[-1])/2.),
+                 textcoords='data', rotation=90, annotation_clip=False)
 
     # ax1.get_yaxis().set_tick_params(pad=2)
 
