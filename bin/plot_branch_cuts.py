@@ -154,7 +154,7 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
         ax1.plot([0, D.y_EP], [-10, D.x_EP], "w--", lw=0.5, dashes=[4, 3])
         ax2.plot([0, D.y_EP], [10, D.x_EP], "w--", lw=0.5, dashes=[4, 3])
 
-    ax1.set_ylabel(r'Amplitude $\varepsilon$')
+    ax1.set_ylabel(r'Amplitude $\sigma$')
     fig.text(0.45, 0.0, r'Detuning $\delta$', va='center')
     fig.text(-0.00, 0.92, 'a', weight='bold', size=14, color='black')
     fig.text(-0.00, 0.45, 'b', weight='bold', size=14, color='black')
