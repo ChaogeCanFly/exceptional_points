@@ -311,7 +311,7 @@ def plot_parameter_trajectory(figname=None, wg=None, ep_coordinates=None,
 
     ax.plot(delta[0], eps[0], "ko", ms=7.5, clip_on=False)
     ax.plot(delta[-1], eps[-1], "ko", ms=7.5, clip_on=False)
-    ax.set_ylabel(r"Amplitude $\varepsilon$")
+    ax.set_ylabel(r"Amplitude $\sigma$")
     ax.set_xlabel(r"Detuning $\delta$")
     ax.locator_params(axis='y', nbins=4)
 
