@@ -75,8 +75,7 @@ def get_defaults():
     font_size = 10
 
     font = {'size': font_size,
-            # 'family': 'Arial'}
-            'family': 'Helvetica'}
+            'family': 'Arial'}
     matplotlib.rc('font', **font)
 
     axes = {'labelsize': font_size}
