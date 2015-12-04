@@ -94,8 +94,12 @@ def get_defaults():
     matplotlib.rc('lines', **lines)
 
 
-def inch_to_mm(i):
+def in_to_mm(i):
     return i*25.4
+
+
+def mm_to_in(m):
+    return m/25.4
 
 
 if __name__ == '__main__':
