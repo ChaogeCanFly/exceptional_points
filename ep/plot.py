@@ -70,6 +70,7 @@ def get_colors():
 
     return colors, parula, parula_discrete
 
+
 def get_defaults():
     """Set better font sizes, label sizes and line widths."""
     font_size = 10
@@ -91,6 +92,10 @@ def get_defaults():
 
     lines = {'linewidth': 2.25}
     matplotlib.rc('lines', **lines)
+
+
+def inch_to_mm(i):
+    return i*25.4
 
 
 if __name__ == '__main__':
