@@ -72,6 +72,7 @@ def c_eig(H, left=False, **kwargs):
 
     # 3) X_L * X_R = 1, X_L = inv(X_R).T
     # eVals, eVecs_r = eig(H, **kwargs)
+    # from scipy.linalg import inv
     # eVecs_l = inv(eVecs_r).T
     # test_eigenvalues(eVals, eVecs_l, eVecs_r, H)
 

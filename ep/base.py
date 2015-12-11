@@ -443,6 +443,12 @@ class Base:
         # replace projection of states by dot product via Einstein sum
         projection = np.einsum('ijk,ij -> ik',
                                self.eVecs_l, self.Psi)
+        # use alternative means to obtain coefficients:
+        #  (c1, c2) = X^-1^T psi
+        # from scipy.linalg import inv
+        # projection = [np.einsum('jk,j -> k', inv(self.eVecs_r[n,:]).T, self.Psi[n,:])
+        #                for n, _ in enumerate(self.t)]
+        # projection = np.asarray(projection)
 
         self.phi_a, self.phi_b = [projection[:,n] for n in (0,1)]
 
