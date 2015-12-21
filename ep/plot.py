@@ -71,23 +71,25 @@ def get_colors():
     return colors, parula, parula_discrete
 
 
-def get_defaults():
+def get_defaults(fontsize=None):
     """Set better font sizes, label sizes and line widths."""
-    font_size = 10
 
-    font = {'size': font_size,
+    if fontsize is None:
+        fontsize = 10
+
+    font = {'size': fontsize,
             'family': 'Arial'}
     matplotlib.rc('font', **font)
 
-    axes = {'labelsize': font_size}
+    axes = {'labelsize': fontsize}
     matplotlib.rc('axes', **axes)
 
-    tick = {'labelsize': font_size,
+    tick = {'labelsize': fontsize,
             'major.width': 0.75}
     matplotlib.rc('xtick', **tick)
     matplotlib.rc('ytick', **tick)
 
-    legend = {'fontsize': font_size}
+    legend = {'fontsize': fontsize}
     matplotlib.rc('legend', **legend)
 
     lines = {'linewidth': 2.25}
