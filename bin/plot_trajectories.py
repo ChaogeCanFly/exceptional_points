@@ -358,14 +358,15 @@ def plot_spectrum(wg_list=None, figname=None,
         ax.tick_params(axis='both', which='minor', bottom='off',
                        left='off', right='off', top='off')
 
-    f.text(0.5, -0., 'Spatial coordinate x', ha='center')
+    f.text(0.28, -0., 'Spatial coordinate x', ha='center')
+    f.text(0.79, -0., 'Spatial coordinate x', ha='center')
     f.text(-0.01, 0.99, 'a', weight='bold', size=12)
-    f.text(0.485, 0.99, 'b', weight='bold', size=12)
+    f.text(0.5, 0.99, 'b', weight='bold', size=12)
 
     # plt.tight_layout(w_pad=1.5)
     plt.tight_layout(w_pad=1.75)
     # plt.tight_layout(w_pad=0.8, h_pad=0.2)
-    # plt.subplots_adjust(hspace=0.2)
+    plt.subplots_adjust(hspace=0.0, wspace=0.45)
 
     # plot_png(fig=f)
     # plt.show()
