@@ -636,8 +636,6 @@ class DirichletPositionDependentLossReduced(DirichletPositionDependentLoss):
         else:
             eps, delta = x, y
 
-        Gamma_matrix = self._get_loss_matrix(x=eps, y=delta)
-
         H11 = delta
         H12 = np.abs(self.B0)*eps
         H21 = np.abs(self.B0)*eps
@@ -648,6 +646,7 @@ class DirichletPositionDependentLossReduced(DirichletPositionDependentLoss):
 
         Gamma_matrix_const = np.array([[self.kF/self.k0, 0.0],
                                        [0.0, self.kF/self.k1]], dtype=complex)
+        Gamma_matrix = self._get_loss_matrix(x=eps, y=delta)
 
         # if self.switch_losses_on_off:
         #     # eta = self.eta * (eps/self.x_R0)**2
