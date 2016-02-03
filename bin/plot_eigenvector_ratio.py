@@ -23,6 +23,7 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
                   interpolate=False):
 
     wg_kwargs = dict(N=2.05,
+                     L=25.0,
                      x_R0=0.1,
                      y_R0=0.85,
                      switch_losses_on_off=True,
@@ -50,7 +51,7 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
 
     if pos_dep:
         vmax_real = 2.0
-        vmax_imag = 8.0
+        vmax_imag = 1.0
     else:
         vmax_real = 2.0
         vmax_imag = 1.0
