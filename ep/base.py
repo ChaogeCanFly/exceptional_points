@@ -149,6 +149,58 @@ class Base:
 
         return X, Y, Z
 
+    def sample_H_eigenvectors(self, xmin=None, xmax=None, xN=None, ymin=None,
+                              ymax=None, yN=None, verbose=False):
+        """Sample local eigenvectors of Hamiltonian H.
+
+            Parameters:
+            -----------
+                xmin, xmax: float
+                    Dimensions in x-direction.
+                ymin, ymax: float
+                    Dimensions in y-direction.
+                xN, yN: int
+                    Number of sampling points in x and y direction.
+                verbose: bool
+                    Show additional output.
+
+            Returns:
+            --------
+                X, Y: (N,N) ndarray
+                    Spatial (mesh)grids.
+                Z: (N,N,2,2) ndarray
+                    Eigenvectors evaluated on the X/Y grid.
+        """
+
+        if xN is None:
+            xN = 5*10**2
+        if yN is None:
+            yN = 5*10**2
+
+        # if xmin is None or xmax is None:
+        #     xmin = self.x_EP - 0.15*self.x_R0
+        #     xmax = self.x_EP + 0.15*self.x_R0
+        #
+        # if ymin is None or ymax is None:
+        #     ymin = self.y_EP - 0.15*self.y_R0
+        #     ymax = self.y_EP + 0.15*self.y_R0
+
+        x = np.linspace(xmin, xmax, xN)
+        y = np.linspace(ymin, ymax, yN)
+
+        X, Y = np.meshgrid(x, y, indexing='ij')
+        Z = np.zeros((xN, yN, 2, 2), dtype=complex)
+
+        for i, xi in enumerate(x):
+            for j, yj in enumerate(y):
+                if verbose:
+                    print "(i,j) =", i, j
+                H = self.H(0, x=xi, y=yj)
+                Z[i, j, :, :] = c_eig(H)[1]
+
+        return X, Y, Z
+
+
     def plot_3D_spectrum(self, xmin=None, xmax=None, xN=None, ymin=None,
                          ymax=None, yN=None, trajectory=False, tube_radius=1e-2,
                          part='imag'):
