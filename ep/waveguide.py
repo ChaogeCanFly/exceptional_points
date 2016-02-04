@@ -96,7 +96,8 @@ class Waveguide(Base):
         return x, y
 
     def get_boundary(self, x=None, eps=None, delta=None, L=None,
-                     W=None, kr=None, theta=None, smearing=False):
+                     W=None, kr=None, theta=None, smearing=False,
+                     boundary_phase=None):
         """Get the boundary function xi as a function of the spatial coordinate x.
 
             Parameters:
@@ -117,6 +118,8 @@ class Waveguide(Base):
                     Phase difference between lower and upper boundary.
                 smearing: bool
                     Return a profile which is smeared out at the edges.
+                boundary_phase: float
+                    Additional phase of upper and lower boundary.
 
             Returns:
             --------
@@ -152,8 +155,8 @@ class Waveguide(Base):
             xi_lower = eps*np.sin(phi - theta/2.)
             xi_upper = W + eps*np.sin(phi + theta/2.)
         else:
-            xi_lower = eps*np.sin((kr + delta)*x)
-            xi_upper = W + eps*np.sin((kr + delta)*x + theta)
+            xi_lower = eps*np.sin((kr + delta)*x + boundary_phase)
+            xi_upper = W + eps*np.sin((kr + delta)*x + theta + boundary_phase)
 
         if smearing:
             def fermi(x, sigma):

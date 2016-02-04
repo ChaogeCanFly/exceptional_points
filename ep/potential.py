@@ -207,7 +207,7 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                     L=100., W=1.0, x_R0=0.05, y_R0=0.4, loop_type='Bell',
                     init_phase=0.0, shape='RAP', plot=True,
                     plot_dimensions=False, direction='right',
-                    boundary_only=False, with_boundary=False,
+                    boundary_only=False, with_boundary=False, boundary_phase=0.0,
                     theta=0.0, smearing=False, verbose=True, linearized=False):
 
     p = Potential(N=N, pphw=pphw, amplitude=amplitude, sigmax=sigmax,
@@ -242,7 +242,8 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
                      sigmax=sigmax, sigmay=sigmay)
 
     if shape == 'RAP':
-        xi_lower, xi_upper = p.WG.get_boundary(theta=theta, smearing=smearing)
+        xi_lower, xi_upper = p.WG.get_boundary(theta=theta, smearing=smearing,
+                                               boundary_phase=boundary_phase)
         # set last element to 0 (xi_lower) or W (xi_upper)
         xi_lower[-1] = 0.0
         xi_upper[-1] = W
