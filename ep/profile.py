@@ -77,7 +77,7 @@ class Generate_Profiles(object):
     """
     def __init__(self, eps_factor=1.0, eps=None, delta=0.0,
                  full_evolution=False, input_xml="input.xml", pphw="200",
-                 nx_part="50", custom_directory=None, neumann=1,
+                 nx_part="50", custom_directory=None, neumann=0,
                  use_variable_length=False, smearing=False,
                  heatmap=False, **waveguide_kwargs):
 
@@ -219,16 +219,29 @@ class Generate_Profiles(object):
         file_upper = self.filename + ".upper_profile"
         file_lower = self.filename + ".lower_profile"
 
+        # replacements = {
+        #         'modes"> modes':     'modes"> {}'.format(self.N),
+        #         'halfwave"> pphw':   'halfwave"> {}'.format(self.pphw),
+        #         'L"> L':             'L"> {}'.format(self.Ln),
+        #         'N_file"> N_file':   'N_file"> {}'.format(N_file),
+        #         'file"> file_upper': 'file"> {}'.format(file_upper),
+        #         'file"> file_lower': 'file"> {}'.format(file_lower),
+        #         'nx_part"> nx_part': 'nx_part"> $r_nx/{}'.format(self.nx_part),
+        #         'neumann"> neumann': 'neumann"> {}'.format(self.neumann),
+        #         'Gamma0"> Gamma0':   'Gamma0"> {:f}'.format(self.eta)
+        #         }
+
         replacements = {
-                'modes"> modes':     'modes"> {}'.format(self.N),
-                'halfwave"> pphw':   'halfwave"> {}'.format(self.pphw),
-                'L"> L':             'L"> {}'.format(self.Ln),
-                'N_file"> N_file':   'N_file"> {}'.format(N_file),
-                'file"> file_upper': 'file"> {}'.format(file_upper),
-                'file"> file_lower': 'file"> {}'.format(file_lower),
-                'nx_part"> nx_part': 'nx_part"> $r_nx/{}'.format(self.nx_part),
-                'neumann"> neumann': 'neumann"> {}'.format(self.neumann),
-                'Gamma0"> Gamma0':   'Gamma0"> {:f}'.format(self.eta)
+                'NAME':  'sine_boundary',
+                'MODES':  '{}'.format(self.N),
+                'PPHW':   '{}'.format(self.pphw),
+                'LENGTH': '{}'.format(self.Ln),
+                'WIDTH': '1.0',
+                'N_FILE_BOUNDARY': '{}'.format(N_file),
+                'NEUMANN': '{}'.format(self.neumann),
+                'BOUNDARY_UPPER': '{}'.format(file_upper),
+                'BOUNDARY_LOWER': '{}'.format(file_lower),
+                'GAMMA0': '{:f}'.format(self.eta)
                 }
 
         out_xml = os.path.abspath("input.xml")
