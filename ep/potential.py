@@ -245,8 +245,9 @@ def write_potential(N=2.5, pphw=20, amplitude=1.0, sigmax=1e-1, sigmay=1e-1,
         xi_lower, xi_upper = p.WG.get_boundary(theta=theta, smearing=smearing,
                                                boundary_phase=boundary_phase)
         # set last element to 0 (xi_lower) or W (xi_upper)
-        xi_lower[-1] = 0.0
-        xi_upper[-1] = W
+        print "WARNING: end of boundary not set zero!"
+        # xi_lower[-1] = 0.0
+        # xi_upper[-1] = W
         np.savetxt("upper.boundary", zip(xrange(p.nx), xi_upper))
         np.savetxt("lower.boundary", zip(xrange(p.nx), xi_lower))
         eps, delta = p.WG.get_cycle_parameters()
