@@ -142,6 +142,8 @@ class Waveguide(Base):
             kr = self.kr
         if theta is None:
             theta = self.theta
+        if boundary_phase is None:
+            boundary_phase = 0.0
 
         # reverse x-coordinate for backward propagation
         # corresponds to x -> L - x
