@@ -44,16 +44,21 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
     eps, delta = D.get_cycle_parameters()
     limits = (eps_min, eps_max, eps_N,
               delta_min, delta_max, delta_N)
+
+    _, _, z_energy = D.sample_H(*limits)
+    z_diff = z_energy[..., 0] - z_energy[..., 1]
+    Z0 = np.sqrt(z_diff.real**2 + (z_diff.imag)**2)
+
     x, y, z = D.sample_H_eigenvectors(*limits)
     z_diff_0 = z[..., 0, 0]/z[..., 1, 0]
     z_diff_1 = z[..., 0, 1]/z[..., 1, 1]
-    # Z0 = np.sqrt(z_diff.real**2 + (z_diff.imag)**2)
+
 
     if pos_dep:
-        vmax_real = 2.0
+        vmax_real = 4.0
         vmax_imag = 1.0
     else:
-        vmax_real = 2.0
+        vmax_real = 4.0
         vmax_imag = 1.0
 
     # Z1 = np.abs(z_diff.real)
@@ -78,10 +83,10 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
         cb.ax.tick_params(labelsize=10)
         cb.solids.set_edgecolor('face')
 
-    # idx = np.argmin(Z0)
-    # x_EP, y_EP = [u.ravel()[idx] for u in (x, y)]
-    # print "x_EP", x_EP
-    # print "y_EP", y_EP
+    idx = np.argmin(Z0)
+    x_EP, y_EP = [u.ravel()[idx] for u in (x, y)]
+    print "x_EP", x_EP
+    print "y_EP", y_EP
 
     dot_kwargs = dict(ms=6.0, mec='w', clip_on=False, zorder=10)
     for ax in (ax1, ax2):
@@ -91,19 +96,19 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
         ax.set_ylim(eps_min, eps_max)
         ax.set_xlim(delta_min, delta_max)
         if pos_dep:
-            # ax.scatter(y_EP, x_EP, color="w")
-            # ax.xaxis.set_major_locator(MultipleLocator(1.00))
+            ax.scatter(y_EP, x_EP, color="w")
+            ax.xaxis.set_major_locator(MultipleLocator(1.00))
             # eps^1 scaling
             # ax.annotate('EP', (-0.35, 0.005), textcoords='data',
             #             weight='bold', size=14, color='white')
             # eps^2 scaling
             ax.annotate('EP', (-0.325, 0.0175), textcoords='data',
-                        weight='bold', size=14, color='white')
+                        weight='bold', size=14, color='black')
         else:
             ax.scatter(D.y_EP, D.x_EP, color="w")
             ax.xaxis.set_major_locator(MultipleLocator(0.50))
             ax.annotate('EP', (0.1, 0.04), textcoords='data',
-                        weight='bold', size=14, color='white')
+                        weight='bold', size=14, color='black')
 
         ax.get_xaxis().set_tick_params(direction='out')
         ax.get_yaxis().set_tick_params(direction='out')
@@ -135,7 +140,7 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
             np.savetxt("interpolate_coordinates.dat", np.vstack([datay, datax]).T,
                        fmt="[%.3f,%.3f],", delimiter=",", header="[", footer="]",
                        comments='')
-        ax1.plot(datay, datax, "w--", ms=1, lw=0.5, dashes=[4, 3])
+        ax1.plot(datay, datax, "k--", ms=1, lw=0.5, dashes=[4, 3])
         # eps^1 scaling
         # datay = [y_EP, -0.352, -0.416, -0.506, -0.596, -0.650, -0.684, -0.736, -0.791, -0.827, -0.901, -0.972, -1.058, -1.145]
         # datax = [x_EP,  0.030,  0.026,  0.018,  0.011,  0.007,  0.005,  0.002,  0.000,  0.000,  0.000,  0.003,  0.008,  0.015]
@@ -153,10 +158,10 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
             [-1.096, 0.011],
             ]).T
         datay, datax = data
-        ax2.plot(datay, datax, "w--", ms=1, lw=0.5, dashes=[4, 3])
+        ax2.plot(datay, datax, "k--", ms=1, lw=0.5, dashes=[4, 3])
     else:
-        ax1.plot([0, D.y_EP], [-10, D.x_EP], "w--", lw=0.5, dashes=[4, 3])
-        ax2.plot([0, D.y_EP], [10, D.x_EP], "w--", lw=0.5, dashes=[4, 3])
+        ax1.plot([0, D.y_EP], [-10, D.x_EP], "k--", lw=0.5, dashes=[4, 3])
+        ax2.plot([0, D.y_EP], [10, D.x_EP], "k--", lw=0.5, dashes=[4, 3])
 
     ax1.set_ylabel(r'Amplitude $\sigma$')
     fig.text(0.45, 0.0, r'Detuning $\delta$', va='center')
