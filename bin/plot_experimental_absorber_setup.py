@@ -15,10 +15,11 @@ from ep.plot import get_colors
 c, _, _ = get_colors()
 
 
-def main(W=0.05, L=25, eps_config=0.16, delta_config=-0.55, plot=False):
+def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
     """docstring for main"""
 
     L = L*W
+
     eps_rep, delta_rep = eps_config*W, delta_config/W
 
     exp_setup = dict(N=2.6,
@@ -32,20 +33,40 @@ def main(W=0.05, L=25, eps_config=0.16, delta_config=-0.55, plot=False):
     WG_exp = DirichletReduced(**exp_setup)
 
     effective_setup = exp_setup.copy()
-    effective_setup.update(dict(x_R0=eps_rep,
-                                y_R0=delta_rep,
-                                init_phase=exp_setup['init_phase'] + delta_rep))
+    effective_setup.update(dict(#x_R0=exp_setup[,
+                                y_R0=2.*exp_setup['y_R0'],
+                                init_phase=exp_setup['init_phase'] + exp_setup['y_R0']))
     WG_eff = DirichletReduced(**effective_setup)
+
+    snapshots_x_values = [7*W, 9.75*W, L/2, 15.25*W, 18*W]
+    # show eps, delta values at start/end of absorber
+    for n, s in enumerate(snapshots_x_values):
+        s_eps_delta = WG_eff.get_cycle_parameters(s)
+        print "configuration at", s, s_eps_delta[0]/W, s_eps_delta[1]*W
+
+        if config == n:
+            eps_rep, delta_rep = s_eps_delta
+
+    if config == 0:
+        phase = np.pi
+    elif config == 1:
+        phase = -1.0
+    elif config == 2:
+        phase = np.pi
+    elif config == 3:
+        phase = -1.0
+    elif config == 4:
+        phase = -1.0
+    elif config == 5:
+        phase = -1.0
 
     eps, delta = WG_exp.get_cycle_parameters()
     x = WG_exp.t
 
-    # x_abs, y_abs = np.loadtxt("peaks_interactive.dat", unpack=True)
-    # f_abs = interp1d(x_abs, y_abs)
-    f_abs = interp1d(*np.loadtxt("peaks_interactive.dat", unpack=True))
+    f_absorber = interp1d(*np.loadtxt("peaks_interactive.dat", unpack=True))
     y_absorber = 1.*x
     absorber_cutoff = (x > 7.*W) & (x < 18.*W)
-    y_absorber[absorber_cutoff] = f_abs(x[absorber_cutoff])
+    y_absorber[absorber_cutoff] = f_absorber(x[absorber_cutoff])
     y_absorber[x < 7*W] = np.nan
     y_absorber[x > 18*W] = np.nan
 
@@ -65,8 +86,8 @@ def main(W=0.05, L=25, eps_config=0.16, delta_config=-0.55, plot=False):
 
     ax2 = ax.twiny()
     ax2.set_xlim(0, L)
-    ax2.set_xticks([7*W, L/2, 18*W])
-    ax2.set_xticklabels([str(t) for t in (7*W, L/2, 18*W)])
+    ax2.set_xticks(snapshots_x_values)
+    ax2.set_xticklabels([str(t) for t in snapshots_x_values])
     ax2.grid(True, lw=1.)
 
     # linearized 2x2 parameter path
@@ -77,12 +98,12 @@ def main(W=0.05, L=25, eps_config=0.16, delta_config=-0.55, plot=False):
     ax3.set_ylabel(r"$\sigma$")
 
     # comparison periodic system and experiment
-    phase = np.pi
     ax4.plot(x, -xi(eps, delta) + W, "k-", lw=0.25)
     ax4.plot(x, -xi(eps, delta), "k-", lw=0.25)
     ax4.plot(x, y_absorber - xi(eps, delta), ls="-", lw=1, color=c[1])
-    ax4.plot(x, -xi(0.16*W, -0.55/W, phase), "k-")
-    ax4.plot(x, W - xi(0.16*W, -0.55/W, phase), "k-")
+    periodic_xi = xi(eps_rep, delta_rep, phase)
+    ax4.plot(x, -periodic_xi, "k-")
+    ax4.plot(x, W - periodic_xi, "k-")
     ax4.set_xlim(0, L)
     ax4.set_ylim(-0.01, 0.06)
     ax4.set_xlabel(r"$x$", labelpad=0.0)
@@ -90,15 +111,10 @@ def main(W=0.05, L=25, eps_config=0.16, delta_config=-0.55, plot=False):
 
     ax5 = ax4.twiny()
     ax5.set_xlim(0, L)
-    ax5.set_xticks([7*W, L/2, 18*W])
-    ax5.set_xticklabels([str(t) for t in (7*W, L/2, 18*W)])
+    ax5.set_xticks(snapshots_x_values)
+    ax5.set_xticklabels([str(t) for t in snapshots_x_values])
     ax5.grid(True, lw=1.)
 
-    # show eps, delta values at start/end of absorber
-    s1 = WG_eff.get_cycle_parameters(7*W)
-    s2 = WG_eff.get_cycle_parameters(18*W)
-    # print "eps = ", s1[0]/W, "delta = ", s1[1]*W
-    # print "eps = ", s2[0]/W, "delta = ", s2[1]*W
 
     # extract a half period of the absorber
     wavelength = 2.*np.pi/(WG_eff.kr + delta_rep)
