@@ -19,6 +19,7 @@ def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
     """docstring for main"""
 
     L = L*W
+    snapshots_x_values = [7*W, 9.75*W, L/2, 15.25*W, 18*W]
 
     # eps_reduced_model, delta_reduced_model = eps_config*W, delta_config/W
 
@@ -33,12 +34,10 @@ def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
     WG_exp = DirichletReduced(**exp_setup)
 
     effective_setup = exp_setup.copy()
-    effective_setup.update(dict(#x_R0=exp_setup[,
-                                y_R0=2.*exp_setup['y_R0'],
+    effective_setup.update(dict(y_R0=2.*exp_setup['y_R0'],
                                 init_phase=exp_setup['init_phase'] + exp_setup['y_R0']))
     WG_eff = DirichletReduced(**effective_setup)
 
-    snapshots_x_values = [7*W, 9.75*W, L/2, 15.25*W, 18*W]
     # show eps, delta values at start/end of absorber
     for n, s in enumerate(snapshots_x_values):
         s_eps_delta = WG_eff.get_cycle_parameters(s)
@@ -91,9 +90,10 @@ def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
     ax2.grid(True, lw=1.)
 
     # linearized 2x2 parameter path
-    eps2, delta2 = WG_eff.get_cycle_parameters()
-    ax3.plot(delta2*W, eps2/W, "k-", lw=0.75)
-    ax3.plot(delta2[absorber_cutoff]*W, eps2[absorber_cutoff]/W, ls="-", lw=3, color=c[1])
+    eps_linearized, delta_linearized = WG_eff.get_cycle_parameters()
+    ax3.plot(delta_linearized*W, eps_linearized/W, "k-", lw=0.75)
+    ax3.plot(delta_linearized[absorber_cutoff]*W,
+             eps_linearized[absorber_cutoff]/W, ls="-", lw=3, color=c[1])
     ax3.set_xlabel(r"$\delta$", labelpad=0.0)
     ax3.set_ylabel(r"$\sigma$")
 
