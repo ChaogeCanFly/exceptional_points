@@ -42,7 +42,7 @@ def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
     # show eps, delta values at start/end of absorber
     for n, s in enumerate(snapshots_x_values):
         s_eps_delta = WG_eff.get_cycle_parameters(s)
-        print "configuration at", s, s_eps_delta[0]/W, s_eps_delta[1]*W
+        print "configuration at x={:.5f}: eps={:.5f} delta={: .5f}".format(s, s_eps_delta[0]/W, s_eps_delta[1]*W)
 
         if config == n:
             eps_reduced_model, delta_reduced_model = s_eps_delta
