@@ -20,7 +20,7 @@ def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
 
     L = L*W
 
-    eps_rep, delta_rep = eps_config*W, delta_config/W
+    # eps_reduced_model, delta_reduced_model = eps_config*W, delta_config/W
 
     exp_setup = dict(N=2.6,
                      L=L,
@@ -45,7 +45,7 @@ def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
         print "configuration at", s, s_eps_delta[0]/W, s_eps_delta[1]*W
 
         if config == n:
-            eps_rep, delta_rep = s_eps_delta
+            eps_reduced_model, delta_reduced_model = s_eps_delta
 
     if config == 0:
         phase = np.pi
@@ -101,7 +101,7 @@ def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
     ax4.plot(x, -xi(eps, delta) + W, "k-", lw=0.25)
     ax4.plot(x, -xi(eps, delta), "k-", lw=0.25)
     ax4.plot(x, y_absorber - xi(eps, delta), ls="-", lw=1, color=c[1])
-    periodic_xi = xi(eps_rep, delta_rep, phase)
+    periodic_xi = xi(eps_reduced_model, delta_reduced_model, phase)
     ax4.plot(x, -periodic_xi, "k-")
     ax4.plot(x, W - periodic_xi, "k-")
     ax4.set_xlim(0, L)
@@ -115,9 +115,8 @@ def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
     ax5.set_xticklabels([str(t) for t in snapshots_x_values])
     ax5.grid(True, lw=1.)
 
-
     # extract a half period of the absorber
-    wavelength = 2.*np.pi/(WG_eff.kr + delta_rep)
+    wavelength = 2.*np.pi/(WG_eff.kr + delta_reduced_model)
     dx = wavelength/4
     piece_mask = (x > L/2. - dx) & (x < L/2. + dx)
     a = y_absorber[piece_mask]
@@ -126,8 +125,8 @@ def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
 
     x_rep = np.linspace(L/2. - elements*dx, L/2. + elements*dx, len(periodic_absorber))
     file_mask = (x_rep > 0.31) #& (x_rep < 0.85)
-    ax5.plot(x_rep[file_mask], periodic_absorber[file_mask] + xi(eps_rep, delta_rep, x=x_rep)[file_mask], "r-")
-    # ax5.plot(x_rep, periodic_absorber+ xi(eps_rep, delta_rep, x=x_rep), "r-")
+    ax5.plot(x_rep[file_mask], periodic_absorber[file_mask] + xi(eps_reduced_model, delta_reduced_model, x=x_rep)[file_mask], "r-")
+    # ax5.plot(x_rep, periodic_absorber+ xi(eps_reduced_model, delta_reduced_model, x=x_rep), "r-")
     # ax5.plot(0.31, 0.025, "ro")
     # ax5.plot(0.85, 0.025, "ro")
 
@@ -135,8 +134,8 @@ def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
         plt.show()
 
     # save file
-    np.savetxt("periodic_configuration_sigma_{}_delta_{}.dat".format(eps_rep, delta_rep),
-               zip(x_rep[file_mask], periodic_absorber[file_mask], xi(eps_rep, delta_rep, x=x_rep[file_mask])),
+    np.savetxt("periodic_configuration_sigma_{}_delta_{}.dat".format(eps_reduced_model, delta_reduced_model),
+               zip(x_rep[file_mask], periodic_absorber[file_mask], xi(eps_reduced_model, delta_reduced_model, x=x_rep[file_mask])),
                header="x, y_absorber (absolute coordinates), xi(x) (boundary modulation)")
 
     # backmatter
