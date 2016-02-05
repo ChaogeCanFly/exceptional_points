@@ -126,17 +126,17 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False):
 
     # extract a half period of the absorber
     wavelength = 2.*np.pi/(WG_eff.kr + delta_reduced_model)
-    delta_x = wavelength/4
-    # piece_mask = (x > L/2. - delta_x) & (x < L/2. + delta_x)
-    piece_mask = (x > x0 - delta_x) & (x < x0 + delta_x)
+    dx = wavelength/4
+    # piece_mask = (x > L/2. - dx) & (x < L/2. + dx)
+    piece_mask = (x > x0 - dx) & (x < x0 + dx)
     a = y_absorber[piece_mask]
     ax5.plot(x[piece_mask], a - periodic_xi[piece_mask], "y-")
 
     periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
     elements = len(periodic_absorber)/len(a)
 
-    x_elements = np.linspace(x0 - elements*delta_x,
-                             x0 + elements*delta_x, len(periodic_absorber))
+    x_elements = np.linspace(x0 - elements*dx,
+                             x0 + elements*dx, len(periodic_absorber))
     # start at maximum of boundary oscillation -> different for each configuration
     maximum_mask = (x_elements > 0.31)
     ax5.plot(x_elements[maximum_mask], periodic_absorber[maximum_mask] +
