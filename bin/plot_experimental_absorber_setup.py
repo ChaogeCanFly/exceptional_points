@@ -110,9 +110,9 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False):
     ax4.plot(x, -xi(eps, delta) + W, "k-", lw=0.25)
     ax4.plot(x, -xi(eps, delta), "k-", lw=0.25)
     ax4.plot(x, y_absorber - xi(eps, delta), ls="-", lw=1, color=c[1])
-    periodic_xi = xi(eps_reduced_model, delta_reduced_model, phase)
-    ax4.plot(x, -periodic_xi, "k-")
-    ax4.plot(x, W - periodic_xi, "k-")
+    xi_periodic = xi(eps_reduced_model, delta_reduced_model, phase)
+    ax4.plot(x, -xi_periodic, "k-")
+    ax4.plot(x, W - xi_periodic, "k-")
     ax4.set_xlim(0, L)
     ax4.set_ylim(-0.01, 0.06)
     ax4.set_xlabel(r"$x$", labelpad=0.0)
@@ -130,17 +130,19 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False):
     # piece_mask = (x > L/2. - dx) & (x < L/2. + dx)
     piece_mask = (x > x0 - dx) & (x < x0 + dx)
     a = y_absorber[piece_mask]
-    ax5.plot(x[piece_mask], a - periodic_xi[piece_mask], "y-")
+    ax5.plot(x[piece_mask], a - xi_periodic[piece_mask], "y-")
 
     periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
+    # periodic_absorber = np.concatenate([a[::-1], a, a[::-1]])
     elements = len(periodic_absorber)/len(a)
 
     x_elements = np.linspace(x0 - elements*dx,
                              x0 + elements*dx, len(periodic_absorber))
     # start at maximum of boundary oscillation -> different for each configuration
-    maximum_mask = (x_elements > 0.31)
-    ax5.plot(x_elements[maximum_mask], periodic_absorber[maximum_mask] +
-             xi(eps_reduced_model, delta_reduced_model, x=x_elements)[maximum_mask], "r-")
+    # maximum_mask = (x_elements > 0.31)
+    # ax5.plot(x_elements[maximum_mask], periodic_absorber[maximum_mask] +
+    #          xi(eps_reduced_model, delta_reduced_model, phase=0.0, x=x_elements)[maximum_mask], "r-")
+    ax5.plot(x_elements, periodic_absorber - xi(eps_reduced_model, delta_reduced_model, phase=phase, x=x_elements), "r-")
 
     if plot:
         plt.tight_layout()
