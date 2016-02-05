@@ -15,7 +15,7 @@ from ep.plot import get_colors
 c, _, _ = get_colors()
 
 
-def main(W=0.05, L=25, eps_config=0.16, delta_config=-0.55):
+def main(W=0.05, L=25, eps_config=0.16, delta_config=-0.55, plot=False):
     """docstring for main"""
 
     L = L*W
@@ -114,6 +114,9 @@ def main(W=0.05, L=25, eps_config=0.16, delta_config=-0.55):
     # ax5.plot(x_rep, periodic_absorber+ xi(eps_rep, delta_rep, x=x_rep), "r-")
     # ax5.plot(0.31, 0.025, "ro")
     # ax5.plot(0.85, 0.025, "ro")
+
+    if plot:
+        plt.show()
 
     # save file
     np.savetxt("periodic_configuration_sigma_{}_delta_{}.dat".format(eps_rep, delta_rep),
