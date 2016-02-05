@@ -15,7 +15,7 @@ from ep.plot import get_colors
 c, _, _ = get_colors()
 
 
-def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
+def main(W=0.05, L=25, config=1, phase=None, plot=False):
     """docstring for main"""
 
     L = L*W
@@ -30,7 +30,7 @@ def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
                      y_R0=1.25/W,
                      init_phase=-1.8/W,
                      loop_type='Bell',
-                     tN=1000)
+                     tN=500)
     WG_exp = DirichletReduced(**exp_setup)
 
     effective_setup = exp_setup.copy()
@@ -41,23 +41,22 @@ def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
     # show eps, delta values at start/end of absorber
     for n, s in enumerate(snapshots_x_values):
         s_eps_delta = WG_eff.get_cycle_parameters(s)
-        print "configuration at x={:.5f}: eps={:.5f} delta={: .5f}".format(s, s_eps_delta[0]/W, s_eps_delta[1]*W)
+        print "configuration {} at x={:.5f}: eps={:.5f} delta={: .5f}".format(n, s, s_eps_delta[0]/W, s_eps_delta[1]*W)
 
         if config == n:
             eps_reduced_model, delta_reduced_model = s_eps_delta
 
-    if config == 0:
-        phase = np.pi
-    elif config == 1:
-        phase = -1.0
-    elif config == 2:
-        phase = np.pi
-    elif config == 3:
-        phase = -1.0
-    elif config == 4:
-        phase = -1.0
-    elif config == 5:
-        phase = -1.0
+    if phase is None:
+        if config == 0:
+            phase = 1.4
+        elif config == 1:
+            phase = -np.pi
+        elif config == 2:
+            phase = np.pi
+        elif config == 3:
+            phase = +1.9
+        elif config == 4:
+            phase = -1.0
 
     eps, delta = WG_exp.get_cycle_parameters()
     x = WG_exp.t
