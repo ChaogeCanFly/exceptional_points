@@ -126,22 +126,16 @@ def main(W=0.05, L=25, config=1, phase=np.pi, plot=False):
     x_rep = np.linspace(L/2. - elements*dx, L/2. + elements*dx, len(periodic_absorber))
     file_mask = (x_rep > 0.31) #& (x_rep < 0.85)
     ax5.plot(x_rep[file_mask], periodic_absorber[file_mask] + xi(eps_reduced_model, delta_reduced_model, x=x_rep)[file_mask], "r-")
-    # ax5.plot(x_rep, periodic_absorber+ xi(eps_reduced_model, delta_reduced_model, x=x_rep), "r-")
-    # ax5.plot(0.31, 0.025, "ro")
-    # ax5.plot(0.85, 0.025, "ro")
 
     if plot:
+        plt.tight_layout()
+        f.subplots_adjust(bottom=0.1, left=0.09, top=0.9)
         plt.show()
 
     # save file
     np.savetxt("periodic_configuration_sigma_{}_delta_{}.dat".format(eps_reduced_model, delta_reduced_model),
                zip(x_rep[file_mask], periodic_absorber[file_mask], xi(eps_reduced_model, delta_reduced_model, x=x_rep[file_mask])),
                header="x, y_absorber (absolute coordinates), xi(x) (boundary modulation)")
-
-    # backmatter
-    plt.tight_layout()
-    f.subplots_adjust(bottom=0.1, left=0.09, top=0.9)
-    plt.show()
 
 
 if __name__ == '__main__':
