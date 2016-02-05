@@ -39,12 +39,15 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False):
     WG_eff = DirichletReduced(**effective_setup)
 
     # show eps, delta values at start/end of absorber
+    snapshots_delta_values = []
     for n, s in enumerate(snapshots_x_values):
         s_eps_delta = WG_eff.get_cycle_parameters(s)
         print "configuration {} at x={:.5f}: eps={:.5f} delta={: .5f}".format(n, s, s_eps_delta[0]/W, s_eps_delta[1]*W)
+        snapshots_delta_values.append(s_eps_delta[-1]*W)
 
         if config == n:
             eps_reduced_model, delta_reduced_model = s_eps_delta
+            x0 = s
 
     if phase is None:
         if config == 0:
@@ -96,6 +99,12 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False):
     ax3.set_xlabel(r"$\delta$", labelpad=0.0)
     ax3.set_ylabel(r"$\sigma$")
 
+    ax33 = ax3.twiny()
+    ax33.set_xlim(-4, 2)
+    ax33.set_xticks(snapshots_delta_values)
+    ax33.set_xticklabels([str(t) for t in snapshots_delta_values])
+    ax33.grid(True, lw=1.)
+
     # comparison periodic system and experiment
     ax4.plot(x, -xi(eps, delta) + W, "k-", lw=0.25)
     ax4.plot(x, -xi(eps, delta), "k-", lw=0.25)
@@ -117,14 +126,17 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False):
     # extract a half period of the absorber
     wavelength = 2.*np.pi/(WG_eff.kr + delta_reduced_model)
     dx = wavelength/4
-    piece_mask = (x > L/2. - dx) & (x < L/2. + dx)
+    # piece_mask = (x > L/2. - dx) & (x < L/2. + dx)
+    piece_mask = (x > x0 - dx) & (x < x0 + dx)
     a = y_absorber[piece_mask]
     periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
     elements = len(periodic_absorber)/len(a)
 
-    x_rep = np.linspace(L/2. - elements*dx, L/2. + elements*dx, len(periodic_absorber))
+    # x_rep = np.linspace(L/2. - elements*dx, L/2. + elements*dx, len(periodic_absorber))
+    x_rep = np.linspace(x0 - elements*dx, x0 + elements*dx, len(periodic_absorber))
     file_mask = (x_rep > 0.31) #& (x_rep < 0.85)
-    ax5.plot(x_rep[file_mask], periodic_absorber[file_mask] + xi(eps_reduced_model, delta_reduced_model, x=x_rep)[file_mask], "r-")
+    ax5.plot(x_rep[file_mask], periodic_absorber[file_mask] +
+             xi(eps_reduced_model, delta_reduced_model, x=x_rep)[file_mask], "r-")
 
     if plot:
         plt.tight_layout()
