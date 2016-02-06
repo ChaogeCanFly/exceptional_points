@@ -168,6 +168,8 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     print
     print "wavelength", wavelength
     print "4*wavelength", 4*wavelength
+    print "wavelength/W", wavelength/W
+    print "4*wavelength/W", 4*wavelength/W
     print
     np.savetxt("periodic_configuration_{}.dat".format(config),
                zip((x_file - x_file[0])/(x_file[-1] - x_file[0])*4*wavelength/W,
