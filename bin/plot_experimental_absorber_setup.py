@@ -165,6 +165,10 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     x_file = x_elements[maximum_mask]
     y_file = periodic_absorber[maximum_mask]
     xi_file = xi(eps_reduced_model, delta_reduced_model, x=x_elements[maximum_mask])
+    print
+    print "wavelength", wavelength
+    print "4*wavelength", 4*wavelength
+    print
     np.savetxt("periodic_configuration_{}.dat".format(config),
                zip((x_file - x_file[0])/(x_file[-1] - x_file[0])*4*wavelength/W,
                    # (y_file - W/2.)/(y_file[-1] - y_file[0]) + 0.5,
