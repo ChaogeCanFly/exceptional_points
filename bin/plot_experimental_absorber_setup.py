@@ -15,13 +15,14 @@ from ep.plot import get_colors
 c, _, _ = get_colors()
 
 
-def main(W=0.05, L=25, config=1, phase=None, plot=False):
+@argh.arg("-p", "--phase", type=float)
+@argh.arg("--threshold-left", type=float)
+@argh.arg("--threshold-right", type=float)
+def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, threshold_right=None):
     """docstring for main"""
 
     L = L*W
     snapshots_x_values = [7*W, 9.75*W, L/2, 15.25*W, 18*W]
-
-    # eps_reduced_model, delta_reduced_model = eps_config*W, delta_config/W
 
     exp_setup = dict(N=2.6,
                      L=L,
@@ -49,17 +50,27 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False):
             eps_reduced_model, delta_reduced_model = s_eps_delta
             x0 = s
 
-    if phase is None:
+    if phase is None and threshold_left is None and threshold_right is None:
         if config == 0:
             phase = 1.4
+            threshold_left = 0.0
+            threshold_right = 0.0
         elif config == 1:
             phase = -np.pi
+            threshold_left = 0.0
+            threshold_right = 0.0
         elif config == 2:
             phase = np.pi
+            threshold_left = 0.31
+            threshold_right = 9.0
         elif config == 3:
             phase = +1.9
+            threshold_left = 0.47
+            threshold_right = 1.0
         elif config == 4:
             phase = -1.0
+            threshold_left = 0.0
+            threshold_right = 0.0
 
     eps, delta = WG_exp.get_cycle_parameters()
     x = WG_exp.t
@@ -127,22 +138,23 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False):
     # extract a half period of the absorber
     wavelength = 2.*np.pi/(WG_eff.kr + delta_reduced_model)
     dx = wavelength/4
-    # piece_mask = (x > L/2. - dx) & (x < L/2. + dx)
     piece_mask = (x > x0 - dx) & (x < x0 + dx)
     a = y_absorber[piece_mask]
     ax5.plot(x[piece_mask], a - xi_periodic[piece_mask], "y-")
 
     periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
-    # periodic_absorber = np.concatenate([a[::-1], a, a[::-1]])
-    elements = len(periodic_absorber)/len(a)
+    if config == 0 or config == 4:
+        periodic_absorber = np.concatenate([a, a, a])
 
+    elements = len(periodic_absorber)/len(a)
     x_elements = np.linspace(x0 - elements*dx,
                              x0 + elements*dx, len(periodic_absorber))
+
     # start at maximum of boundary oscillation -> different for each configuration
-    # maximum_mask = (x_elements > 0.31)
-    # ax5.plot(x_elements[maximum_mask], periodic_absorber[maximum_mask] +
-    #          xi(eps_reduced_model, delta_reduced_model, phase=0.0, x=x_elements)[maximum_mask], "r-")
-    ax5.plot(x_elements, periodic_absorber - xi(eps_reduced_model, delta_reduced_model, phase=phase, x=x_elements), "r-")
+    maximum_mask = (x_elements > threshold_left) & (x_elements < threshold_right)
+    ax5.plot(x_elements[maximum_mask], periodic_absorber[maximum_mask] -
+             xi(eps_reduced_model, delta_reduced_model, phase=phase, x=x_elements)[maximum_mask], "r-")
+    # ax5.plot(x_elements, periodic_absorber - xi(eps_reduced_model, delta_reduced_model, phase=phase, x=x_elements), "r-")
 
     if plot:
         plt.tight_layout()
@@ -150,7 +162,7 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False):
         plt.show()
 
     # save file
-    np.savetxt("periodic_configuration_sigma_{}_delta_{}.dat".format(eps_reduced_model, delta_reduced_model),
+    np.savetxt("periodic_configuration_{}.dat".format(config),
                zip(x_elements[maximum_mask], periodic_absorber[maximum_mask], xi(eps_reduced_model, delta_reduced_model, x=x_elements[maximum_mask])),
                header="x, y_absorber (absolute coordinates), xi(x) (boundary modulation)")
 
