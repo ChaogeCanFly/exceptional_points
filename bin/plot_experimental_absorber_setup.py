@@ -53,8 +53,8 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     if phase is None and threshold_left is None and threshold_right is None:
         if config == 0:
             phase = 1.4
-            threshold_left = 0.0
-            threshold_right = 1.0
+            threshold_left = 0.465
+            threshold_right = 3.0
         elif config == 1:
             phase = -np.pi
             threshold_left = 0.225
@@ -145,6 +145,10 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
     if config == 1 or config == 4:
         periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
+    if config == 0:
+        # a_list = np.concatenate(5*[a, a[::-1]])
+        # periodic_absorber = np.concatenate([a_list, a, a_list[::-1]])
+        periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
 
     elements = len(periodic_absorber)/len(a)
     x_elements = np.linspace(x0 - elements*dx,
