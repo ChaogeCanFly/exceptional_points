@@ -65,8 +65,8 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
             threshold_right = 1.02
         elif config == 3:
             phase = +1.9
-            threshold_left = 0.39
-            threshold_right = 0.796
+            threshold_left = 0.522
+            threshold_right = 1.1
         elif config == 4:
             phase = -1.0
             threshold_left = 0.0
@@ -142,9 +142,9 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     a = y_absorber[piece_mask]
     ax5.plot(x[piece_mask], a - xi_periodic[piece_mask], "y-")
 
-    # periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
+    periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
     # if config == 3:
-    periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
+    # periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
 
     elements = len(periodic_absorber)/len(a)
     x_elements = np.linspace(x0 - elements*dx,
