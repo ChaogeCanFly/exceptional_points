@@ -161,9 +161,15 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
         f.subplots_adjust(bottom=0.1, left=0.09, top=0.9)
         plt.show()
 
-    # save file
+    # save file: x in [0, 4*lambda], y in [0, 1]
+    x_file = x_elements[maximum_mask]
+    y_file = periodic_absorber[maximum_mask]
+    xi_file = xi(eps_reduced_model, delta_reduced_model, x=x_elements[maximum_mask])
     np.savetxt("periodic_configuration_{}.dat".format(config),
-               zip(x_elements[maximum_mask], periodic_absorber[maximum_mask], xi(eps_reduced_model, delta_reduced_model, x=x_elements[maximum_mask])),
+               zip((x_file - x_file[0])/(x_file[-1] - x_file[0])*4*wavelength/W,
+                   # (y_file - W/2.)/(y_file[-1] - y_file[0]) + 0.5,
+                   y_file/W,
+                   xi_file),
                header="x, y_absorber (absolute coordinates), xi(x) (boundary modulation)")
 
 
