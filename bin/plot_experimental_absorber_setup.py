@@ -69,8 +69,10 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
             threshold_right = 1.1
         elif config == 4:
             phase = -1.0
-            threshold_left = 0.735
-            threshold_right = 1.176413 #0.982
+            # threshold_left = 0.735 #- 0.109439643711
+            threshold_left = 0.705 #- 0.109439643711
+            # threshold_right = 1.176413 #- 0.109439643711 #0.982
+            threshold_right = 1.149 #- 0.109439643711 #0.982
 
     eps, delta = WG_exp.get_cycle_parameters()
     x = WG_exp.t
