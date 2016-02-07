@@ -3,6 +3,7 @@
 from __future__ import division
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import numpy as np
 from scipy.interpolate import interp1d
 
@@ -93,8 +94,8 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     ax.plot(x, -xi(eps, delta) + W, "k-")
     ax.plot(x, -xi(eps, delta), "k-")
     ax.plot(x, y_absorber - xi(eps, delta), ls="-", lw=3, color=c[1])
-    ax.set_xlabel(r"$x$", labelpad=0.0)
-    ax.set_ylabel(r"$y$", labelpad=0.0)
+    ax.set_xlabel(r"$x$", labelpad=-5.0)
+    ax.set_ylabel(r"$y$", labelpad=2.0)
     ax.set_xlim(0, L)
     ax.set_ylim(-0.01, 0.06)
 
@@ -102,6 +103,8 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     ax2.set_xlim(0, L)
     ax2.set_xticks(snapshots_x_values)
     ax2.set_xticklabels([str(t) for t in snapshots_x_values])
+    for tick in ax2.get_xaxis().get_major_ticks():
+        tick.set_pad(0.0)
     ax2.grid(True, lw=1.)
 
     # linearized 2x2 parameter path
@@ -109,14 +112,16 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     ax3.plot(delta_linearized*W, eps_linearized/W, "k-", lw=0.75)
     ax3.plot(delta_linearized[absorber_cutoff]*W,
              eps_linearized[absorber_cutoff]/W, ls="-", lw=3, color=c[1])
-    ax3.set_xlabel(r"$\delta$", labelpad=0.0)
-    ax3.set_ylabel(r"$\sigma$")
+    ax3.set_xlabel(r"$\delta\cdot W$", labelpad=-5.0)
+    ax3.set_ylabel(r"$\sigma/W$", labelpad=2.0)
     ax3.set_xlim(-3.1, 2)
 
     ax33 = ax3.twiny()
     ax33.set_xlim(-3.1, 2)
     ax33.set_xticks(snapshots_delta_values)
     ax33.set_xticklabels(["{:.3f}".format(t) for t in snapshots_delta_values])
+    for tick in ax33.get_xaxis().get_major_ticks():
+        tick.set_pad(0.0)
     ax33.grid(True, lw=1.)
 
     # comparison periodic system and experiment
@@ -128,13 +133,15 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     ax4.plot(x, W - xi_periodic, "k-")
     ax4.set_xlim(0, L)
     ax4.set_ylim(-0.01, 0.06)
-    ax4.set_xlabel(r"$x$", labelpad=0.0)
-    ax4.set_ylabel(r"$y$", labelpad=0.0)
+    ax4.set_xlabel(r"$x$", labelpad=-5.0)
+    ax4.set_ylabel(r"$y$", labelpad=2.0)
 
     ax5 = ax4.twiny()
     ax5.set_xlim(0, L)
     ax5.set_xticks(snapshots_x_values)
     ax5.set_xticklabels([str(t) for t in snapshots_x_values])
+    for tick in ax5.get_xaxis().get_major_ticks():
+        tick.set_pad(0.0)
     ax5.grid(True, lw=1.)
 
     # extract a half period of the absorber
@@ -143,6 +150,10 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     piece_mask = (x > x0 - dx) & (x < x0 + dx)
     a = y_absorber[piece_mask]
     ax5.plot(x[piece_mask], a - xi_periodic[piece_mask], "y-")
+
+    for axis in (ax, ax3, ax4):
+        axis.yaxis.set_major_locator(MaxNLocator(nbins=3))
+    ax4.set_ylim(-0.01, 0.06)
 
     periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
     if config == 1 or config == 4:
