@@ -532,7 +532,7 @@ def plot_position_dependent():
         'W': 1,
         'L': 100,
         'eta':  1.0,
-        'eta0': 0.0,
+        'eta0': 1.0, # here makes no difference if 0.0 or 1.0; only necessary for extension in (sigma, delta) plane?
         'x_R0': 0.1,
         'y_R0': 0.85,
         'init_phase': 0.0,
