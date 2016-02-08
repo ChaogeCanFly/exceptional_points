@@ -88,7 +88,7 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     def xi(eps, delta, phase=0.0, x=x):
         return eps*np.sin((WG_exp.kr + delta)*x + phase)
 
-    f, (ax, ax3, ax4) = plt.subplots(nrows=3, figsize=(45, 5), dpi=200)
+    f, (ax, ax3, ax4) = plt.subplots(nrows=3, figsize=(45, 5), dpi=120)
 
     # experimental WG
     ax.plot(x, -xi(eps, delta) + W, "k-")
@@ -123,6 +123,15 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     for tick in ax33.get_xaxis().get_major_ticks():
         tick.set_pad(0.0)
     ax33.grid(True, lw=1.)
+
+    snapshots_y_values = [0.095, 0.1416, 0.16]
+    ax333 = ax3.twinx()
+    ax333.set_ylim(0, 0.18)
+    ax333.set_yticks(snapshots_y_values)
+    ax333.set_yticklabels([str(t) for t in snapshots_y_values])
+    for tick in ax33.get_yaxis().get_major_ticks():
+        tick.set_pad(0.0)
+    ax333.grid(True, lw=1.)
 
     # comparison periodic system and experiment
     ax4.plot(x, -xi(eps, delta) + W, "k-", lw=0.25)
@@ -175,7 +184,7 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
 
     if plot:
         plt.tight_layout()
-        f.subplots_adjust(bottom=0.1, left=0.09, top=0.9)
+        f.subplots_adjust(bottom=0.1, left=0.09, top=0.9, right=0.9)
         plt.show()
 
     # save file: x in [0, 4*lambda], y in [0, 1]
