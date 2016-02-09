@@ -199,10 +199,15 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     print
     np.savetxt("periodic_configuration_{}.dat".format(config),
                zip((x_file - x_file[0])/(x_file[-1] - x_file[0])*4*wavelength/W,
-                   # (y_file - W/2.)/(y_file[-1] - y_file[0]) + 0.5,
                    y_file/W,
                    xi_file),
-               header="x, y_absorber (absolute coordinates), xi(x) (boundary modulation)")
+               header="x, y_absorber (relative coordinates), xi(x) (boundary modulation)")
+    np.savetxt("experimental_configuration_{}.dat".format(config),
+               zip((x_file - x_file[0])/(x_file[-1] - x_file[0])*4*wavelength,
+                   2*W - (y_file + xi_file + eps_reduced_model),
+                   2*W - (xi_file + eps_reduced_model),
+                   2*W - (xi_file + eps_reduced_model + W)),
+               header="x, y_absorber (absolute coordinates), xi_lower xi_upper")
 
 
 if __name__ == '__main__':
