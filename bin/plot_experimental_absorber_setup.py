@@ -168,8 +168,6 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     if config == 1 or config == 4:
         periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
     if config == 0:
-        # a_list = np.concatenate(5*[a, a[::-1]])
-        # periodic_absorber = np.concatenate([a_list, a, a_list[::-1]])
         periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
 
     elements = len(periodic_absorber)/len(a)
@@ -180,7 +178,6 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     maximum_mask = (x_elements > threshold_left) & (x_elements < threshold_right)
     ax5.plot(x_elements[maximum_mask], periodic_absorber[maximum_mask] -
              xi(eps_reduced_model, delta_reduced_model, phase=phase, x=x_elements)[maximum_mask], "r-")
-    # ax5.plot(x_elements, periodic_absorber - xi(eps_reduced_model, delta_reduced_model, phase=phase, x=x_elements), "r-")
 
     if plot:
         plt.tight_layout()
