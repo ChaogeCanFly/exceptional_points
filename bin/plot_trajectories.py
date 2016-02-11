@@ -325,6 +325,79 @@ def plot_parameter_trajectory(figname=None, wg=None, ep_coordinates=None,
     plt.savefig(figname, bbox_inches='tight')
 
 
+def plot_parameter_trajectory_p1_p2(figname=None, wg=None, ep_coordinates=None,
+                                    pos_dep=False):
+    WGam = wg
+    eps, delta = WGam.get_cycle_parameters()
+
+    f = plt.figure(figsize=(3.1, 3.1/2.5), dpi=220)
+    ax = plt.gca()
+
+    D = lambda d: 0.25*(1. + np.cos(np.pi*(d - WGam.init_phase)/WGam.y_R0))**2
+    phi = lambda e, d: np.arctan(e/d) - np.pi*0.5*(np.sign(np.arctan(e/d)) - 1.)
+    get_p1 = lambda e, d: ((e/WGam.x_R0)**1 - 0.01*D(d))*np.cos(2.*phi(e, d))
+    get_p2 = lambda e, d: ((e/WGam.x_R0)**1 - 0.01*D(d))*np.sin(2.*phi(e, d))
+    p1 = get_p1(eps, delta)
+    p2 = get_p2(eps, delta)
+
+    ax.plot(p1, p2, color="k", lw=0.5, clip_on=False)
+    if not ep_coordinates:
+        x_EP, y_EP = WGam.x_EP, WGam.y_EP
+    else:
+        x_EP, y_EP = ep_coordinates
+
+    if pos_dep:
+        datay = [y_EP, -0.278, -0.234, -0.188, -0.140, -0.072, -0.048, -0.024, -0.007, 0.000, 0.0]
+        datax = [x_EP,  0.033,  0.034,  0.034,  0.033,  0.028,  0.025,  0.021,  0.015, 0.008, -0.1]
+        ax.plot(datay, datax, "k--", lw=0.75, dashes=[3, 3])
+        datay = [y_EP, -0.352, -0.416, -0.506, -0.596, -0.650, -0.684, -0.736, -0.791, -0.827, -0.901, -0.972, -1.058, -1.145]
+        datax = [x_EP,  0.030,  0.026,  0.018,  0.011,  0.007,  0.005,  0.002,  0.000,  0.000,  0.000,  0.003,  0.008,  0.015]
+        ax.plot(datay, datax, "k--", lw=0.75, dashes=[1, 2])
+        ax.annotate('EP', (-0.29, 0.041), textcoords='data',
+                    weight='bold', size=12, color='black')
+        ax.set_xlim(-1.1, 1.1)
+        ax.set_ylim(0, eps.max())
+    else:
+        # xline = np.linspace(x_EP, 0.099, 16)
+        # epsline = np.linspace(0.0, x_EP, 100)
+        # epsline = np.linspace(0.0, WGam.x_EP, 100)
+        epsline = np.linspace(WGam.x_EP, WGam.x_R0, 100)
+        print epsline.max()
+        print eps.max()
+        print get_p1(0.1, 1e-20)
+        print get_p2(0.1, 1e-20)
+        deltaline = 0.*epsline
+        p1_EP = get_p1(x_EP, y_EP)
+        p2_EP = get_p2(x_EP, y_EP)
+        print "x_EP, y_EP", x_EP, y_EP
+        # ax.plot([0, y_EP], [0.0, x_EP], "k--", lw=0.75, dashes=[3, 3])
+        # ax.plot([0, y_EP], [0.1, x_EP], "k--", lw=0.75, dashes=[1, 1])
+        p1line = get_p1(epsline, deltaline)
+        p2line = get_p2(epsline, deltaline)
+        ax.plot(p1line, p2line, "r-", ms=0.5, lw=0.75)
+        ax.plot(p1_EP, p2_EP, "o", color=colors[4], ms=2.5, mec='none', clip_on=False)
+        print "x_EP, y_EP", p1line[-1], p2line[-1]
+        # ax.plot(p1line[-1], p2line[-1], "o", color=colors[4], ms=2.5, mec='none', clip_on=False)
+        # ax.annotate('EP', (0.1, 0.04), textcoords='data',
+        #             weight='bold', size=12, color='black')
+        plt.show()
+
+    # ax.plot(delta[0], eps[0], "ko", ms=7.5, clip_on=False)
+    # ax.plot(delta[-1], eps[-1], "ko", ms=7.5, clip_on=False)
+    ax.set_ylabel(r"Amplitude $\sigma$")
+    ax.set_xlabel(r"Detuning $\delta$")
+    ax.locator_params(axis='y', nbins=4)
+
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+    ax.get_xaxis().set_tick_params(direction='out')
+    ax.get_yaxis().set_tick_params(direction='out')
+
+    plt.savefig(figname, bbox_inches='tight')
+
+
 def plot_spectrum(wg_list=None, figname=None,
                   y_range_imag_spectrum=None, y_range_real_spectrum=None,
                   y_axis_step_length=5, y_ticklabels_real_spectrum=None,
@@ -517,6 +590,7 @@ def plot_uniform():
                   y_ticklabels_imag_spectrum=5)
 
     plot_parameter_trajectory(wg=WGam, figname="uniform_path.pdf")
+    plot_parameter_trajectory_p1_p2(wg=WGam, figname="uniform_path_p1_p2.pdf")
 
 
 def plot_position_dependent():
