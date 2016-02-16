@@ -20,7 +20,7 @@ get_defaults()
 
 def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
                   eps_min=None, eps_max=None, eps_N=None, delta_N=None,
-                  interpolate=False):
+                  interpolate=False, p_space=False):
 
     wg_kwargs = dict(N=2.05,
                      x_R0=0.1,
@@ -55,13 +55,31 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
         vmax_imag = 1.0
 
     Z1 = np.abs(z_diff.real)
-    p1 = ax1.imshow(Z1, cmap=cmap, aspect='auto', origin='lower',
-                    extent=[y.min(), y.max(), x.min(), x.max()],
-                    vmin=0.0, vmax=vmax_real)
-    Z2 = np.abs(z_diff.imag)
-    p2 = ax2.imshow(Z2, cmap=cmap, aspect='auto', origin='lower',
-                    extent=[y.min(), y.max(), x.min(), x.max()],
-                    vmin=0.0, vmax=vmax_imag)
+    if p_space:
+        phi = lambda e, d: np.arctan2((d - D.init_phase)/D.y_R0, e/D.x_R0)
+        R = lambda e, d: np.hypot(e/D.x_R0, (d - D.init_phase)/D.y_R0)
+        get_p1 = lambda e, d: R(e, d)*np.sin(2*phi(e, d))
+        get_p2 = lambda e, d: R(e, d)*np.cos(2*phi(e, d))
+
+        pp1 = get_p1(x, y)
+        pp2 = get_p2(x, y)
+        x, y = pp2, pp1
+        p1 = ax1.pcolormesh(y, x, Z1, cmap=cmap,
+                            vmin=0.0, vmax=vmax_real)
+        Z2 = np.abs(z_diff.imag)
+        p2 = ax2.pcolormesh(y, x, Z2, cmap=cmap,
+                            vmin=0.0, vmax=vmax_imag)
+        ax1.plot(get_p1(eps, delta), get_p2(eps, delta), "k-")
+        ax2.plot(get_p1(eps, delta), get_p2(eps, delta), "k-")
+        plt.show()
+    else:
+        p1 = ax1.imshow(Z1, cmap=cmap, aspect='auto', origin='lower',
+                        extent=[y.min(), y.max(), x.min(), x.max()],
+                        vmin=0.0, vmax=vmax_real)
+        Z2 = np.abs(z_diff.imag)
+        p2 = ax2.imshow(Z2, cmap=cmap, aspect='auto', origin='lower',
+                        extent=[y.min(), y.max(), x.min(), x.max()],
+                        vmin=0.0, vmax=vmax_imag)
 
     for (p, ax) in zip((p1, p2), (ax1, ax2)):
         divider = make_axes_locatable(ax)
@@ -190,7 +208,8 @@ def on_pick(event, event_coordinates, ax):
 
 
 def build_composite_plot(eps_min=-0.01, eps_max=0.11, eps_N=101, delta_N=101,
-                         show=False, interactive=False, interpolate=False):
+                         show=False, interactive=False, interpolate=False,
+                         p_space=False):
     plot_kwargs = locals()
     plot_kwargs.pop('show')
     plot_kwargs.pop('interactive')
