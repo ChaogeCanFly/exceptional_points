@@ -14,7 +14,7 @@ from ep.waveguide import DirichletReduced
 
 
 ep.plot.get_defaults()
-colors, parula, parula_discrete = ep.plot.get_colors(N=20)
+colors, parula, parula_discrete = ep.plot.get_colors(N=10)
 
 
 def plot_parameter_trajectory_p1_p2(W=1.0, remove_inside=False, show=False):
@@ -42,7 +42,7 @@ def plot_parameter_trajectory_p1_p2(W=1.0, remove_inside=False, show=False):
     eps, delta = WGam.get_cycle_parameters()
     eps_EP, delta_EP = WGam.x_EP, WGam.y_EP
 
-    f, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(6.5*1.5, 1.5*2), dpi=220)
+    f, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(6.2, 2.1), dpi=220)
 
     phi = lambda e, d: np.arctan2((d - WGam.init_phase)/WGam.y_R0, e/WGam.x_R0)
     R = lambda e, d: np.hypot(e/WGam.x_R0, (d - WGam.init_phase)/WGam.y_R0)
@@ -133,24 +133,25 @@ def plot_parameter_trajectory_p1_p2(W=1.0, remove_inside=False, show=False):
         #     p1_p, p2_p = p1, p2
         #     p1_0, p2_0 = 0., 0.
         p1_p, p2_p = p1, p2
-        p1_0, p2_0 = p1_EP*(1.-r**2), p2_EP*(1.-r**2)
+        p1_0, p2_0 = p1_EP*(1.-r**3), p2_EP*(1.-r**3)
         (p1_circle, p2_circle,
          eps_circle, delta_circle) = get_circles(p1_p, p2_p,
                                                  p1_0=p1_0, p2_0=p2_0,
                                                  radius=r)
-        n = n/len(radii)
+        n = n/(len(radii))
         ax1.plot(delta_circle, eps_circle, "-", color=parula(n), lw=0.1)
         ax2.plot(p1_circle, p2_circle, "-", color=parula(n), lw=0.1)
 
-    ax1.plot(delta, eps, color="k", **plot_kwargs)
-    ax1.plot(delta[0], eps[0], "ko", ms=5.0)
-    ax1.plot(delta[-1], eps[-1], "ko", ms=5.0)
+    ax1.plot(delta, eps, color="grey", **plot_kwargs)
+    ax1.plot(delta[0], eps[0], "o", color="grey", ms=5.0, mec='none')
+    ax1.plot(delta[-1], eps[-1], "o", color="grey", ms=5.0, mec='none')
     ax1.plot(delta_re_branch_cut, eps_re_branch_cut, "--", color="k", **plot_kwargs)
-    ax1.plot(delta_im_branch_cut[::5], eps_im_branch_cut[::5], "o", color="k", ms=1.0)
+    ax1.plot(delta_im_branch_cut[::5], eps_im_branch_cut[::5], "o", color="k", ms=2.0, mec='none')
     # ax1.plot(delta_horizontal_line, eps_const, "-", color=colors[1], **plot_kwargs)
     ax1.plot(delta_EP, eps_EP, "o", color="w", ms=5, mec='k')
     ax1.annotate('EP', (0.075, 0.04), textcoords='data',
                  weight='bold', size=12, color='black')
+
 
     ax1.set_xlim(-0.7, 1.3)
     ax1.set_ylim(-0.005, WGam.x_R0 + 0.005)
@@ -159,11 +160,11 @@ def plot_parameter_trajectory_p1_p2(W=1.0, remove_inside=False, show=False):
     # ax1.locator_params(axis='x', nbins=4)
     # ax1.locator_params(axis='y', nbins=4)
 
-    ax2.plot(p1, p2, color="k", **plot_kwargs)
-    ax2.plot(p1[0], p2[0], "ko", ms=5.0)
-    ax2.plot(p1[-1], p2[-1], "ko", ms=5.0)
+    ax2.plot(p1, p2, color="grey", **plot_kwargs)
+    ax2.plot(p1[0], p2[0], "o", color="grey", ms=5.0, mec='none')
+    ax2.plot(p1[-1], p2[-1], "o", color="grey", ms=5.0, mec='none')
     ax2.plot(p1_re_branch_cut, p2_re_branch_cut, "--", color="k", **plot_kwargs)
-    ax2.plot(p1_im_branch_cut[::5], p2_im_branch_cut[::5], "o", color="k", ms=1.0)
+    ax2.plot(p1_im_branch_cut[::10], p2_im_branch_cut[::10], "o", color="k", ms=2.0, mec='none')
     # ax2.plot(p1_line_2, p2_line_2, "-", color=colors[1], **plot_kwargs)
     ax2.plot(p1_EP, p2_EP, "o", color="w", ms=5, mec='k')
     ax2.annotate('EP', (-0.45, 0.04), textcoords='data',
@@ -183,6 +184,11 @@ def plot_parameter_trajectory_p1_p2(W=1.0, remove_inside=False, show=False):
         ax.yaxis.set_ticks_position('left')
         ax.get_xaxis().set_tick_params(direction='out')
         ax.get_yaxis().set_tick_params(direction='out')
+
+    ax1.annotate('a', (1.1, 0.1), textcoords='data',
+                 weight='bold', size=12, color='black')
+    ax2.annotate('b', (0.7, 1.0), textcoords='data',
+                 weight='bold', size=12, color='black')
 
     plt.tight_layout()
     if show:
