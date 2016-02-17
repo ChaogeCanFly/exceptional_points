@@ -54,26 +54,29 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     if phase is None and threshold_left is None and threshold_right is None:
         if config == 0:
             phase = 1.4
-            threshold_left = 0.465
-            threshold_right = 3.0
+            # threshold_left = 0.465
+            threshold_left = 0.35
+            # threshold_right = 3.0
         elif config == 1:
             phase = -np.pi
-            threshold_left = 0.225
-            threshold_right = 1.26
+            # threshold_left = 0.225
+            threshold_left = 0.1925
+            # threshold_right = 1.26
         elif config == 2:
             phase = np.pi
             threshold_left = 0.31
             # threshold_right = 1.02
         elif config == 3:
             phase = +1.9
-            threshold_left = 0.522
-            threshold_right = 1.1
+            # threshold_left = 0.522
+            threshold_left = 0.507
+            # threshold_right = 1.1
         elif config == 4:
             phase = -1.0
-            # threshold_left = 0.735 #- 0.109439643711
-            threshold_left = 0.705 #- 0.109439643711
-            # threshold_right = 1.176413 #- 0.109439643711 #0.982
-            threshold_right = 1.149 #- 0.109439643711 #0.982
+            # threshold_left = 0.705
+            threshold_left = 0.7375
+            # threshold_left = 0.738
+            # threshold_right = 1.149
 
     eps, delta = WG_exp.get_cycle_parameters()
     x = WG_exp.t
