@@ -85,6 +85,10 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     y_absorber[x < 7*W] = np.nan
     y_absorber[x > 18*W] = np.nan
 
+    print "Omega", (WG_exp.kr + delta_reduced_model)
+    print "kr", WG_exp.kr
+    print "delta_reduced_model", delta_reduced_model
+
     def xi(eps, delta, phase=0.0, x=x):
         return eps*np.sin((WG_exp.kr + delta)*x + phase)
 
@@ -155,7 +159,7 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
 
     # extract a half period of the absorber
     wavelength = 2.*np.pi/(WG_eff.kr + delta_reduced_model)
-    dx = wavelength/4
+    dx = wavelength/4.
     piece_mask = (x > x0 - dx) & (x < x0 + dx)
     a = y_absorber[piece_mask]
     ax5.plot(x[piece_mask], a - xi_periodic[piece_mask], "y-")
