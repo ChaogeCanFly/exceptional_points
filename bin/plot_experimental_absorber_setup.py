@@ -71,6 +71,7 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, save_plot=False, thresh
             # threshold_left = 0.522
             threshold_left = 0.507
             # threshold_right = 1.1
+            threshold_left_absorber = 0.522
         elif config == 4:
             phase = -1.0
             # threshold_left = 0.705
@@ -87,10 +88,6 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, save_plot=False, thresh
     y_absorber[absorber_cutoff] = f_absorber(x[absorber_cutoff])
     y_absorber[x < 7*W] = np.nan
     y_absorber[x > 18*W] = np.nan
-
-    print "Omega", (WG_exp.kr + delta_reduced_model)
-    print "kr", WG_exp.kr
-    print "delta_reduced_model", delta_reduced_model
 
     def xi(eps, delta, phase=0.0, x=x):
         return eps*np.sin((WG_exp.kr + delta)*x + phase)
@@ -183,11 +180,15 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, save_plot=False, thresh
 
     # start at maximum of boundary oscillation -> different for each configuration
     maximum_mask = (x_elements >= threshold_left) & (x_elements <= threshold_left + 4*wavelength)
-    # plt.clf()
-    # plt.plot(x_elements[maximum_mask] - x_elements[maximum_mask][0], periodic_absorber[maximum_mask])
-    # plt.show()
-    ax5.plot(x_elements[maximum_mask], periodic_absorber[maximum_mask] -
-             xi(eps_reduced_model, delta_reduced_model, phase=phase, x=x_elements)[maximum_mask], "r-")
+    maximum_mask_absorber = (x_elements >= threshold_left_absorber) & (x_elements <= threshold_left_absorber + 4*wavelength)
+
+    x_file = x_elements
+    y_file = periodic_absorber
+    xi_file = xi(eps_reduced_model, delta_reduced_model, x=x_file)
+
+    m = maximum_mask_absorber
+    ax5.plot(x_file[m], y_file[m] -
+             xi(eps_reduced_model, delta_reduced_model, phase=phase, x=x_file)[m], "r-")
 
     if plot:
         plt.tight_layout()
@@ -198,15 +199,21 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, save_plot=False, thresh
             plt.show()
 
     # save file: x in [0, 4*lambda], y in [0, 1]
-    x_file = x_elements[maximum_mask]
-    y_file = periodic_absorber[maximum_mask]
-    xi_file = xi(eps_reduced_model, delta_reduced_model, x=x_file)
+    print
+    print "kr", WG_exp.kr
+    print "delta_reduced_model", delta_reduced_model
+    print "Omega", (WG_exp.kr + delta_reduced_model)
     print
     print "wavelength", wavelength
     print "4*wavelength", 4*wavelength
     print "wavelength/W", wavelength/W
     print "4*wavelength/W", 4*wavelength/W
     print
+
+    x_file = x_file[maximum_mask]
+    y_file = y_file[maximum_mask_absorber]
+    xi_file = xi_file[maximum_mask]
+
     np.savetxt("periodic_configuration_{}.dat".format(config),
                # zip((x_file - x_file[0])/(x_file[-1] - x_file[0])*4*wavelength/W,
                zip((x_file - x_file[0])/W,
