@@ -179,7 +179,12 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
                              x0 + elements*dx, len(periodic_absorber))
 
     # start at maximum of boundary oscillation -> different for each configuration
-    maximum_mask = (x_elements > threshold_left) & (x_elements < threshold_right)
+    maximum_mask = (x_elements >= threshold_left) & (x_elements <= threshold_left + 4*wavelength)
+    # plt.clf()
+    # plt.plot(x_elements[maximum_mask] - x_elements[maximum_mask][0], periodic_absorber[maximum_mask])
+    # plt.show()
+    # x_test = x_elements[maximum_mask]
+    # print "4*wavelength - (x[-1] - x[0])", abs(abs(x_test[-1] - x_test[0]) - 4*wavelength)
     ax5.plot(x_elements[maximum_mask], periodic_absorber[maximum_mask] -
              xi(eps_reduced_model, delta_reduced_model, phase=phase, x=x_elements)[maximum_mask], "r-")
 
@@ -189,7 +194,9 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
         plt.show()
 
     # save file: x in [0, 4*lambda], y in [0, 1]
+    # maximum_mask = (x_elements == x_elements)
     x_file = x_elements[maximum_mask]
+    x_file -= x_file[0]
     y_file = periodic_absorber[maximum_mask]
     xi_file = xi(eps_reduced_model, delta_reduced_model, x=x_elements[maximum_mask])
     print
@@ -204,7 +211,8 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
                    xi_file),
                header="x, y_absorber (relative coordinates), xi(x) (boundary modulation)")
     np.savetxt("experimental_configuration_{}.dat".format(config),
-               zip((x_file - x_file[0])/(x_file[-1] - x_file[0])*4*wavelength,
+               # zip((x_file - x_file[0])/(x_file[-1] - x_file[0])*4*wavelength,
+               zip(x_file,
                    2*W - (y_file + xi_file + eps_reduced_model),
                    2*W - (xi_file + eps_reduced_model),
                    2*W - (xi_file + eps_reduced_model + W)),
