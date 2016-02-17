@@ -19,7 +19,7 @@ c, _, _ = get_colors()
 @argh.arg("-p", "--phase", type=float)
 @argh.arg("--threshold-left", type=float)
 @argh.arg("--threshold-right", type=float)
-def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, threshold_right=None):
+def main(W=0.05, L=25, config=1, phase=None, plot=False, save_plot=False, threshold_left=None, threshold_right=None):
     """docstring for main"""
 
     L = L*W
@@ -95,7 +95,7 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     def xi(eps, delta, phase=0.0, x=x):
         return eps*np.sin((WG_exp.kr + delta)*x + phase)
 
-    f, (ax, ax3, ax4) = plt.subplots(nrows=3, figsize=(45, 5), dpi=120)
+    f, (ax, ax3, ax4) = plt.subplots(nrows=3, figsize=(10., 6), dpi=120)
 
     # experimental WG
     ax.plot(x, -xi(eps, delta) + W, "k-")
@@ -192,7 +192,10 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, threshold_left=None, th
     if plot:
         plt.tight_layout()
         f.subplots_adjust(bottom=0.1, left=0.09, top=0.9, right=0.9)
-        plt.show()
+        if save_plot:
+            plt.savefig("summary_config_{}".format(config))
+        else:
+            plt.show()
 
     # save file: x in [0, 4*lambda], y in [0, 1]
     x_file = x_elements[maximum_mask]
