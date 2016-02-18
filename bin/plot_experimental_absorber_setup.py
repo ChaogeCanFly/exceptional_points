@@ -16,10 +16,10 @@ from ep.plot import get_colors
 c, _, _ = get_colors()
 
 
-@argh.arg("-p", "--phase", type=float)
+@argh.arg("-p", "--plot-phase", type=float)
 @argh.arg("--threshold-left", type=float)
 @argh.arg("--threshold-right", type=float)
-def main(W=0.05, L=25, config=1, phase=None, plot=False, save_plot=False, threshold_left=None, threshold_right=None):
+def main(W=0.05, L=25, config=1, plot_phase=None, plot=False, save_plot=False, threshold_left=None, threshold_right=None):
     """docstring for main"""
 
     L = L*W
@@ -51,33 +51,27 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, save_plot=False, thresh
             eps_reduced_model, delta_reduced_model = s_eps_delta
             x0 = s
 
-    if phase is None and threshold_left is None and threshold_right is None:
+    if plot_phase is None and threshold_left is None and threshold_right is None:
         if config == 0:
-            phase = 1.4
-            # threshold_left = 0.465
+            plot_phase = 1.4
             threshold_left = 0.35
-            # threshold_right = 3.0
+            threshold_left_absorber = 0.465
         elif config == 1:
-            phase = -np.pi
-            # threshold_left = 0.225
+            plot_phase = -np.pi
             threshold_left = 0.1925
-            # threshold_right = 1.26
+            threshold_left_absorber = 0.225
         elif config == 2:
-            phase = np.pi
+            plot_phase = np.pi
             threshold_left = 0.31
-            # threshold_right = 1.02
+            threshold_left_absorber = 0.32
         elif config == 3:
-            phase = +1.9
-            # threshold_left = 0.522
+            plot_phase = +1.9
             threshold_left = 0.507
-            # threshold_right = 1.1
             threshold_left_absorber = 0.522
         elif config == 4:
-            phase = -1.0
-            # threshold_left = 0.705
+            plot_phase = -1.0
             threshold_left = 0.7375
-            # threshold_left = 0.738
-            # threshold_right = 1.149
+            threshold_left_absorber = 0.705
 
     eps, delta = WG_exp.get_cycle_parameters()
     x = WG_exp.t
@@ -89,8 +83,8 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, save_plot=False, thresh
     y_absorber[x < 7*W] = np.nan
     y_absorber[x > 18*W] = np.nan
 
-    def xi(eps, delta, phase=0.0, x=x):
-        return eps*np.sin((WG_exp.kr + delta)*x + phase)
+    def xi(eps, delta, plot_phase=0.0, x=x):
+        return eps*np.sin((WG_exp.kr + delta)*x + plot_phase)
 
     f, (ax, ax3, ax4) = plt.subplots(nrows=3, figsize=(10., 6), dpi=120)
 
@@ -141,7 +135,7 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, save_plot=False, thresh
     ax4.plot(x, -xi(eps, delta) + W, "k-", lw=0.25)
     ax4.plot(x, -xi(eps, delta), "k-", lw=0.25)
     ax4.plot(x, y_absorber - xi(eps, delta), ls="-", lw=1, color=c[1])
-    xi_periodic = xi(eps_reduced_model, delta_reduced_model, phase)
+    xi_periodic = xi(eps_reduced_model, delta_reduced_model, plot_phase)
     ax4.plot(x, -xi_periodic, "k-")
     ax4.plot(x, W - xi_periodic, "k-")
     ax4.set_xlim(0, L)
@@ -179,8 +173,8 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, save_plot=False, thresh
                              x0 + elements*dx, len(periodic_absorber))
 
     # start at maximum of boundary oscillation -> different for each configuration
-    maximum_mask = (x_elements >= threshold_left) & (x_elements <= threshold_left + 4*wavelength)
-    maximum_mask_absorber = (x_elements >= threshold_left_absorber) & (x_elements <= threshold_left_absorber + 4*wavelength)
+    maximum_mask = (x_elements > threshold_left) & (x_elements < threshold_left + 4*wavelength)
+    maximum_mask_absorber = (x_elements > threshold_left_absorber) & (x_elements < threshold_left_absorber + 4*wavelength)
 
     x_file = x_elements
     y_file = periodic_absorber
@@ -188,7 +182,7 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, save_plot=False, thresh
 
     m = maximum_mask_absorber
     ax5.plot(x_file[m], y_file[m] -
-             xi(eps_reduced_model, delta_reduced_model, phase=phase, x=x_file)[m], "r-")
+             xi(eps_reduced_model, delta_reduced_model, plot_phase=plot_phase, x=x_file)[m], "r-")
 
     if plot:
         plt.tight_layout()
@@ -213,6 +207,18 @@ def main(W=0.05, L=25, config=1, phase=None, plot=False, save_plot=False, thresh
     x_file = x_file[maximum_mask]
     y_file = y_file[maximum_mask_absorber]
     xi_file = xi_file[maximum_mask]
+
+    print "len(x_file)", len(x_file)
+    print "len(y_file)", len(y_file)
+    print "len(xi_file)", len(xi_file)
+    if len(x_file) > len(y_file):
+        x_file = x_file[:len(y_file)]
+        xi_file = xi_file[:len(y_file)]
+    else:
+        y_file = y_file[:len(x_file)]
+    print "len(x_file)", len(x_file)
+    print "len(y_file)", len(y_file)
+    print "len(xi_file)", len(xi_file)
 
     np.savetxt("periodic_configuration_{}.dat".format(config),
                # zip((x_file - x_file[0])/(x_file[-1] - x_file[0])*4*wavelength/W,
