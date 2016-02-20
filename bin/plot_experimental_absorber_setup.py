@@ -164,13 +164,21 @@ def main(W=0.05, L=25, config=1, plot_phase=None, plot=False, save_plot=False, t
         axis.yaxis.set_major_locator(MaxNLocator(nbins=3))
     ax4.set_ylim(-0.01, 0.06)
 
-    periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
-    if config == 1 or config == 4:
-        periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
-    if config == 0:
-        periodic_absorber = np.concatenate([a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a, a[::-1], a])
-
+    periodic_absorber = np.concatenate([a, a[::-1]]*4 + [a])
     elements = len(periodic_absorber)/len(a)
+
+    if config == 0:
+        piece_mask = (x > x0) & (x < x0 + dx)
+        a = y_absorber[piece_mask]
+        periodic_absorber = np.concatenate(4*[W - a[::-1], W - a, a[::-1], a])
+        elements = len(periodic_absorber)/len(a)/2.
+
+    if config == 4:
+        piece_mask = (x > x0 - dx) & (x < x0)
+        a = y_absorber[piece_mask]
+        periodic_absorber = np.concatenate(4*[W - a[::-1], W - a, a[::-1], a])
+        elements = len(periodic_absorber)/len(a)/2.
+
     x_elements = np.linspace(x0 - elements*dx,
                              x0 + elements*dx, len(periodic_absorber))
 
