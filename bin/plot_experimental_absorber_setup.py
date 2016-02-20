@@ -188,8 +188,14 @@ def main(W=0.05, L=25, config=1, plot_phase=None, plot=False, save_plot=False, t
     xi_file = xi(eps_reduced_model, delta_reduced_model, x=x_file)
 
     m = maximum_mask_absorber
-    ax5.set_xticks(snapshots_x_values + [x0 - dx, x0 + dx])
-    ax5.plot(x_file[m], y_file[m] -
+
+    ax6 = ax4.twiny()
+    ax6.set_xlim(0, L)
+    ax6.set_ylim(-0.01, 0.06)
+    ax6.set_xticks([x0 - dx, x0 + dx])
+    ax6.set_xticklabels([str("") for t in ax6.get_xticks()])
+    ax6.grid(True, lw=1., color="darkgrey")
+    ax6.plot(x_file[m], y_file[m] -
              xi(eps_reduced_model, delta_reduced_model, plot_phase=plot_phase, x=x_file)[m], "r-")
 
     if plot:
