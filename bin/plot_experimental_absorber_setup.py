@@ -73,6 +73,8 @@ def main(W=0.05, L=25, config=1, plot_phase=None, plot=False, save_plot=False, t
             threshold_left = 0.7375
             threshold_left_absorber = 0.705
 
+    plot_phase = -2.*WG_exp.y_R0*x0**2/L
+
     eps, delta = WG_exp.get_cycle_parameters()
     x = WG_exp.t
 
@@ -181,6 +183,7 @@ def main(W=0.05, L=25, config=1, plot_phase=None, plot=False, save_plot=False, t
     xi_file = xi(eps_reduced_model, delta_reduced_model, x=x_file)
 
     m = maximum_mask_absorber
+    ax5.set_xticks(snapshots_x_values + [x0 - dx, x0 + dx])
     ax5.plot(x_file[m], y_file[m] -
              xi(eps_reduced_model, delta_reduced_model, plot_phase=plot_phase, x=x_file)[m], "r-")
 
