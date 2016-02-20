@@ -216,17 +216,17 @@ def main(W=0.05, L=25, config=1, plot_phase=None, plot=False, save_plot=False, t
     y_file = y_file[maximum_mask_absorber]
     xi_file = xi_file[maximum_mask]
 
-    print "len(x_file)", len(x_file)
-    print "len(y_file)", len(y_file)
-    print "len(xi_file)", len(xi_file)
+    # print "len(x_file)", len(x_file)
+    # print "len(y_file)", len(y_file)
+    # print "len(xi_file)", len(xi_file)
     if len(x_file) > len(y_file):
         x_file = x_file[:len(y_file)]
         xi_file = xi_file[:len(y_file)]
     else:
         y_file = y_file[:len(x_file)]
-    print "len(x_file)", len(x_file)
-    print "len(y_file)", len(y_file)
-    print "len(xi_file)", len(xi_file)
+    # print "len(x_file)", len(x_file)
+    # print "len(y_file)", len(y_file)
+    # print "len(xi_file)", len(xi_file)
 
     np.savetxt("periodic_configuration_{}.dat".format(config),
                # zip((x_file - x_file[0])/(x_file[-1] - x_file[0])*4*wavelength/W,
