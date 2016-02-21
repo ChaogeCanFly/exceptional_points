@@ -173,7 +173,7 @@ def main(W=0.05, L=25, config=1, plot_phase=None, plot=False, save_plot=False, t
         piece_mask = (x > x0 - dx) & (x < x0)
     if config == 0 or config == 4:
         a = y_absorber[piece_mask]
-        periodic_absorber = np.concatenate(4*[W - a[::-1], W - a, a[::-1], a])
+        periodic_absorber = np.concatenate(8*[W - a[::-1], W - a, a[::-1], a])
         elements = len(periodic_absorber)/len(a)/2.
 
     x_elements = np.linspace(x0 - elements*dx,
