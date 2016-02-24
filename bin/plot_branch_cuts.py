@@ -55,6 +55,7 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
         vmax_imag = 1.0
 
     Z1 = np.abs(z_diff.real)
+    Z2 = np.abs(z_diff.imag)
     if p_space:
         phi = lambda e, d: np.arctan2((d - D.init_phase)/D.y_R0, e/D.x_R0)
         R = lambda e, d: np.hypot(e/D.x_R0, (d - D.init_phase)/D.y_R0)
@@ -66,7 +67,6 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
         x, y = pp2, pp1
         p1 = ax1.pcolormesh(y, x, Z1, cmap=cmap,
                             vmin=0.0, vmax=vmax_real)
-        Z2 = np.abs(z_diff.imag)
         p2 = ax2.pcolormesh(y, x, Z2, cmap=cmap,
                             vmin=0.0, vmax=vmax_imag)
         ax1.plot(get_p1(eps, delta), get_p2(eps, delta), "k-")
@@ -76,7 +76,6 @@ def plot_spectrum(fig=None, ax1=None, ax2=None, pos_dep=False,
         p1 = ax1.imshow(Z1, cmap=cmap, aspect='auto', origin='lower',
                         extent=[y.min(), y.max(), x.min(), x.max()],
                         vmin=0.0, vmax=vmax_real)
-        Z2 = np.abs(z_diff.imag)
         p2 = ax2.imshow(Z2, cmap=cmap, aspect='auto', origin='lower',
                         extent=[y.min(), y.max(), x.min(), x.max()],
                         vmin=0.0, vmax=vmax_imag)
