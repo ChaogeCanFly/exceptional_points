@@ -200,8 +200,8 @@ def plot_parameter_trajectory_p1_p2(W=1.0, remove_inside=False, show=False):
     if show:
         plt.show()
     else:
-        # plt.savefig("SI_Fig2.png", bbox_inches='tight')
-        plt.savefig("SI_Fig2.pdf", bbox_inches='tight')
+        # plt.savefig("Fig2_alt.png", bbox_inches='tight')
+        plt.savefig("Fig2_alt.pdf", bbox_inches='tight')
 
 
 if __name__ == '__main__':
