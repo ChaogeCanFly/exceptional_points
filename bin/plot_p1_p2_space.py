@@ -120,31 +120,36 @@ def plot_parameter_trajectory_p1_p2(W=1.0, remove_inside=False, show=False):
     # ax2.plot(P1, P2, "o", color=colors[-1], **plot_kwargs)
 
     radii = np.linspace(1., 0.0, 6000)
+    radii = np.linspace(1., 0.0, 2500)
     for n, r in enumerate(radii):
-        # if r < 0.85:
-        #     r = r*1.075
-        #     step = 2
-        #     p1_p, p2_p = [np.concatenate([u[::step], [u[0]]]) for u in (p1, p2)]
-        #     tck, _ = scipy.interpolate.splprep([p1_p, p2_p], k=5)#,
-        #     s = np.linspace(0.0, 1.0, 1000)
-        #     p1_p, p2_p = scipy.interpolate.splev(s, tck)
-        #     p1_0, p2_0 = p1_EP, p2_EP
-        # else:
-        #     p1_p, p2_p = p1, p2
-        #     p1_0, p2_0 = 0., 0.
-        p1_p, p2_p = p1, p2
-        p1_0, p2_0 = p1_EP*(1.-r**3), p2_EP*(1.-r**3)
+        if r < 0.825:
+            r = r*1.075
+            step = 10
+            p1_p, p2_p = [np.concatenate([u[::step], [u[0]]]) for u in (p1, p2)]
+            tck, _ = scipy.interpolate.splprep([p1_p, p2_p], k=5)#,
+            s = np.linspace(0.0, 1.0, 1000)
+            p1_p, p2_p = scipy.interpolate.splev(s, tck)
+            p1_0, p2_0 = p1_EP, p2_EP
+            r_smaller = True
+        else:
+            # p1_p, p2_p = p1, p2
+            # p1_0, p2_0 = 0., 0.
+            p1_p, p2_p = p1, p2
+            p1_0, p2_0 = p1_EP*(1.-r**3), p2_EP*(1.-r**3)
+            r_smaller = False
         (p1_circle, p2_circle,
          eps_circle, delta_circle) = get_circles(p1_p, p2_p,
                                                  p1_0=p1_0, p2_0=p2_0,
                                                  radius=r)
         n = n/(len(radii))
-        ax1.plot(delta_circle, eps_circle, "-", color=parula(n), lw=0.1)
-        ax2.plot(p1_circle, p2_circle, "-", color=parula(n), lw=0.1)
+        if not r_smaller:
+            n = 1./6. #1000/len(radii)
+        ax1.plot(delta_circle, eps_circle, "-", color=parula(n), lw=0.25)
+        ax2.plot(p1_circle, p2_circle, "-", color=parula(n), lw=0.25)
 
-    ax1.plot(delta, eps, color="grey", **plot_kwargs)
-    ax1.plot(delta[0], eps[0], "o", color="grey", ms=5.0, mec='none')
-    ax1.plot(delta[-1], eps[-1], "o", color="grey", ms=5.0, mec='none')
+    ax1.plot(delta, eps, color="k", lw=2.0) #**plot_kwargs)
+    ax1.plot(delta[0], eps[0], "o", color="k", ms=7.5, mec='none')
+    ax1.plot(delta[-1], eps[-1], "o", color="k", ms=7.5, mec='none')
     ax1.plot(delta_re_branch_cut, eps_re_branch_cut, "--", color="k", **plot_kwargs)
     ax1.plot(delta_im_branch_cut[::5], eps_im_branch_cut[::5], "o", color="k", ms=2.0, mec='none')
     # ax1.plot(delta_horizontal_line, eps_const, "-", color=colors[1], **plot_kwargs)
@@ -154,15 +159,15 @@ def plot_parameter_trajectory_p1_p2(W=1.0, remove_inside=False, show=False):
 
 
     ax1.set_xlim(-0.7, 1.3)
-    ax1.set_ylim(-0.005, WGam.x_R0 + 0.005)
-    ax1.set_xlabel(r"$\delta$")
-    ax1.set_ylabel(r"$\sigma$")
+    ax1.set_ylim(-0.0075, WGam.x_R0 + 0.005)
+    ax1.set_xlabel(r"Detuning $\delta$")
+    ax1.set_ylabel(r"Amplitude $\sigma$")
     # ax1.locator_params(axis='x', nbins=4)
     # ax1.locator_params(axis='y', nbins=4)
 
-    ax2.plot(p1, p2, color="grey", **plot_kwargs)
-    ax2.plot(p1[0], p2[0], "o", color="grey", ms=5.0, mec='none')
-    ax2.plot(p1[-1], p2[-1], "o", color="grey", ms=5.0, mec='none')
+    ax2.plot(p1, p2, color="k", lw=2.0) #**plot_kwargs)
+    ax2.plot(p1[0], p2[0], "o", color="k", ms=7.5, mec='none')
+    ax2.plot(p1[-1], p2[-1], "o", color="k", ms=7.5, mec='none')
     ax2.plot(p1_re_branch_cut, p2_re_branch_cut, "--", color="k", **plot_kwargs)
     ax2.plot(p1_im_branch_cut[::10], p2_im_branch_cut[::10], "o", color="k", ms=2.0, mec='none')
     # ax2.plot(p1_line_2, p2_line_2, "-", color=colors[1], **plot_kwargs)
@@ -171,7 +176,7 @@ def plot_parameter_trajectory_p1_p2(W=1.0, remove_inside=False, show=False):
                  weight='bold', size=12, color='black')
 
     ax2.set_xlim(-0.85, 0.85)
-    ax2.set_ylim(-1.1, 1.05)
+    ax2.set_ylim(-1.15, 1.05)
     ax2.set_xlabel(r"$p_1$")
     ax2.set_ylabel(r"$p_2$")
     ax2.locator_params(axis='x', nbins=4)
@@ -194,7 +199,8 @@ def plot_parameter_trajectory_p1_p2(W=1.0, remove_inside=False, show=False):
     if show:
         plt.show()
     else:
-        plt.savefig("SI_Fig2.png", bbox_inches='tight')
+        # plt.savefig("SI_Fig2.png", bbox_inches='tight')
+        plt.savefig("SI_Fig2.pdf", bbox_inches='tight')
 
 
 if __name__ == '__main__':
