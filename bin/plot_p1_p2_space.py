@@ -119,8 +119,7 @@ def plot_parameter_trajectory_p1_p2(W=1.0, remove_inside=False, show=False):
     # ax1.plot(DELTA, EPS, "o", color=colors[-1], **plot_kwargs)
     # ax2.plot(P1, P2, "o", color=colors[-1], **plot_kwargs)
 
-    radii = np.linspace(1., 0.0, 6000)
-    radii = np.linspace(1., 0.0, 2500)
+    radii = np.linspace(1., 0.0, 10)
     for n, r in enumerate(radii):
         if r < 0.825:
             r = r*1.075
@@ -143,9 +142,11 @@ def plot_parameter_trajectory_p1_p2(W=1.0, remove_inside=False, show=False):
                                                  radius=r)
         n = n/(len(radii))
         if not r_smaller:
-            n = 1./6. #1000/len(radii)
-        ax1.plot(delta_circle, eps_circle, "-", color=parula(n), lw=0.25)
-        ax2.plot(p1_circle, p2_circle, "-", color=parula(n), lw=0.25)
+            n = 1./6.
+        # ax1.plot(delta_circle, eps_circle, "-", color=parula(n), lw=0.25)
+        # ax2.plot(p1_circle, p2_circle, "-", color=parula(n), lw=0.25)
+        ax1.fill(delta_circle, eps_circle, "-", color=parula(n), lw=0.25)
+        ax2.fill(p1_circle, p2_circle, "-", color=parula(n), lw=0.25)
 
     ax1.plot(delta, eps, color="k", lw=2.0) #**plot_kwargs)
     ax1.plot(delta[0], eps[0], "o", color="k", ms=7.5, mec='none')
