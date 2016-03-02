@@ -12,24 +12,6 @@ from ep.waveguide import DirichletPositionDependentLossReduced, DirichletReduced
 
 colors, _, _ = get_colors()
 
-# def get_toymodel_data():
-#     wg_kwargs = dict(N=2.6,
-#             L=25.0,
-#             W=1.0,
-#             x_R0=0.16,
-#             y_R0=2.5,
-#             init_phase=-0.55,
-#             switch_losses_on_off=True,
-#             eta=1.0,
-#             eta0=1.0,
-#             loop_type='Bell')
-#     D = DirichletPositionDependentLossReduced(**wg_kwargs)
-#     _, b1, b2 = D.solve_ODE()
-#     eps, delta = D.get_cycle_parameters()
-#     v1, v2 = [D.eVecs_r[:, :, m] for m in (0, 1)]
-#
-#     return eps, delta, v1, v2
-
 def get_toymodel_data():
     wg_kwargs = dict(N=2.6,
             L=25.0,
@@ -39,13 +21,31 @@ def get_toymodel_data():
             init_phase=-0.55,
             switch_losses_on_off=True,
             eta=1.0,
+            eta0=1.0,
             loop_type='Bell')
-    D = DirichletReduced(**wg_kwargs)
+    D = DirichletPositionDependentLossReduced(**wg_kwargs)
     _, b1, b2 = D.solve_ODE()
     eps, delta = D.get_cycle_parameters()
     v1, v2 = [D.eVecs_r[:, :, m] for m in (0, 1)]
 
     return eps, delta, v1, v2
+
+# def get_toymodel_data():
+#     wg_kwargs = dict(N=2.6,
+#             L=25.0,
+#             W=1.0,
+#             x_R0=0.16,
+#             y_R0=2.5,
+#             init_phase=-0.55,
+#             switch_losses_on_off=True,
+#             eta=2.5,
+#             loop_type='Bell')
+#     D = DirichletReduced(**wg_kwargs)
+#     _, b1, b2 = D.solve_ODE()
+#     eps, delta = D.get_cycle_parameters()
+#     v1, v2 = [D.eVecs_r[:, :, m] for m in (0, 1)]
+#
+#     return eps, delta, v1, v2
 
 
 @argh.arg("--exp-config", type=int, nargs='+')
@@ -104,10 +104,10 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None, exp_c
     # ax2.plot(c[3], -2.13086764, "d-", color=colors[0], mec="w", clip_on=False)
     # ax2.plot(c[3], -1.58584083, "d-", color=colors[1], mec="w", clip_on=False)
 
-    print np.arctan(abs(v1_exp/v2_exp))
-    print np.arctan(abs(c1_exp/c2_exp))
-    print np.angle(v1_exp/v2_exp)
-    print np.angle(c1_exp/c2_exp)
+    # print np.arctan(abs(v1_exp/v2_exp))
+    # print np.arctan(abs(c1_exp/c2_exp))
+    # print np.angle(v1_exp/v2_exp)
+    # print np.angle(c1_exp/c2_exp)
 
     ax2.plot(delta_tm, np.angle(v1_tm[:, 0]/v1_tm[:, 1]), ls="--", color=colors[0])
     ax2.plot(delta_tm, np.angle(v2_tm[:, 0]/v2_tm[:, 1]), ls="--", color=colors[1])
