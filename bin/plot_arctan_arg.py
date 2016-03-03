@@ -88,6 +88,7 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None, exp_c
     ax2.plot(c, np.angle(v1/v2), "o-", color=colors[0], clip_on=False)
     ax2.plot(c, np.angle(c1/c2), "o-", color=colors[1], clip_on=False)
 
+    exp_data = []
     for expn, (exp_c, exp_f) in enumerate(zip(exp_config, exp_file)):
         (_, _, v1r, v1i, v2r, v2i,
          _, _, c1r, c1i, c2r, c2i) = np.loadtxt(exp_f).T
@@ -95,14 +96,19 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None, exp_c
         v2_exp = v2r + 1j*v2i
         c1_exp = c1r + 1j*c1i
         c2_exp = c2r + 1j*c2i
-        ax1.plot(c[exp_c], np.arctan(abs(v1_exp/v2_exp)), "o-", color="w", mec=colors[0], clip_on=False)
-        ax1.plot(c[exp_c], np.arctan(abs(c1_exp/c2_exp)), "o-", color="w", mec=colors[1], clip_on=False)
-        ax2.plot(c[exp_c], np.angle(v1_exp/v2_exp), "o-", color="w", mec=colors[0], clip_on=False)
-        ax2.plot(c[exp_c], np.angle(c1_exp/c2_exp), "o-", color="w", mec=colors[1], clip_on=False)
-    # ax1.plot(c[3], 0.92684023, "d-", color=colors[0], mec="w", clip_on=False)
-    # ax1.plot(c[3], 0.84520712, "d-", color=colors[1], mec="w", clip_on=False)
-    # ax2.plot(c[3], -2.13086764, "d-", color=colors[0], mec="w", clip_on=False)
-    # ax2.plot(c[3], -1.58584083, "d-", color=colors[1], mec="w", clip_on=False)
+        exp_data.append([c[exp_c], v1_exp, v2_exp, c1_exp, c2_exp])
+
+    c_exp, v1_exp, v2_exp, c1_exp, c2_exp = np.asarray(exp_data).T
+
+    ax1.plot(c_exp, np.arctan(abs(v1_exp/v2_exp)), "v:", color=colors[0], mfc="w", mec=colors[0], clip_on=False)
+    ax1.plot(c_exp, np.arctan(abs(c1_exp/c2_exp)), "v:", color=colors[1], mfc="w", mec=colors[1], clip_on=False)
+    ax2.plot(c_exp, np.angle(v1_exp/v2_exp), "v:", color=colors[0], mfc="w", mec=colors[0], clip_on=False)
+    ax2.plot(c_exp, np.angle(c1_exp/c2_exp), "v:", color=colors[1], mfc="w", mec=colors[1], clip_on=False)
+
+    # ax1.plot(c[4], 0.904979981018, "v-", color=colors[0], mfc="w", mec=colors[0], clip_on=False)
+    # ax1.plot(c[4], 0.748095088658, "v-", color=colors[1], mfc="w", mec=colors[1], clip_on=False)
+    # ax2.plot(c[4], -0.223734533323, "v-", color=colors[0], mfc="w", mec=colors[0], clip_on=False)
+    # ax2.plot(c[4], 2.9830283703, "v-", color=colors[1], mfc="w", mec=colors[1], clip_on=False)
 
     # print np.arctan(abs(v1_exp/v2_exp))
     # print np.arctan(abs(c1_exp/c2_exp))
