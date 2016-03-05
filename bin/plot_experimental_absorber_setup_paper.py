@@ -58,12 +58,12 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False):
     def xi(eps, delta, x=x):
         return eps*np.sin((WG_exp.kr + delta)*x)
 
-    f = plt.figure(figsize=(6.3, 4), dpi=220)
-    ax1 = plt.subplot2grid((5, 1), (0, 0), rowspan=2)
-    ax2 = plt.subplot2grid((5, 1), (2, 0), rowspan=3)
+    f = plt.figure(figsize=(6.3, 3), dpi=220)
+    ax1 = plt.subplot2grid((2, 1), (0, 0), rowspan=1)
+    ax2 = plt.subplot2grid((2, 1), (1, 0), rowspan=1)
 
     f.text(0.0, 0.95, 'a', weight='bold', size=12)
-    f.text(0.0, 0.55, 'b', weight='bold', size=12)
+    f.text(0.0, 0.45, 'b', weight='bold', size=12)
 
     configuration_labels = ("I", "II", "III", "IV", "V")
 
@@ -71,11 +71,14 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False):
     ax1.plot(x, -xi(eps, delta) + W, "k-", lw=0.75)
     ax1.plot(x, -xi(eps, delta), "k-", lw=0.75)
     ax1.plot(x, y_absorber - xi(eps, delta), ls="-", lw=3, color=c[1])
-    ax1.set_xlabel(r"Spatial coordinate $x$ (m)", labelpad=0.0)
-    ax1.set_ylabel(r"$y$", labelpad=2.0)
+    ax1.set_xlabel(r"Spatial coordinate $x$ (m)") #, labelpad=0.0)
+    ax1.set_ylabel(r"$y$") #, labelpad=2.0)
     ax1.set_xlim(0, L)
     ax1.set_ylim(-0.01, 0.06)
+    ax1.set_xticks([0, 7*W, 12.5*W, 18*W, L])
+    ax1.set_xticklabels([r"$0$", r"$7W$", r"$12.5W$", r"$18W$", r"$25W$"])
     ax1.set_yticks([0.0, 0.05])
+    ax1.set_yticklabels([r"$0$", r"$W$"])
 
     ax11 = ax1.twiny()
     ax11.set_xlim(0, L)
@@ -86,8 +89,8 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False):
     ax2.plot(delta_linearized*W, eps_linearized/W, "k-", lw=0.75)
     ax2.plot(delta_linearized[absorber_cutoff]*W,
              eps_linearized[absorber_cutoff]/W, ls="-", lw=3, color=c[1])
-    ax2.set_xlabel(r"$\delta\cdot W$", labelpad=-5.0)
-    ax2.set_ylabel(r"$\sigma/W$", labelpad=2.0)
+    ax2.set_xlabel(r"$\delta\cdot W$") #, labelpad=-5.0)
+    ax2.set_ylabel(r"$\sigma/W$") #, labelpad=2.0)
     ax2.set_xlim(-3.1, 2)
     ax2.set_ylim(0.0, 0.18)
     ax2.set_yticks(np.linspace(0.0, 0.18, 4))
@@ -115,8 +118,8 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False):
             tick.set_pad(-4.0)
 
     if plot:
-        plt.tight_layout(pad=2.0)
-        f.subplots_adjust(bottom=0.1, left=0.09, top=0.9, right=0.9)
+        plt.tight_layout(pad=1.25)
+        f.subplots_adjust(bottom=0.15, left=0.1, top=0.9, right=0.95)
         if save_plot:
             plt.savefig("waveguide.pdf")
         else:
