@@ -64,35 +64,11 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None, exp_c
     c1 = c1r + 1j*c1i
     c2 = c2r + 1j*c2i
 
-    # configuration to delta
-    # c = (-3.05, -1.65, -1.1, -0.55, 0.0, 0.55, 1.95)
-    # v1 = np.concatenate([[1.0], v1, [0.0]])
-    # v2 = np.concatenate([[0.0], v2, [1.0j]])
-    # c1 = np.concatenate([[1j], c1, [0.0]])
-    # c2 = np.concatenate([[1.0], c2, [1j]])
-
-    # n, m = 0, len(c)
-
+    # plot
     f, (ax1, ax2) = plt.subplots(ncols=2, figsize=(6.3, 2), dpi=220)
 
     f.text(0.0, 0.9, 'a', weight='bold', size=12)
     f.text(0.5, 0.9, 'b', weight='bold', size=12)
-
-    ax1.set_ylabel(r"$\arctan\vert c^n_1/c^n_2\vert$")
-    ax1.plot(c, np.arctan(abs(v1/v2)), "o-", color=colors[0], clip_on=False, mec='none', lw=lw)
-    ax1.plot(c, np.arctan(abs(c1/c2)), "o-", color=colors[1], clip_on=False, mec='none', lw=lw)
-
-    eps_tm, delta_tm, v1_tm, v2_tm = get_toymodel_data()
-    ax1.plot(delta_tm, np.arctan(abs(v1_tm[:, 0]/v1_tm[:, 1])), ls="--", color=colors[0], lw=lw)
-    ax1.plot(delta_tm, np.arctan(abs(v2_tm[:, 0]/v2_tm[:, 1])), ls="--", color=colors[1], lw=lw)
-
-    ax1.set_ylim(0, np.pi/2)
-    ax1.set_xlabel(r"$\delta\cdot W$")
-
-    # ax2.set_title(r"$\operatorname{Arg} c^i_1/c^i_2$")
-    ax2.set_ylabel(r"$\vert \tau_1/\tau_2 \vert$")
-    # ax2.plot(c, np.angle(v1/v2), "o-", color=colors[0], clip_on=False)
-    # ax2.plot(c, np.angle(c1/c2), "o-", color=colors[1], clip_on=False)
 
     exp_data = []
     exp_data_evals = []
@@ -109,33 +85,23 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None, exp_c
     c_exp, v1_exp, v2_exp, c1_exp, c2_exp = np.asarray(exp_data).T
     ev1_abs_exp, ev2_abs_exp = np.asarray(exp_data_evals).T
 
+    ax1.set_ylabel(r"$\arctan\vert c^n_1/c^n_2\vert$")
+    ax1.plot(c, np.arctan(abs(v1/v2)), "o-", color=colors[0], clip_on=False, mec='none', lw=lw)
+    ax1.plot(c, np.arctan(abs(c1/c2)), "o-", color=colors[1], clip_on=False, mec='none', lw=lw)
+
+    eps_tm, delta_tm, v1_tm, v2_tm = get_toymodel_data()
+    ax1.plot(delta_tm, np.arctan(abs(v1_tm[:, 0]/v1_tm[:, 1])), ls="--", color=colors[0], lw=lw)
+    ax1.plot(delta_tm, np.arctan(abs(v2_tm[:, 0]/v2_tm[:, 1])), ls="--", color=colors[1], lw=lw)
+
+    ax1.set_xlabel(r"$\delta\cdot W$")
     ax1.plot(c_exp, np.arctan(abs(v1_exp/v2_exp)), "v:", color=colors[0], mfc="w", mec=colors[0], clip_on=False, lw=lw)
     ax1.plot(c_exp, np.arctan(abs(c1_exp/c2_exp)), "v:", color=colors[1], mfc="w", mec=colors[1], clip_on=False, lw=lw)
 
+    ax1.set_ylim(0, np.pi/2)
     ax1.set_yticks([0, np.pi/4, np.pi/2])
     ax1.set_yticklabels([r"$0$", r"$\pi/4$", r"$\pi/2$"])
-    # ax2.plot(c_exp, np.angle(v1_exp/v2_exp), "v:", color=colors[0], mfc="w", mec=colors[0], clip_on=False)
-    # ax2.plot(c_exp, np.angle(c1_exp/c2_exp), "v:", color=colors[1], mfc="w", mec=colors[1], clip_on=False)
 
-    # ax1.plot(c[4], 0.904979981018, "v-", color=colors[0], mfc="w", mec=colors[0], clip_on=False)
-    # ax1.plot(c[4], 0.748095088658, "v-", color=colors[1], mfc="w", mec=colors[1], clip_on=False)
-    # ax2.plot(c[4], -0.223734533323, "v-", color=colors[0], mfc="w", mec=colors[0], clip_on=False)
-    # ax2.plot(c[4], 2.9830283703, "v-", color=colors[1], mfc="w", mec=colors[1], clip_on=False)
-
-    # print np.arctan(abs(v1_exp/v2_exp))
-    # print np.arctan(abs(c1_exp/c2_exp))
-    # print np.angle(v1_exp/v2_exp)
-    # print np.angle(c1_exp/c2_exp)
-
-    # ax2.plot(delta_tm, np.angle(v1_tm[:, 0]/v1_tm[:, 1]), ls="--", color=colors[0])
-    # ax2.plot(delta_tm, np.angle(v2_tm[:, 0]/v2_tm[:, 1]), ls="--", color=colors[1])
-    # ax2.set_xlabel(r"$\delta\cdot W$")
-
-    # ax3.set_title(r"$\lambda$")
-    # ax2.semilogy(c, ev1_abs, marker="o", ls="-", color=colors[0], clip_on=False, mec='none', lw=lw)
-    # ax2.semilogy(c, ev2_abs, marker="o", ls="-", color=colors[1], clip_on=False, mec='none', lw=lw)
-    # ax2.semilogy(c_exp, ev1_abs_exp, marker="v", ls=":", color=colors[0], mfc="w", mec=colors[0], clip_on=False, lw=lw)
-    # ax2.semilogy(c_exp, ev2_abs_exp, marker="v", ls=":", color=colors[1], mfc="w", mec=colors[1], clip_on=False, lw=lw)
+    ax2.set_ylabel(r"$\vert \tau_1/\tau_2 \vert$")
     ax2.semilogy(c, ev1_abs/ev2_abs, marker="o", ls="-", color="k", clip_on=False, mec='none', lw=lw)
     ax2.semilogy(c_exp, ev1_abs_exp/ev2_abs_exp, marker="v", ls=":", color="k", mfc="w", mec="k", clip_on=False, lw=lw)
     ax2.set_ylim(1e0, 1e3)
