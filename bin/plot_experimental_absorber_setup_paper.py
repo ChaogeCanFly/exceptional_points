@@ -17,7 +17,7 @@ get_defaults()
 c, _, _ = get_colors()
 
 
-def main(W=0.05, L=25, phase=None, plot=False, save_plot=False):
+def main(W=0.05, L=25, phase=None, plot=False, save_plot=False, lw=0.75):
     """docstring for main"""
 
     L = L*W
@@ -55,23 +55,25 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False):
     y_absorber[x < 7*W] = np.nan
     y_absorber[x > 18*W] = np.nan
 
-    def xi(eps, delta, x=x):
-        return eps*np.sin((WG_exp.kr + delta)*x)
+    def xi(eps, delta, x=x, plot_phase=0.0):
+        return eps*np.sin((WG_exp.kr + delta)*x + plot_phase)
 
-    f = plt.figure(figsize=(6.3, 3), dpi=220)
-    ax1 = plt.subplot2grid((2, 1), (0, 0), rowspan=1)
-    ax2 = plt.subplot2grid((2, 1), (1, 0), rowspan=1)
+    f = plt.figure(figsize=(6.3, 4.0), dpi=220)
+    ax1 = plt.subplot2grid((3, 1), (0, 0), rowspan=1)
+    ax2 = plt.subplot2grid((3, 1), (2, 0), rowspan=1)
+    ax3 = plt.subplot2grid((3, 1), (1, 0), rowspan=1)
 
     f.text(0.0, 0.95, 'a', weight='bold', size=12)
-    f.text(0.0, 0.45, 'b', weight='bold', size=12)
+    f.text(0.0, 0.61, 'b', weight='bold', size=12)
+    f.text(0.0, 0.30, 'c', weight='bold', size=12)
 
     configuration_labels = ("I", "II", "III", "IV", "V")
 
     # experimental WG
-    ax1.plot(x, -xi(eps, delta) + W, "k-", lw=0.75)
-    ax1.plot(x, -xi(eps, delta), "k-", lw=0.75)
+    ax1.plot(x, -xi(eps, delta) + W, "k-", lw=lw)
+    ax1.plot(x, -xi(eps, delta), "k-", lw=lw)
     ax1.plot(x, y_absorber - xi(eps, delta), ls="-", lw=3, color=c[1])
-    ax1.set_xlabel(r"Spatial coordinate $x$ (m)") #, labelpad=0.0)
+    ax1.set_xlabel(r"Spatial coordinate $x$ (m)", labelpad=1.5)
     ax1.set_ylabel(r"$y$") #, labelpad=2.0)
     ax1.set_xlim(0, L)
     ax1.set_ylim(-0.01, 0.06)
@@ -86,10 +88,10 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False):
 
     # linearized 2x2 parameter path
     eps_linearized, delta_linearized = WG_eff.get_cycle_parameters()
-    ax2.plot(delta_linearized*W, eps_linearized/W, "k-", lw=0.75)
+    ax2.plot(delta_linearized*W, eps_linearized/W, "k-", lw=lw)
     ax2.plot(delta_linearized[absorber_cutoff]*W,
              eps_linearized[absorber_cutoff]/W, ls="-", lw=3, color=c[1])
-    ax2.set_xlabel(r"$\delta\cdot W$") #, labelpad=-5.0)
+    ax2.set_xlabel(r"$\delta\cdot W$", labelpad=1.5)
     ax2.set_ylabel(r"$\sigma/W$") #, labelpad=2.0)
     ax2.set_xlim(-3.1, 2)
     ax2.set_ylim(0.0, 0.18)
@@ -99,7 +101,47 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False):
     ax22.set_xlim(-3.1, 2)
     ax22.set_xticks(snapshots_delta_values)
 
-    for ax in (ax1, ax11, ax2, ax22):
+    # plot snapshot III
+    x0 = snapshots_x_values[2]
+    eps_reduced_model, delta_reduced_model = WG_eff.get_cycle_parameters(x0)
+    plot_phase = -2.*WG_exp.y_R0*x0**2/L
+    xi_periodic = xi(eps_reduced_model, delta_reduced_model, plot_phase=plot_phase)
+    wavelength = 2.*np.pi/(WG_eff.kr + delta_reduced_model)
+    dx = wavelength/4.
+    x = WG_eff.t
+    a = y_absorber[(x > x0 - dx) & (x < x0 + dx)]
+    periodic_absorber = np.concatenate([a, a[::-1]]*4 + [a])
+    elements = len(periodic_absorber)/len(a)
+    x_elements = np.linspace(x0 - elements*dx,
+                             x0 + elements*dx, len(periodic_absorber))
+    plot_mask = (x_elements > 0.32) & (x_elements < 0.32 + 4*wavelength)
+    x_file = x_elements[plot_mask]
+    y_file = periodic_absorber[plot_mask]
+    xi_file = xi(eps_reduced_model, delta_reduced_model, x=x_file, plot_phase=plot_phase)
+
+    ax3.plot(x, -xi(eps, delta) + W, "-", color=c[-1], lw=lw)
+    ax3.plot(x, -xi(eps, delta), "-", color=c[-1], lw=lw)
+    ax3.plot(x, y_absorber - xi(eps, delta), ls="-", lw=3., color=c[-1])
+    ax3.set_xlabel(r"Spatial coordinate $x$ (m)", labelpad=1.5)
+    ax3.set_ylabel(r"$y$")
+    ax3.set_xlim(0, L)
+    ax3.set_ylim(-0.01, 0.06)
+    ax3.set_xticks([0, 7*W, 12.5*W, 18*W, L])
+    ax3.set_xticklabels([r"$0$", r"$7W$", r"$12.5W$", r"$18W$", r"$25W$"])
+    ax3.set_yticks([0.0, 0.05])
+    ax3.set_yticklabels([r"$0$", r"$W$"])
+    ax3.plot(x, -xi_periodic, "k-", lw=lw)
+    ax3.plot(x, W - xi_periodic, "k-", lw=lw)
+    ax3.plot(x_file, y_file -
+             xi(eps_reduced_model, delta_reduced_model,
+                plot_phase=plot_phase, x=x_file), "-", color=c[1], lw=3.)
+
+    ax33 = ax3.twiny()
+    ax33.set_xlim(0, L)
+    ax33.set_xticks([12.5*W])
+    ax33.set_xticklabels([r"III"])
+
+    for ax in (ax1, ax11, ax2, ax22, ax3, ax33):
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
         ax.get_xaxis().set_tick_params(direction='out')
@@ -109,9 +151,14 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False):
         ax.tick_params(axis='both', which='major', bottom='on',
                       left='on', right='off', top='off')
 
-    for ax in (ax11, ax22):
+    for ax in (ax1, ax2, ax3):
+        for tick in ax.get_xaxis().get_major_ticks():
+            tick.set_pad(1.0)
+
+    for ax in (ax11, ax22, ax33):
         ax.grid(True, lw=1.)
-        ax.set_xticklabels(configuration_labels)
+        if ax != ax33:
+            ax.set_xticklabels(configuration_labels)
         ax.tick_params(axis='both', which='major', bottom='off',
                         left='on', right='off', top='off')
         for tick in ax.get_xaxis().get_major_ticks():
@@ -119,7 +166,7 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False):
 
     if plot:
         plt.tight_layout(pad=1.25)
-        f.subplots_adjust(bottom=0.15, left=0.1, top=0.9, right=0.95)
+        f.subplots_adjust(bottom=0.10, left=0.1, top=0.95, right=0.95)
         if save_plot:
             plt.savefig("waveguide.pdf")
         else:
