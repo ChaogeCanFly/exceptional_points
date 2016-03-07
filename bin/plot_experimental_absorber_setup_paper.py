@@ -110,11 +110,12 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False, lw=0.75):
     dx = wavelength/4.
     x = WG_eff.t
     a = y_absorber[(x > x0 - dx) & (x < x0 + dx)]
-    periodic_absorber = np.concatenate([a, a[::-1]]*4 + [a])
+    periodic_absorber = np.concatenate([a, a[::-1]]*10 + [a])
     elements = len(periodic_absorber)/len(a)
     x_elements = np.linspace(x0 - elements*dx,
                              x0 + elements*dx, len(periodic_absorber))
     plot_mask = (x_elements > 0.32) & (x_elements < 0.32 + 4*wavelength)
+    plot_mask = x_elements == x_elements
     x_file = x_elements[plot_mask]
     y_file = periodic_absorber[plot_mask]
     xi_file = xi(eps_reduced_model, delta_reduced_model, x=x_file, plot_phase=plot_phase)
