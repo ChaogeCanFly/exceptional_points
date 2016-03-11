@@ -52,7 +52,8 @@ def get_toymodel_data():
 
 @argh.arg("--exp-config", type=int, nargs='+')
 @argh.arg("--exp-file", type=str, nargs='+')
-def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None, exp_config=None, lw=1.0):
+def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None,
+                      exp_config=None, lw=1.0, plot_evals=False):
     """docstring for plot_coefficients"""
 
     c = (-1.65, -1.1, -0.55, 0.0, 0.55)
@@ -65,10 +66,14 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None, exp_c
     c2 = c2r + 1j*c2i
 
     # plot
-    f, (ax2, ax1) = plt.subplots(ncols=2, figsize=(6.3, 2), dpi=220)
+    if plot_evals:
+        f, (ax2, ax1) = plt.subplots(ncols=2, figsize=(6.3, 2), dpi=220)
+    else:
+        f, ax1 = plt.subplots(ncols=1, figsize=(6.3/2.0, 2), dpi=220)
 
-    f.text(0.0, 0.9, 'a', weight='bold', size=12)
-    f.text(0.5, 0.9, 'b', weight='bold', size=12)
+    if plot_evals:
+        f.text(0.0, 0.9, 'a', weight='bold', size=12)
+        f.text(0.5, 0.9, 'b', weight='bold', size=12)
 
     exp_data = []
     exp_data_evals = []
@@ -94,8 +99,18 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None, exp_c
     ax1.plot(delta_tm, np.arctan(abs(v2_tm[:, 0]/v2_tm[:, 1])), ls="--", color=colors[1], lw=lw)
 
     ax1.set_xlabel(r"$\delta\cdot W$")
-    ax1.plot(c_exp, np.arctan(abs(v1_exp/v2_exp)), "v:", color=colors[0], mfc="w", mec=colors[0], clip_on=False, lw=lw)
-    ax1.plot(c_exp, np.arctan(abs(c1_exp/c2_exp)), "v:", color=colors[1], mfc="w", mec=colors[1], clip_on=False, lw=lw)
+    # ax1.plot(c_exp, np.arctan(abs(v1_exp/v2_exp)), "v:", color=colors[0], mfc="w", mec=colors[0], clip_on=False, lw=lw)
+    # ax1.plot(c_exp, np.arctan(abs(c1_exp/c2_exp)), "v:", color=colors[1], mfc="w", mec=colors[1], clip_on=False, lw=lw)
+    c_exp_extended = np.concatenate([[delta_tm[0]], c_exp, [delta_tm[-1]]])
+    arctan_v_exp_extended = np.concatenate([[0], np.arctan(abs(v1_exp/v2_exp)), [np.pi/2.]])
+    arctan_c_exp_extended = np.concatenate([[np.pi/2.], np.arctan(abs(c1_exp/c2_exp)), [0.0]])
+    ax1.plot(c_exp_extended, arctan_v_exp_extended, ":", color=colors[0], mfc="w", mec=colors[0], clip_on=False, lw=lw)
+    ax1.plot(c_exp_extended, arctan_c_exp_extended, ":", color=colors[1], mfc="w", mec=colors[1], clip_on=False, lw=lw)
+    ax1.plot(c_exp, np.arctan(abs(v1_exp/v2_exp)), "v", color="k", mfc="w", mec=colors[0], clip_on=False, lw=lw)
+    ax1.plot(c_exp, np.arctan(abs(c1_exp/c2_exp)), "v", color="k", mfc="w", mec=colors[1], clip_on=False, lw=lw)
+    for idx in (0, -1):
+        ax1.plot(c_exp_extended[idx], arctan_v_exp_extended[idx], "v", color="k", mfc="k", mec="k", clip_on=False, lw=lw)
+        ax1.plot(c_exp_extended[idx], arctan_c_exp_extended[idx], "v", color="k", mfc="k", mec="k", clip_on=False, lw=lw)
 
     ax1.set_ylim(0, np.pi/2)
     ax1.set_yticks([0, np.pi/4, np.pi/2])
@@ -107,10 +122,10 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None, exp_c
     # ax2.set_ylim(1e0, 1e3)
 
     WG_len = [0.51576837377840601, 2.*0.49262250087499387, 4.*0.39514141195540475, 4.*0.4792450151610923, 4.*0.53112071257820737]
-    ev_abs_list = (ev1_abs*np.exp(1j*ev1_phi), ev2_abs, ev1_abs_exp, ev2_abs_exp)
+    # ev_abs_list = (ev1_abs*np.exp(1j*ev1_phi), ev2_abs, ev1_abs_exp, ev2_abs_exp)
     ev_list = (ev1_abs*np.exp(1j*ev1_phi), ev2_abs*np.exp(1j*ev2_phi), ev1_abs_exp*np.exp(1j*ev1_phi_exp), ev2_abs_exp*np.exp(1j*ev2_phi_exp))
     # ev1_abs, ev2_abs, ev1_abs_exp, ev2_abs_exp =  [ e**(1./w) for e, w in zip(ev_abs_list, WG_len)]
-    ev1, ev2, ev1_exp, ev2_exp = [ e**(1./w) for e, w in zip(ev_list, WG_len)]
+    # ev1, ev2, ev1_exp, ev2_exp = [ e**(1./w) for e, w in zip(ev_list, WG_len)]
     ev1, ev2, ev1_exp, ev2_exp = [ e for e, w in zip(ev_list, WG_len)]
 
     # ax2.semilogy(c, ev1_abs, marker="o", ls="-", color=colors[0], clip_on=False, mec='none', lw=lw)
@@ -118,12 +133,18 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None, exp_c
     # ax2.semilogy(c_exp, ev1_abs_exp, marker="v", ls=":", color=colors[0], mfc="w", mec=colors[0], clip_on=False, lw=lw)
     # ax2.semilogy(c_exp, ev2_abs_exp, marker="v", ls=":", color=colors[1], mfc="w", mec=colors[1], clip_on=False, lw=lw)
 
-    # absolute value
-    ax2.set_ylabel(r"$\vert \tau_n \vert$")
-    ax2.semilogy(c, np.abs(ev1), marker="o", ls="-", color=colors[0], clip_on=False, mec='none', lw=lw)
-    ax2.semilogy(c, np.abs(ev2), marker="o", ls="-", color=colors[1], clip_on=False, mec='none', lw=lw)
-    ax2.semilogy(c_exp, np.abs(ev1_exp), marker="v", ls=":", color=colors[0], mfc="w", mec=colors[0], clip_on=False, lw=lw)
-    ax2.semilogy(c_exp, np.abs(ev2_exp), marker="v", ls=":", color=colors[1], mfc="w", mec=colors[1], clip_on=False, lw=lw)
+    if plot_evals:
+        # absolute value
+        ax2.set_ylabel(r"$\vert \tau_n \vert$")
+        ax2.semilogy(c, np.abs(ev1), marker="o", ls="-", color=colors[0], clip_on=False, mec='none', lw=lw)
+        ax2.semilogy(c, np.abs(ev2), marker="o", ls="-", color=colors[1], clip_on=False, mec='none', lw=lw)
+        ax2.semilogy(c_exp, np.abs(ev1_exp), marker="v", ls=":", color=colors[0], mfc="w", mec=colors[0], clip_on=False, lw=lw)
+        ax2.semilogy(c_exp, np.abs(ev2_exp), marker="v", ls=":", color=colors[1], mfc="w", mec=colors[1], clip_on=False, lw=lw)
+        ax2.set_xlabel(r"$\delta\cdot W$")
+
+    print "eigenvalue ratios |tau_1|/|tau_2|"
+    print "num:", np.abs(ev1/ev2)
+    print "exp:", np.abs(ev1_exp/ev2_exp)
 
     # phase
     # ax2.plot(c, ev1_phi, marker="o", ls="-", color="k", clip_on=False, mec='none', lw=lw)
@@ -137,9 +158,12 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None, exp_c
     # ax2.plot(c_exp, np.angle(ev1_exp), marker="v", ls=":", color=colors[0], clip_on=False, mec=colors[0], mfc="w", lw=lw)
     # ax2.plot(c_exp, np.angle(ev2_exp), marker="v", ls=":", color=colors[1], clip_on=False, mec=colors[1], mfc="w", lw=lw)
 
-    ax2.set_xlabel(r"$\delta\cdot W$")
+    if plot_evals:
+        axes_list = (ax1, ax2)
+    else:
+        axes_list = (ax1, )
 
-    for ax in (ax1, ax2): #, ax3):
+    for ax in axes_list:
         ax.set_xlim(-3.1, 2.05)
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
