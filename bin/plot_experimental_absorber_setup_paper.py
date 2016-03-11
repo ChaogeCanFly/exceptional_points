@@ -60,12 +60,12 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False, lw=0.75):
 
     f = plt.figure(figsize=(6.3, 4.0), dpi=220)
     ax1 = plt.subplot2grid((3, 1), (0, 0), rowspan=1)
-    ax2 = plt.subplot2grid((3, 1), (2, 0), rowspan=1)
-    ax3 = plt.subplot2grid((3, 1), (1, 0), rowspan=1)
+    ax2 = plt.subplot2grid((3, 1), (1, 0), rowspan=1)
+    ax3 = plt.subplot2grid((3, 1), (2, 0), rowspan=1)
 
-    f.text(0.0, 0.95, 'a', weight='bold', size=12)
-    f.text(0.0, 0.61, 'b', weight='bold', size=12)
-    f.text(0.0, 0.30, 'c', weight='bold', size=12)
+    f.text(0.0, 0.96, 'a', weight='bold', size=12)
+    f.text(0.0, 0.64, 'b', weight='bold', size=12)
+    f.text(0.0, 0.28, 'c', weight='bold', size=12)
 
     configuration_labels = ("I", "II", "III", "IV", "V")
 
@@ -73,7 +73,7 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False, lw=0.75):
     ax1.plot(x, -xi(eps, delta) + W, "k-", lw=lw)
     ax1.plot(x, -xi(eps, delta), "k-", lw=lw)
     ax1.plot(x, y_absorber - xi(eps, delta), ls="-", lw=3, color=c[1])
-    ax1.set_xlabel(r"Spatial coordinate $x$ (m)", labelpad=1.5)
+    ax1.set_xlabel(r"Spatial coordinate $x$", labelpad=1.5)
     ax1.set_ylabel(r"$y$") #, labelpad=2.0)
     ax1.set_xlim(0, L)
     ax1.set_ylim(-0.01, 0.06)
@@ -123,7 +123,7 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False, lw=0.75):
     ax3.plot(x, -xi(eps, delta) + W, "-", color=c[-1], lw=lw)
     ax3.plot(x, -xi(eps, delta), "-", color=c[-1], lw=lw)
     ax3.plot(x, y_absorber - xi(eps, delta), ls="-", lw=3., color=c[-1])
-    ax3.set_xlabel(r"Spatial coordinate $x$ (m)", labelpad=1.5)
+    ax3.set_xlabel(r"Spatial coordinate $x$", labelpad=1.5)
     ax3.set_ylabel(r"$y$")
     ax3.set_xlim(0, L)
     ax3.set_ylim(-0.01, 0.06)
