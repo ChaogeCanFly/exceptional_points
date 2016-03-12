@@ -66,10 +66,11 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None,
     c2 = c2r + 1j*c2i
 
     # plot
+    dpi = 220
     if plot_evals:
-        f, (ax2, ax1) = plt.subplots(ncols=2, figsize=(6.3, 2), dpi=220)
+        f, (ax2, ax1) = plt.subplots(ncols=2, figsize=(6.3, 2), dpi=dpi)
     else:
-        f, ax1 = plt.subplots(ncols=1, figsize=(6.3/2.0, 2), dpi=220)
+        f, ax1 = plt.subplots(ncols=1, figsize=(6.3/1.75, 2.5), dpi=dpi)
 
     if plot_evals:
         f.text(0.0, 0.9, 'a', weight='bold', size=12)
