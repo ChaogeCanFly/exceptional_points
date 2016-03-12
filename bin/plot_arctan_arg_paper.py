@@ -116,22 +116,13 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None,
     ax1.set_yticks([0, np.pi/4, np.pi/2])
     ax1.set_yticklabels([r"$0$", r"$\pi/4$", r"$\pi/2$"])
 
-    # ax2.set_ylabel(r"$\vert \tau_1/\tau_2 \vert$")
-    # ax2.semilogy(c, ev1_abs/ev2_abs, marker="o", ls="-", color="k", clip_on=False, mec='none', lw=lw)
-    # ax2.semilogy(c_exp, ev1_abs_exp/ev2_abs_exp, marker="v", ls=":", color="k", mfc="w", mec="k", clip_on=False, lw=lw)
-    # ax2.set_ylim(1e0, 1e3)
-
-    WG_len = [0.51576837377840601, 2.*0.49262250087499387, 4.*0.39514141195540475, 4.*0.4792450151610923, 4.*0.53112071257820737]
-    # ev_abs_list = (ev1_abs*np.exp(1j*ev1_phi), ev2_abs, ev1_abs_exp, ev2_abs_exp)
-    ev_list = (ev1_abs*np.exp(1j*ev1_phi), ev2_abs*np.exp(1j*ev2_phi), ev1_abs_exp*np.exp(1j*ev1_phi_exp), ev2_abs_exp*np.exp(1j*ev2_phi_exp))
-    # ev1_abs, ev2_abs, ev1_abs_exp, ev2_abs_exp =  [ e**(1./w) for e, w in zip(ev_abs_list, WG_len)]
+    ev_list = [ev1_abs*np.exp(1j*ev1_phi),
+               ev2_abs*np.exp(1j*ev2_phi),
+               ev1_abs_exp*np.exp(1j*ev1_phi_exp),
+               ev2_abs_exp*np.exp(1j*ev2_phi_exp)]
+    ev1, ev2, ev1_exp, ev2_exp = ev_list
+    # WG_len = [0.51576837377840601, 2.*0.49262250087499387, 4.*0.39514141195540475, 4.*0.4792450151610923, 4.*0.53112071257820737]
     # ev1, ev2, ev1_exp, ev2_exp = [ e**(1./w) for e, w in zip(ev_list, WG_len)]
-    ev1, ev2, ev1_exp, ev2_exp = [ e for e, w in zip(ev_list, WG_len)]
-
-    # ax2.semilogy(c, ev1_abs, marker="o", ls="-", color=colors[0], clip_on=False, mec='none', lw=lw)
-    # ax2.semilogy(c, ev2_abs, marker="o", ls="-", color=colors[1], clip_on=False, mec='none', lw=lw)
-    # ax2.semilogy(c_exp, ev1_abs_exp, marker="v", ls=":", color=colors[0], mfc="w", mec=colors[0], clip_on=False, lw=lw)
-    # ax2.semilogy(c_exp, ev2_abs_exp, marker="v", ls=":", color=colors[1], mfc="w", mec=colors[1], clip_on=False, lw=lw)
 
     if plot_evals:
         # absolute value
@@ -147,11 +138,6 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None,
     print "exp:", np.abs(ev1_exp/ev2_exp)
 
     # phase
-    # ax2.plot(c, ev1_phi, marker="o", ls="-", color="k", clip_on=False, mec='none', lw=lw)
-    # ax2.plot(c, ev2_phi, marker="o", ls="-", color="grey", clip_on=False, mec='none', lw=lw)
-    # ax2.plot(c_exp, ev1_phi_exp, marker="v", ls=":", color="k", clip_on=False, mec='none', lw=lw)
-    # ax2.plot(c_exp, ev2_phi_exp, marker="v", ls=":", color="grey", clip_on=False, mec='none', lw=lw)
-
     # ax2.set_ylabel(r"$\operatorname{Arg} \tau_n$")
     # ax2.plot(c, np.angle(ev1), marker="o", ls="-", color=colors[0], clip_on=False, mec='none', lw=lw)
     # ax2.plot(c, np.angle(ev2), marker="o", ls="-", color=colors[1], clip_on=False, mec='none', lw=lw)
