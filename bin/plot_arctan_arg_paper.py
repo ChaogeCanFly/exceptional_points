@@ -104,13 +104,16 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None,
     c_exp_extended = np.concatenate([[delta_tm[0]], c_exp, [delta_tm[-1]]])
     arctan_v_exp_extended = np.concatenate([[0], np.arctan(abs(v1_exp/v2_exp)), [np.pi/2.]])
     arctan_c_exp_extended = np.concatenate([[np.pi/2.], np.arctan(abs(c1_exp/c2_exp)), [0.0]])
+    marker = "^"
     ax1.plot(c_exp_extended, arctan_v_exp_extended, ":", color=colors[0], mfc="w", mec=colors[0], clip_on=False, lw=lw)
     ax1.plot(c_exp_extended, arctan_c_exp_extended, ":", color=colors[1], mfc="w", mec=colors[1], clip_on=False, lw=lw)
-    ax1.plot(c_exp, np.arctan(abs(v1_exp/v2_exp)), "v", color="k", mfc="w", mec=colors[0], clip_on=False, lw=lw)
-    ax1.plot(c_exp, np.arctan(abs(c1_exp/c2_exp)), "v", color="k", mfc="w", mec=colors[1], clip_on=False, lw=lw)
-    for idx in (0, -1):
-        ax1.plot(c_exp_extended[idx], arctan_v_exp_extended[idx], "v", color="k", mfc="k", mec="k", clip_on=False, lw=lw)
-        ax1.plot(c_exp_extended[idx], arctan_c_exp_extended[idx], "v", color="k", mfc="k", mec="k", clip_on=False, lw=lw)
+    ax1.plot(c_exp, np.arctan(abs(v1_exp/v2_exp)), marker, color="k", mfc="w", mec=colors[0], clip_on=False, lw=lw)
+    ax1.plot(c_exp, np.arctan(abs(c1_exp/c2_exp)), marker, color="k", mfc="w", mec=colors[1], clip_on=False, lw=lw)
+    for color_n, arctan in enumerate([arctan_v_exp_extended, arctan_c_exp_extended]):
+        for idx in (0, -1):
+            ax1.plot(c_exp_extended[idx], arctan[idx], marker,
+                     color=colors[color_n], mec=colors[color_n],
+                     clip_on=False, lw=lw)
 
     ax1.set_ylim(-0.1, np.pi/2)
     ax1.set_yticks([0, np.pi/4, np.pi/2])
@@ -121,7 +124,11 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None,
                ev1_abs_exp*np.exp(1j*ev1_phi_exp),
                ev2_abs_exp*np.exp(1j*ev2_phi_exp)]
     ev1, ev2, ev1_exp, ev2_exp = ev_list
-    # WG_len = [0.51576837377840601, 2.*0.49262250087499387, 4.*0.39514141195540475, 4.*0.4792450151610923, 4.*0.53112071257820737]
+    # WG_len = [0.51576837377840601,
+    #           2.*0.49262250087499387,
+    #           4.*0.39514141195540475,
+    #           4.*0.4792450151610923,
+    #           4.*0.53112071257820737]
     # ev1, ev2, ev1_exp, ev2_exp = [ e**(1./w) for e, w in zip(ev_list, WG_len)]
 
     if plot_evals:
