@@ -112,7 +112,7 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None,
         ax1.plot(c_exp_extended[idx], arctan_v_exp_extended[idx], "v", color="k", mfc="k", mec="k", clip_on=False, lw=lw)
         ax1.plot(c_exp_extended[idx], arctan_c_exp_extended[idx], "v", color="k", mfc="k", mec="k", clip_on=False, lw=lw)
 
-    ax1.set_ylim(0, np.pi/2)
+    ax1.set_ylim(-0.1, np.pi/2)
     ax1.set_yticks([0, np.pi/4, np.pi/2])
     ax1.set_yticklabels([r"$0$", r"$\pi/4$", r"$\pi/2$"])
 
@@ -164,7 +164,7 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None,
         axes_list = (ax1, )
 
     for ax in axes_list:
-        ax.set_xlim(-3.1, 2.05)
+        ax.set_xlim(-3.2, 2.05)
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
         ax.tick_params(axis='both', which='both', bottom='on',
