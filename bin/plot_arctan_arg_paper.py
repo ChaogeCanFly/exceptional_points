@@ -93,50 +93,49 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None,
 
     ax1.set_ylabel(r"$\arctan\vert c^{(n)}_1/c^{(n)}_2\vert$")
     ax1.set_xlabel(r"$\delta\cdot W$")
-    # dashes = [3, 3]
     marker1 = "s"
     marker2 = "^"
     marker3 = "D"
     marker4 = "v"
-    ms = 5.5
-    ms_exp = ms
+    ms_1 = 5.5
+    ms_2 = 5.5
+    ms_exp_1 = 4.5
+    ms_exp_2 = 5.5
     if 0:
         marker1 = "o"
         marker2 = "o"
         marker3 = "v"
         marker4 = "v"
-        ms = 6.0
-        ms_exp = 5.25
-    ax1.plot(c, np.arctan(abs(v1/v2)), marker1, color=colors[0], clip_on=False, mec=colors[0], lw=lw, ms=ms) #, dashes=dashes)
-    ax1.plot(c, np.arctan(abs(c1/c2)), marker2, color=colors[1], clip_on=False, mec=colors[1], lw=lw, ms=ms) #, dashes=dashes)
-    ax1.plot(c_exp, np.arctan(abs(v1_exp/v2_exp)), marker3, color=colors[0], mfc="w", mec=colors[0], clip_on=False, lw=lw, ms=4.5)
-    ax1.plot(c_exp, np.arctan(abs(c1_exp/c2_exp)), marker4, color=colors[1], mfc="w", mec=colors[1], clip_on=False, lw=lw, ms=ms_exp)
+        ms_1 = 5.0
+        ms_2 = 5.0
+        ms_exp_1 = 5.0
+        ms_exp_2 = 5.0
+    ms_end_1 = ms_exp_1
+    ms_end_2 = ms_exp_2
+    ax1.plot(c, np.arctan(abs(v1/v2)), marker1, color=colors[0], clip_on=False, mfc='none', mec=colors[0], lw=lw, ms=ms_1)
+    ax1.plot(c, np.arctan(abs(c1/c2)), marker2, color=colors[1], clip_on=False, mfc='none', mec=colors[1], lw=lw, ms=ms_2)
+    ax1.plot(c_exp, np.arctan(abs(v1_exp/v2_exp)), marker3, color=colors[0], mfc="none", mec=colors[0], clip_on=False, lw=lw, ms=ms_exp_1)
+    ax1.plot(c_exp, np.arctan(abs(c1_exp/c2_exp)), marker4, color=colors[1], mfc="none", mec=colors[1], clip_on=False, lw=lw, ms=ms_exp_2)
 
     eps_tm, delta_tm, v1_tm, v2_tm = get_toymodel_data()
     ax1.plot(delta_tm, np.arctan(abs(v1_tm[:, 0]/v1_tm[:, 1])), ls="--", color=colors[0], lw=lw)
     ax1.plot(delta_tm, np.arctan(abs(v2_tm[:, 0]/v2_tm[:, 1])), ls="--", color=colors[1], lw=lw)
 
-    # c_exp_extended = np.concatenate([[delta_tm[0]], c_exp, [delta_tm[-1]]])
-    # arctan_v_exp_extended = np.concatenate([[0], np.arctan(abs(v1_exp/v2_exp)), [np.pi/2.]])
-    # arctan_c_exp_extended = np.concatenate([[np.pi/2.], np.arctan(abs(c1_exp/c2_exp)), [0.0]])
     c_exp_extended = np.concatenate([[delta_tm[0]], [delta_tm[-1]]])
     arctan_v_exp_extended = np.concatenate([[0], [np.pi/2.]])
     arctan_c_exp_extended = np.concatenate([[np.pi/2.], [0.0]])
-    marker = "v"
-    # ax1.plot(c_exp_extended, arctan_v_exp_extended, ls="", color=colors[0], mfc="w", mec=colors[0], clip_on=False, lw=lw)
-    # ax1.plot(c_exp_extended, arctan_c_exp_extended, ls="", color=colors[1], mfc="w", mec=colors[1], clip_on=False, lw=lw)
-    # ax1.plot(c_exp, np.arctan(abs(v1_exp/v2_exp)), marker, color="k", mfc="w", mec=colors[0], clip_on=False, lw=lw)
-    # ax1.plot(c_exp, np.arctan(abs(c1_exp/c2_exp)), marker, color="k", mfc="w", mec=colors[1], clip_on=False, lw=lw)
     for color_n, arctan in enumerate([arctan_v_exp_extended, arctan_c_exp_extended]):
         for idx in (0, -1):
             if color_n == 0:
                 marker = marker3
-                ms_end = 4.5
+                marker = marker1
+                ms_end = ms_end_1
             else:
                 marker = marker4
-                ms_end = ms_exp
+                marker = marker2
+                ms_end = ms_end_2
             ax1.plot(c_exp_extended[idx], arctan[idx], marker,
-                     color=colors[color_n], mec=colors[color_n], #mfc='w',
+                     color=colors[color_n], mec=colors[color_n], mfc='none',
                      clip_on=False, lw=lw, ms=ms_end)
 
     ax1.set_ylim(-0.1, np.pi/2)
