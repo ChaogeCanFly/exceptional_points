@@ -590,7 +590,7 @@ def plot_uniform():
                   y_ticklabels_imag_spectrum=5)
 
     plot_parameter_trajectory(wg=WGam, figname="uniform_path.pdf")
-    plot_parameter_trajectory_p1_p2(wg=WGam, figname="uniform_path_p1_p2.pdf")
+    # plot_parameter_trajectory_p1_p2(wg=WGam, figname="uniform_path_p1_p2.pdf")
 
 
 def plot_position_dependent():
