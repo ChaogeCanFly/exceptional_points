@@ -89,8 +89,8 @@ def main(W=0.05, L=25, phase=None, plot=False, save_plot=False, lw=0.75):
     # linearized 2x2 parameter path
     eps_linearized, delta_linearized = WG_eff.get_cycle_parameters()
     ax2.plot(delta_linearized*W, eps_linearized/W, "k-", lw=lw)
-    ax2.plot(delta_linearized[absorber_cutoff]*W,
-             eps_linearized[absorber_cutoff]/W, ls="-", lw=3, color=c[1])
+    # ax2.plot(delta_linearized[absorber_cutoff]*W,
+    #          eps_linearized[absorber_cutoff]/W, ls="-", lw=3, color=c[1])
     ax2.set_xlabel(r"$\delta\cdot W$", labelpad=1.5)
     ax2.set_ylabel(r"$\sigma/W$") #, labelpad=2.0)
     ax2.set_xlim(-3.1, 2)
