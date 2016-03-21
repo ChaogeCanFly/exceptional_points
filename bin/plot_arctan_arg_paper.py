@@ -135,7 +135,7 @@ def plot_coefficients(save=False, evecs_file="evecs_t.dat", exp_file=None,
                 marker = marker2
                 ms_end = ms_end_2
             ax1.plot(c_exp_extended[idx], arctan[idx], marker,
-                     color=colors[color_n], mec=colors[color_n], mfc='none',
+                     color=colors[color_n], mec=colors[color_n], mfc='w',
                      clip_on=False, lw=lw, ms=ms_end)
 
     ax1.set_ylim(-0.1, np.pi/2)
