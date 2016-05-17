@@ -366,7 +366,7 @@ class Dirichlet(Waveguide):
             """Return x-coordinates in unit cell.  Only valid for boundary
             phase parameter vartheta = 0."""
             return (2.*pi/kr * (1+s)/2 - 1j/kr *
-                    np.log(s*b1*b2.conj() / (abs(b1)*abs(b2))))
+                    np.log(-s*np.exp(-1j*np.pi/2)*b1*b2.conj() / (abs(b1)*abs(b2))))
 
         # def x0(s):
         #     """Return x-coordinates in unit cell.  Only valid for boundary
@@ -652,6 +652,8 @@ class DirichletPositionDependentLossReduced(DirichletPositionDependentLoss):
         Gamma_matrix_const = np.array([[self.kF/self.k0, 0.0],
                                        [0.0, self.kF/self.k1]], dtype=complex)
         Gamma_matrix = self._get_loss_matrix(x=eps, y=delta)
+        Gamma_matrix[0,1] *= np.exp(+1j*np.pi/2.)
+        Gamma_matrix[1,0] *= np.exp(-1j*np.pi/2.)
 
         # if self.switch_losses_on_off:
         #     # eta = self.eta * (eps/self.x_R0)**2
